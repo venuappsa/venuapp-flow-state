@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Download, ShoppingCart, Check, CreditCard, BarChart, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -105,8 +106,8 @@ const MerchantPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
                 <img 
-                  src="/lovable-uploads/5d8b60e0-5720-4bb2-a096-45e85531221c.png" 
-                  alt="Market vendor serving customers"
+                  src="/lovable-uploads/a324a41f-b192-4da3-88ed-46939c740f35.png" 
+                  alt="Food service preparation"
                   className="w-full h-auto rounded-lg shadow-md"
                 />
               </div>
@@ -151,3 +152,4 @@ const MerchantPage = () => {
 };
 
 export default MerchantPage;
+

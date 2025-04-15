@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, ShoppingCart, Check, CreditCard, BarChart, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -105,18 +104,11 @@ const MerchantPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <img 
-                    src="/lovable-uploads/007aac9b-58de-46dc-9fc2-836eb4d94aed.png" 
-                    alt="Delicious sandwich"
-                    className="w-full h-auto rounded-lg shadow-md"
-                  />
-                  <img 
-                    src="/lovable-uploads/de70eab4-3d7a-47e7-b3d1-6c77c58284e5.png" 
-                    alt="Burger in wrapper"
-                    className="w-full h-auto rounded-lg shadow-md"
-                  />
-                </div>
+                <img 
+                  src="/lovable-uploads/5d8b60e0-5720-4bb2-a096-45e85531221c.png" 
+                  alt="Market vendor serving customers"
+                  className="w-full h-auto rounded-lg shadow-md"
+                />
               </div>
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-6">

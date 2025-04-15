@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, Truck, Check, Clock, MapPin, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -154,8 +153,8 @@ const FetchmanPage = () => {
               </div>
               <div className="order-1 md:order-2">
                 <img 
-                  src="/lovable-uploads/e64d7921-63d4-4399-bb3d-a9b79582571b.png" 
-                  alt="Friends enjoying food at an event"
+                  src="/lovable-uploads/7c4f5418-ea00-4870-9a48-973caab3954f.png" 
+                  alt="Family enjoying food at an event"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
               </div>

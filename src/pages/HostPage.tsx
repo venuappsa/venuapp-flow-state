@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, Building, Check, TrendingUp, Users, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -137,8 +136,8 @@ const HostPage = () => {
               </div>
               <div className="order-1 md:order-2">
                 <img 
-                  src="/lovable-uploads/9398a69c-8a46-4dd6-892d-204e4fe5a8ef.png" 
-                  alt="Event food service staff"
+                  src="/lovable-uploads/da8e3c18-ccdf-47b2-b37c-d422706d433c.png" 
+                  alt="Concert stage with colorful lighting and confetti"
                   className="w-full h-auto rounded-lg shadow-lg"
                 />
               </div>

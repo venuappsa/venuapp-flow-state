@@ -167,8 +167,8 @@ const SubscribePage = () => {
             </div>
             <div className="mt-12">
               <img 
-                src="/lovable-uploads/e64d7921-63d4-4399-bb3d-a9b79582571b.png" 
-                alt="Friends enjoying food at an event"
+                src="/lovable-uploads/2b0ca0a1-3b98-44e8-8563-cf25f85e169f.png" 
+                alt="VenuApp mobile app preview"
                 className="rounded-lg shadow-xl max-w-full md:max-w-3xl mx-auto"
               />
             </div>

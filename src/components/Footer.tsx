@@ -29,6 +29,9 @@ const Footer = () => {
               <a href="https://x.com/venuappsa" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-venu-orange transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
+              <a href="https://www.linkedin.com/company/venuapp-south-africa/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-venu-orange transition-colors">
+                <Linkedin className="h-5 w-5" />
+              </a>
               <a href="https://www.tiktok.com/@venuappontiktok" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-venu-orange transition-colors">
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 

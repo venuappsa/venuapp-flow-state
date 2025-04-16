@@ -15,21 +15,53 @@ const SubscribePage = () => {
   const [role, setRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      toast({
-        title: "Subscription successful!",
-        description: "You're now on the list to get early access to Venuapp.",
+    try {
+      // Format email content
+      const emailContent = `
+        Name: ${name}
+        Email: ${email}
+        Interested as: ${role}
+      `;
+
+      // Send to server
+      const response = await fetch("https://formsubmit.co/ajax/hello@venuapp.co.za", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          subject: "Early Access Subscription - Venuapp",
+          message: emailContent,
+          email: email,
+          name: name
+        }),
       });
+
+      if (response.ok) {
+        toast({
+          title: "Subscription successful!",
+          description: "You're now on the list to get early access to Venuapp.",
+        });
+        setEmail("");
+        setName("");
+        setRole("");
+      } else {
+        throw new Error("Failed to subscribe");
+      }
+    } catch (error) {
+      toast({
+        title: "Error subscribing",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSubmitting(false);
-      setEmail("");
-      setName("");
-      setRole("");
-    }, 1500);
+    }
   };
 
   return (

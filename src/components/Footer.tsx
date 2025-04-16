@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, Download } from "lucide-react";
@@ -55,11 +56,11 @@ const Footer = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <Button variant="outline" className="bg-transparent border-gray-700 hover:bg-gray-800 hover:border-gray-600 flex items-center gap-2">
                 <Download size={18} />
-                <span>App Store</span>
+                <span>App Store (Coming Soon)</span>
               </Button>
               <Button variant="outline" className="bg-transparent border-gray-700 hover:bg-gray-800 hover:border-gray-600 flex items-center gap-2">
                 <Download size={18} />
-                <span>Google Play</span>
+                <span>Google Play (Coming Soon)</span>
               </Button>
             </div>
           </div>

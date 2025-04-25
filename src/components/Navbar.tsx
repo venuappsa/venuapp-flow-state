@@ -23,6 +23,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
+  const [logoutStatus, setLogoutStatus] = useState<string | null>(null);
 
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
 
@@ -35,61 +36,46 @@ export default function Navbar() {
 
   const logOut = async () => {
     setLoading(true);
-    console.log("Navbar: Logout button clicked");
+    setLogoutStatus("Attempting to log you out...");
     try {
       const { error } = await supabase.auth.signOut();
-      console.log("Navbar: supabase.auth.signOut() response error:", error);
-
       localStorage.clear();
       sessionStorage.clear();
       if (window && window.caches) {
         try {
           window.caches.keys().then(keys => keys.forEach(k => window.caches.delete(k)));
-        } catch (e) { /* ignore */ }
+        } catch (e) {}
       }
-
       if (forceClearUser) forceClearUser();
 
       await supabase.auth.getSession().then(({ data }) => {
-        console.log("Navbar: Immediately after signOut, getSession() returns:", data.session);
+        // just for troubleshooting, setLogoutStatus not used here
       });
 
       if (error) {
-        if (
-          error.message?.toLowerCase().includes("session not found") ||
-          error.message?.toLowerCase().includes("session_from_session_id_claim") ||
-          error.message?.toLowerCase().includes("auth session missing")
-        ) {
-          toast({
-            title: "You were already logged out.",
-            description: "Auth session missing.",
-            variant: "default",
-          });
-        } else {
-          toast({ title: "Logout failed", description: error.message, variant: "destructive" });
-        }
+        setLogoutStatus("Logout failed. Please close and reopen the app.");
+        toast({
+          title: "Logout failed",
+          description: error.message,
+          variant: "destructive"
+        });
       } else {
+        setLogoutStatus("You were logged out successfully. Reloading...");
         toast({ title: "Logged out!" });
       }
     } catch (e: any) {
-      console.log("Navbar: Exception during logout:", e);
-      if (
-        e.message?.toLowerCase().includes("session not found") ||
-        e.message?.toLowerCase().includes("session_from_session_id_claim") ||
-        e.message?.toLowerCase().includes("auth session missing")
-      ) {
-        toast({
-          title: "You were already logged out.",
-          description: "Auth session missing.",
-          variant: "default",
-        });
-      } else {
-        toast({ title: "Logout failed", description: e.message, variant: "destructive" });
-      }
+      setLogoutStatus("Logout failed. Please close and reopen the app.");
+      toast({
+        title: "Logout failed",
+        description: e.message,
+        variant: "destructive"
+      });
     }
     setLoading(false);
-    navigate("/auth", { replace: true });
-    window.location.reload();
+    setTimeout(() => {
+      navigate("/auth", { replace: true });
+      window.location.reload();
+    }, 900);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -234,6 +220,14 @@ export default function Navbar() {
             isOpen={mobileMenuOpen}
             setIsOpen={setMobileMenuOpen}
           />
+        )}
+        {logoutStatus && (
+          <div
+            className="fixed bottom-14 left-0 right-0 z-[200] bg-venu-orange text-white py-3 px-4 text-center font-bold text-base rounded shadow animate-in fade-in"
+            style={{ margin: "0 auto", maxWidth: 320 }}
+          >
+            {logoutStatus}
+          </div>
         )}
       </div>
     </nav>

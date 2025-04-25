@@ -1,3 +1,4 @@
+
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -89,10 +90,7 @@ export default function Navbar() {
     if (isMobile) setMobileMenuOpen(false);
   };
 
-  // Always show SecurePanelButton for non-logged-in users.
-  // Hide Login button, as requested. 
-  // Logout is only in secure panels, not here.
-
+  // Always show SecurePanelButton for all users; it switches text based on auth state.
   return (
     <nav className="w-full border-b bg-white shadow z-50 sticky top-0">
       <div className="max-w-7xl mx-auto flex items-center px-4 py-1 sm:py-2">
@@ -168,8 +166,8 @@ export default function Navbar() {
             >
               Subscribe
             </Link>
-            {/* Secure Panel Button replaces Login */}
-            <SecurePanelButton />
+            {/* Secure Panel Button shows "Login" when logged out, otherwise "Go to Secure Panel" */}
+            <SecurePanelButton showWelcome className="flex flex-col items-center" />
           </div>
         )}
         {isMobile && (
@@ -191,3 +189,4 @@ export default function Navbar() {
     </nav>
   );
 }
+

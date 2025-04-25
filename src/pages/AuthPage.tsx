@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +39,13 @@ export default function AuthPage() {
     });
   }, [navigate]);
 
-  // Save user profile & role in tables
+  const handleQuickLogin = () => {
+    setEmail("test@example.com");
+    setPassword("password123");
+    setType("login");
+    toast({ title: "Demo credentials filled!" });
+  };
+
   const createProfileAndRole = async (userId: string) => {
     let { error: profileError } = await supabase
       .from("profiles")
@@ -56,12 +61,7 @@ export default function AuthPage() {
     if (roleError) throw roleError;
   };
 
-  // Generates a 6-digit OTP and sends it via edge function
   const sendOtp = async (toEmail: string, code: string) => {
-    // We'll attempt to call customized edge function,
-    // For now: simulate (in production use a real email sender for OTP)
-    // Example: supabase.functions.invoke('send-otp', { body: { email: toEmail, otp: code } })
-    // For the example, we only display a toast
     toast({
       title: "OTP sent!",
       description: "A 6-digit code was sent to your e-mail.",
@@ -87,15 +87,13 @@ export default function AuthPage() {
         return;
       }
       try {
-        // Signup
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         if (!data.user || !data.user.id) throw new Error("No user ID returned from signup");
 
-        // Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setSentOtp(otp);
-        setSignupUserId(data.user.id); // Save for after OTP check
+        setSignupUserId(data.user.id);
 
         await sendOtp(email, otp);
         setOtpStep(true);
@@ -107,7 +105,6 @@ export default function AuthPage() {
       setLoading(false);
       return;
     }
-    // login
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -136,7 +133,6 @@ export default function AuthPage() {
     setLoading(false);
   };
 
-  // UI
   return (
     <>
       <Navbar />
@@ -153,7 +149,6 @@ export default function AuthPage() {
                 : "Create an account"}
           </h2>
 
-          {/* Honeypot for bots (hidden with CSS) */}
           <div style={{ display: "none" }}>
             <label htmlFor="extra">Leave blank</label>
             <input
@@ -253,6 +248,22 @@ export default function AuthPage() {
               <Button disabled={loading} type="submit">
                 {loading ? "..." : (type === "login" ? "Login" : "Sign Up")}
               </Button>
+              {type === "login" && (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleQuickLogin}
+                    className="w-full"
+                  >
+                    Quick Login (demo)
+                  </Button>
+                  <div className="text-xs text-gray-500 text-center">
+                    Fills in demo credentials for <b>test@example.com</b> / <b>password123</b>.<br />
+                    Sign up with these first, then use Quick Login for fast access.
+                  </div>
+                </>
+              )}
               <button
                 type="button"
                 className="text-xs text-gray-500 hover:underline"

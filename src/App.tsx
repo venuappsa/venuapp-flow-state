@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,9 @@ import HostPage from "./pages/HostPage";
 import MerchantPage from "./pages/MerchantPage";
 import FetchmanPage from "./pages/FetchmanPage";
 import SubscribePage from "./pages/SubscribePage";
+import AuthPage from "./pages/AuthPage";
+import AdminPanel from "./pages/AdminPanel";
+import HostPanel from "./pages/HostPanel";
 
 const queryClient = new QueryClient();
 
@@ -22,8 +24,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/host" element={<HostPanel />} />
           <Route path="/customer" element={<CustomerPage />} />
-          <Route path="/host" element={<HostPage />} />
           <Route path="/merchant" element={<MerchantPage />} />
           <Route path="/fetchman" element={<FetchmanPage />} />
           <Route path="/subscribe" element={<SubscribePage />} />

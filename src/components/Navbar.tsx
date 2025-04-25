@@ -12,6 +12,9 @@ import { ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 
+// Use the newly uploaded logo. Ensure path correctness.
+const VENUAPP_LOGO_SRC = "/lovable-uploads/00295b81-909c-4b6d-b67d-6638afdd5ba3.png";
+
 export default function Navbar() {
   const { user } = useUser();
   const navigate = useNavigate();
@@ -30,16 +33,16 @@ export default function Navbar() {
         {/* Logo and Brand on left */}
         <Link
           to="/"
-          className="flex items-center font-bold text-xl text-black gap-2"
+          className="flex items-center font-bold text-lg text-black gap-2"
           style={{ minWidth: 0 }}
         >
           <img
-            src="/lovable-uploads/57c16116-eacd-44f2-8cd4-b65aab317ae7.png"
+            src={VENUAPP_LOGO_SRC}
             alt="Venuapp Logo"
             className="h-8 w-auto mr-1"
             style={{ maxWidth: 36 }}
           />
-          <span className="whitespace-nowrap text-base sm:text-lg tracking-tight font-extrabold">
+          <span className="whitespace-nowrap text-sm sm:text-base tracking-tight font-extrabold">
             Venuapp
           </span>
         </Link>
@@ -59,16 +62,25 @@ export default function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="z-50 bg-white min-w-[10rem]">
               <DropdownMenuItem asChild>
-                <Link to="/customer" className="text-xs sm:text-sm">Customer</Link>
+                <Link to="/customer" className="text-xs sm:text-sm w-full block">
+                  Customer
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/merchant" className="text-xs sm:text-sm">Merchant</Link>
+                <Link to="/merchant" className="text-xs sm:text-sm w-full block">
+                  Merchant
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/fetchman" className="text-xs sm:text-sm">Fetchman</Link>
+                <Link to="/fetchman" className="text-xs sm:text-sm w-full block">
+                  Fetchman
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/host" className="text-xs sm:text-sm">Host</Link>
+                {/* This links to the Host explainer page, no login! */}
+                <Link to="/host" className="text-xs sm:text-sm w-full block">
+                  Host
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -5,14 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import Navbar from "@/components/Navbar"; // Add the Navbar import
+import Navbar from "@/components/Navbar";
 
 const ROLE_OPTIONS = [
   { value: "customer", label: "Customer" },
   { value: "host", label: "Host/Event Organizer" },
   { value: "merchant", label: "Merchant/Vendor" },
   { value: "fetchman", label: "Fetchman" },
+  { value: "admin", label: "Admin" },
 ];
+
+type AppRole = "admin" | "host" | "merchant" | "customer" | "fetchman";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -20,14 +23,13 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState<string>("");
   const [type, setType] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const [honeypot, setHoneypot] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect if already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate("/");
     });
@@ -42,9 +44,13 @@ export default function AuthPage() {
     if (profileError) throw profileError;
 
     // Insert user role
+    // Type assertion on role to match the enum
     let { error: roleError } = await supabase
       .from("user_roles")
-      .insert({ user_id: userId, role });
+      .insert({
+        user_id: userId,
+        role: role as AppRole,
+      });
     if (roleError) throw roleError;
   };
 
@@ -68,9 +74,7 @@ export default function AuthPage() {
         // Signup
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        // Add profile and role for new user
         if (!data.user || !data.user.id) throw new Error("No user ID returned from signup");
-
         await createProfileAndRole(data.user.id);
 
         toast({ title: "Signup successful! Please check your email to verify." });
@@ -90,7 +94,6 @@ export default function AuthPage() {
           <h2 className="text-xl font-bold text-center">
             {type === "login" ? "Login" : "Create an account"}
           </h2>
-
           {/* Honeypot for bots (hidden with CSS) */}
           <div style={{ display: "none" }}>
             <label htmlFor="extra">Leave blank</label>
@@ -104,7 +107,6 @@ export default function AuthPage() {
               onChange={e => setHoneypot(e.target.value)}
             />
           </div>
-
           {type === "signup" && (
             <>
               <Input

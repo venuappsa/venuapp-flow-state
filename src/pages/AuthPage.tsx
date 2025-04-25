@@ -1,9 +1,7 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
@@ -11,14 +9,10 @@ import { createProfileAndRole, sendOtp } from "@/hooks/useAuthHelpers";
 import type { Enums } from "@/integrations/supabase/types";
 import RedirectLoaderOverlay from "@/components/RedirectLoaderOverlay";
 import useAuthLoadingState from "@/hooks/useAuthLoadingState";
-
-const ROLE_OPTIONS: { value: Enums<"app_role">; label: string }[] = [
-  { value: "customer", label: "Customer" },
-  { value: "host", label: "Host/Event Organizer" },
-  { value: "merchant", label: "Merchant/Vendor" },
-  { value: "fetchman", label: "Fetchman" },
-  { value: "admin", label: "Admin" },
-];
+import { toast } from "@/components/ui/use-toast";
+import AuthForm from "./AuthForm";
+import OtpStep from "./OtpStep";
+import { ROLE_OPTIONS } from "./roleOptions";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -39,7 +33,6 @@ export default function AuthPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(userId);
-
   const isAuthLoading = useAuthLoadingState();
 
   useRoleRedirect({
@@ -88,11 +81,9 @@ export default function AuthPage() {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         if (!data.user || !data.user.id) throw new Error("No user ID returned from signup");
-
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setSentOtp(otp);
         setSignupUserId(data.user.id);
-
         await sendOtp({ email, code: otp, toast });
         setOtpStep(true);
         toast({ title: "Signup step 1 complete", description: "Check your email and enter the OTP to continue." });
@@ -183,119 +174,43 @@ export default function AuthPage() {
             />
           </div>
           {otpStep ? (
-            <>
-              <Input
-                required
-                autoFocus
-                placeholder="Enter OTP code"
-                value={otpInput}
-                onChange={e => setOtpInput(e.target.value.replace(/\D/g, ""))}
-                maxLength={6}
-              />
-              <Button disabled={loading} type="submit">
-                {loading ? "..." : "Verify"}
-              </Button>
-            </>
+            <OtpStep
+              loading={loading}
+              otpInput={otpInput}
+              setOtpInput={setOtpInput}
+              onOtpSubmit={onOtpSubmit}
+            />
           ) : (
-            <>
-              {type === "signup" && (
-                <>
-                  <Input
-                    required
-                    placeholder="Name"
-                    value={name}
-                    autoComplete="given-name"
-                    onChange={e => setName(e.target.value)}
-                  />
-                  <Input
-                    required
-                    placeholder="Surname"
-                    value={surname}
-                    autoComplete="family-name"
-                    onChange={e => setSurname(e.target.value)}
-                  />
-                  <Input
-                    required
-                    placeholder="Phone"
-                    value={phone}
-                    autoComplete="tel"
-                    type="tel"
-                    onChange={e => setPhone(e.target.value)}
-                  />
-                  <select
-                    required
-                    value={role}
-                    onChange={e => setRole(e.target.value as Enums<"app_role"> | "")}
-                    className="bg-gray-100 border rounded px-3 py-2 text-base"
-                  >
-                    <option value="">Select your role</option>
-                    {ROLE_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-              <Input
-                required
-                autoFocus
-                placeholder="Email"
-                type="email"
-                value={email}
-                autoComplete="email"
-                onChange={e => setEmail(e.target.value)}
-              />
-              <Input
-                required
-                placeholder="Password"
-                type="password"
-                value={password}
-                autoComplete={type === "login" ? "current-password" : "new-password"}
-                onChange={e => setPassword(e.target.value)}
-              />
-              {type === "signup" && (
-                <Input
-                  required
-                  placeholder="Confirm password"
-                  type="password"
-                  value={confirmPassword}
-                  autoComplete="new-password"
-                  onChange={e => setConfirmPassword(e.target.value)}
-                />
-              )}
-              <Button disabled={loading} type="submit">
-                {loading ? "..." : (type === "login" ? "Login" : "Sign Up")}
-              </Button>
-              {type === "login" && (
-                <>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={handleQuickLogin}
-                    className="w-full"
-                  >
-                    Quick Login (demo)
-                  </Button>
-                  <div className="text-xs text-gray-500 text-center">
-                    Fills in demo credentials for <b>test@example.com</b> / <b>password123</b>.<br />
-                    Sign up with these first, then use Quick Login for fast access.
-                  </div>
-                </>
-              )}
-              <button
-                type="button"
-                className="text-xs text-gray-500 hover:underline"
-                onClick={() => {
-                  setType(type === "login" ? "signup" : "login");
-                  setOtpStep(false);
-                }}>
-                {type === "login"
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Log in"}
-              </button>
-            </>
+            <AuthForm
+              type={type}
+              onTypeChange={setType}
+              otpStep={otpStep}
+              setOtpStep={setOtpStep}
+              setUserId={setUserId}
+              setPendingRedirect={setPendingRedirect}
+              setSentOtp={setSentOtp}
+              setSignupUserId={setSignupUserId}
+              setLoading={setLoading}
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              confirmPassword={confirmPassword}
+              setConfirmPassword={setConfirmPassword}
+              name={name}
+              setName={setName}
+              surname={surname}
+              setSurname={setSurname}
+              phone={phone}
+              setPhone={setPhone}
+              role={role}
+              setRole={setRole}
+              loading={loading}
+              honeypot={honeypot}
+              setHoneypot={setHoneypot}
+              handleQuickLogin={handleQuickLogin}
+              onSubmit={onSubmit}
+            />
           )}
         </form>
       </div>

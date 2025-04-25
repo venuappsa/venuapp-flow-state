@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -64,18 +63,21 @@ export default function AuthPage() {
   const [pendingRedirect, setPendingRedirect] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
-
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(userId);
 
   // After login/signup, redirect user to their role-specific page
   useEffect(() => {
     if (pendingRedirect && userId && userRoles && !rolesLoading) {
-      console.log("Detected roles on AuthPage after login:", userRoles);
-      const redirectTo = getRedirectPageForRoles(userRoles);
-      navigate(redirectTo, { replace: true });
+      // Add a fallback to "/" if no roles are assigned
+      const rolesArray = userRoles && Array.isArray(userRoles) ? userRoles : [];
+      console.log("Detected roles after login on AuthPage:", rolesArray);
+      const redirectTo = getRedirectPageForRoles(rolesArray);
+      if (redirectTo !== location.pathname) {
+        navigate(redirectTo, { replace: true });
+      }
       setPendingRedirect(false);
     }
-  }, [pendingRedirect, userId, userRoles, rolesLoading, navigate]);
+  }, [pendingRedirect, userId, userRoles, rolesLoading, navigate, location.pathname]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -331,4 +333,3 @@ export default function AuthPage() {
     </>
   );
 }
-

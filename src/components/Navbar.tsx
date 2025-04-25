@@ -30,13 +30,37 @@ export default function Navbar() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signOut();
+      // Handle logout even if session is not found (user already logged out/expired)
       if (error) {
-        toast({ title: "Logout failed", description: error.message, variant: "destructive" });
+        if (
+          error.message?.toLowerCase().includes("session not found") ||
+          error.message?.toLowerCase().includes("session_from_session_id_claim")
+        ) {
+          toast({
+            title: "You were already logged out.",
+            description: "Auth session missing.",
+            variant: "default",
+          });
+        } else {
+          toast({ title: "Logout failed", description: error.message, variant: "destructive" });
+        }
       } else {
         toast({ title: "Logged out!" });
       }
     } catch (e: any) {
-      toast({ title: "Logout failed", description: e.message, variant: "destructive" });
+      // Same logic applies here
+      if (
+        e.message?.toLowerCase().includes("session not found") ||
+        e.message?.toLowerCase().includes("session_from_session_id_claim")
+      ) {
+        toast({
+          title: "You were already logged out.",
+          description: "Auth session missing.",
+          variant: "default",
+        });
+      } else {
+        toast({ title: "Logout failed", description: e.message, variant: "destructive" });
+      }
     }
     setLoading(false);
     // Always redirect and clear localStorage tokens

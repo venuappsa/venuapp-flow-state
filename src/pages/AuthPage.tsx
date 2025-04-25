@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { useRoleRedirect } from "@/hooks/useRoleRedirect";
+import { createProfileAndRole, sendOtp } from "@/hooks/useAuthHelpers";
 
 const ROLE_OPTIONS = [
   { value: "customer", label: "Customer" },
@@ -14,36 +17,6 @@ const ROLE_OPTIONS = [
   { value: "fetchman", label: "Fetchman" },
   { value: "admin", label: "Admin" },
 ];
-
-type AppRole = "admin" | "host" | "merchant" | "customer" | "fetchman";
-
-const ROLE_PRIORITY: AppRole[] = [
-  "admin",
-  "host",
-  "merchant",
-  "fetchman",
-  "customer",
-];
-
-function getRedirectPageForRoles(roles: string[]): string {
-  for (const role of ROLE_PRIORITY) {
-    if (roles.includes(role)) {
-      switch (role) {
-        case "admin":
-          return "/admin";
-        case "host":
-          return "/host";
-        case "merchant":
-          return "/merchant";
-        case "fetchman":
-          return "/fetchman";
-        case "customer":
-          return "/customer";
-      }
-    }
-  }
-  return "/";
-}
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -65,19 +38,13 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(userId);
 
-  // After login/signup, redirect user to their role-specific page
-  useEffect(() => {
-    if (pendingRedirect && userId && userRoles && !rolesLoading) {
-      // Add a fallback to "/" if no roles are assigned
-      const rolesArray = userRoles && Array.isArray(userRoles) ? userRoles : [];
-      console.log("Detected roles after login on AuthPage:", rolesArray);
-      const redirectTo = getRedirectPageForRoles(rolesArray);
-      if (redirectTo !== location.pathname) {
-        navigate(redirectTo, { replace: true });
-      }
-      setPendingRedirect(false);
-    }
-  }, [pendingRedirect, userId, userRoles, rolesLoading, navigate, location.pathname]);
+  useRoleRedirect({
+    pendingRedirect,
+    userId,
+    userRoles,
+    rolesLoading,
+    setPendingRedirect,
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -93,28 +60,6 @@ export default function AuthPage() {
     setPassword("password123");
     setType("login");
     toast({ title: "Demo credentials filled!" });
-  };
-
-  const createProfileAndRole = async (userId: string) => {
-    let { error: profileError } = await supabase
-      .from("profiles")
-      .insert({ id: userId, name, surname, email, phone });
-    if (profileError) throw profileError;
-
-    let { error: roleError } = await supabase
-      .from("user_roles")
-      .insert({
-        user_id: userId,
-        role: role as AppRole,
-      });
-    if (roleError) throw roleError;
-  };
-
-  const sendOtp = async (toEmail: string, code: string) => {
-    toast({
-      title: "OTP sent!",
-      description: "A 6-digit code was sent to your e-mail.",
-    });
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -144,7 +89,7 @@ export default function AuthPage() {
         setSentOtp(otp);
         setSignupUserId(data.user.id);
 
-        await sendOtp(email, otp);
+        await sendOtp({ email, code: otp, toast });
         setOtpStep(true);
         toast({ title: "Signup step 1 complete", description: "Check your email and enter the OTP to continue." });
       } catch (e: any) {
@@ -173,7 +118,14 @@ export default function AuthPage() {
     setLoading(true);
     if (otpInput === sentOtp && signupUserId) {
       try {
-        await createProfileAndRole(signupUserId);
+        await createProfileAndRole({
+          userId: signupUserId,
+          name,
+          surname,
+          email,
+          phone,
+          role,
+        });
         setUserId(signupUserId);
         setPendingRedirect(true);
         toast({ title: "Signup successful!", description: "Welcome!" });

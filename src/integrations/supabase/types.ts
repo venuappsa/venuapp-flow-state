@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      host_profiles: {
+        Row: {
+          company_name: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_suspended: boolean
+          subscription_renewal: string | null
+          subscription_status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+          verification_status: Database["public"]["Enums"]["verification_status"]
+        }
+        Insert: {
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_suspended?: boolean
+          subscription_renewal?: string | null
+          subscription_status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+          verification_status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Update: {
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_suspended?: boolean
+          subscription_renewal?: string | null
+          subscription_status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+          verification_status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -54,6 +99,51 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_profiles: {
+        Row: {
+          company_name: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_suspended: boolean
+          subscription_renewal: string | null
+          subscription_status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+          verification_status: Database["public"]["Enums"]["verification_status"]
+        }
+        Insert: {
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_suspended?: boolean
+          subscription_renewal?: string | null
+          subscription_status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+          verification_status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Update: {
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_suspended?: boolean
+          subscription_renewal?: string | null
+          subscription_status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+          verification_status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -63,6 +153,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "host" | "merchant" | "customer" | "fetchman"
+      subscription_status: "active" | "expired" | "trial" | "none"
+      verification_status: "pending" | "verified" | "declined"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -179,6 +271,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "host", "merchant", "customer", "fetchman"],
+      subscription_status: ["active", "expired", "trial", "none"],
+      verification_status: ["pending", "verified", "declined"],
     },
   },
 } as const

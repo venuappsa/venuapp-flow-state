@@ -33,7 +33,7 @@ export default function MobileNavMenu({ onNavLink, isOpen, setIsOpen }: MobileNa
     <div>
       <button
         className="p-2 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-100 focus:outline-none sm:hidden"
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         <Menu size={24} />

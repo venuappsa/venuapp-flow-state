@@ -96,7 +96,8 @@ export default function Navbar() {
     if (isMobile) setMobileMenuOpen(false);
   };
 
-  let panelRoute: string | null = null;
+  // Compute panel route, fallback for non-logged in users.
+  let panelRoute: string = "/customer";
   if (user && userRoles && !rolesLoading && userRoles.length > 0) {
     panelRoute = getRedirectPageForRoles(userRoles);
     console.log("Navbar: Calculated panelRoute based on roles:", panelRoute);
@@ -177,22 +178,21 @@ export default function Navbar() {
             >
               Subscribe
             </Link>
-            {panelRoute && (
-              <Button
-                asChild
-                className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
-                variant="outline"
+            {/* Always show Go to Secure Panel */}
+            <Button
+              asChild
+              className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
+              variant="outline"
+            >
+              <Link
+                to={panelRoute}
+                onClick={() => {
+                  console.log("Navbar: Go to Secure Panel link clicked. To:", panelRoute);
+                }}
               >
-                <Link
-                  to={panelRoute}
-                  onClick={() => {
-                    console.log("Navbar: Go to Secure Panel link clicked. To:", panelRoute);
-                  }}
-                >
-                  Go to Secure Panel
-                </Link>
-              </Button>
-            )}
+                Go to Secure Panel
+              </Link>
+            </Button>
             {!user && (
               <Button
                 asChild

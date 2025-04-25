@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -79,6 +78,7 @@ export default function AuthPage() {
       }
       try {
         const { data, error } = await supabase.auth.signUp({ email, password });
+        console.log("[AuthPage] Signup attempt", { email, password, result: data, error });
         if (error) throw error;
         if (!data.user || !data.user.id) throw new Error("No user ID returned from signup");
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -88,6 +88,7 @@ export default function AuthPage() {
         setOtpStep(true);
         toast({ title: "Signup step 1 complete", description: "Check your email and enter the OTP to continue." });
       } catch (e: any) {
+        console.error("[AuthPage] Signup ERROR", e);
         toast({ title: "Error", description: e.message, variant: "destructive" });
         setLoading(false);
       }
@@ -96,13 +97,23 @@ export default function AuthPage() {
     }
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      if (data.user) {
-        setUserId(data.user.id);
-        setPendingRedirect(true);
+      console.log("[AuthPage] Login attempt", { email, password, result: data, error });
+      if (error) {
+        console.error("[AuthPage] Login ERROR", error);
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+        setLoading(false);
+        return;
       }
+      if (!data.user) {
+        toast({ title: "Login failed", description: "No user returned.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      setUserId(data.user.id);
+      setPendingRedirect(true);
       toast({ title: "Login successful!" });
     } catch (e: any) {
+      console.error("[AuthPage] Login Exception", e);
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
     setLoading(false);

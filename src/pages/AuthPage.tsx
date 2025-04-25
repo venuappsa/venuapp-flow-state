@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -141,6 +142,20 @@ export default function AuthPage() {
     }
     setLoading(false);
   };
+
+  // New: If redirecting, show loader instead of form
+  if (pendingRedirect) {
+    return (
+      <>
+        <Navbar />
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-gray-50">
+          <span className="animate-spin rounded-full border-4 border-venu-orange border-t-transparent w-12 h-12 mb-6" />
+          <span className="text-venu-orange mb-2 font-bold text-xl">Redirecting you to your panel...</span>
+          <span className="text-gray-500">Please wait</span>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

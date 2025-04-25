@@ -1,4 +1,3 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavMenu from "./MobileNavMenu";
+import { toast } from "@/components/ui/use-toast";
 
 const VENUAPP_LOGO_SRC = "/lovable-uploads/00295b81-909c-4b6d-b67d-6638afdd5ba3.png";
 
@@ -28,9 +28,19 @@ export default function Navbar() {
 
   const logOut = async () => {
     setLoading(true);
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({ title: "Logout failed", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Logged out!" });
+      }
+    } catch (e: any) {
+      toast({ title: "Logout failed", description: e.message, variant: "destructive" });
+    }
     setLoading(false);
-    navigate("/auth");
+    // Always redirect and clear localStorage tokens
+    navigate("/auth", { replace: true });
   };
 
   // Helper to scroll to section by id with smooth behavior

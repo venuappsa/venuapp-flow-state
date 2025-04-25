@@ -70,6 +70,7 @@ export default function AuthPage() {
   // After login/signup, redirect user to their role-specific page
   useEffect(() => {
     if (pendingRedirect && userId && userRoles && !rolesLoading) {
+      console.log("Detected roles on AuthPage after login:", userRoles);
       const redirectTo = getRedirectPageForRoles(userRoles);
       navigate(redirectTo, { replace: true });
       setPendingRedirect(false);

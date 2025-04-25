@@ -1,9 +1,9 @@
+
 import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { User, Building, ShoppingCart, Truck, Download } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { User, Building, ShoppingCart, Truck } from "lucide-react";
+import RoleCard from "./roles/RoleCard";
+import { handleRegister } from "@/utils/registration";
 
 const UserRoles = () => {
   // Function to detect role from URL hash
@@ -14,7 +14,6 @@ const UserRoles = () => {
         const role = hash.split("role=")[1].split("&")[0];
         const validRoles = ["user", "host", "merchant", "fetchman"];
         if (validRoles.includes(role)) {
-          // Find the tab trigger element and click it
           const tabTrigger = document.querySelector(`[data-value="${role}"]`);
           if (tabTrigger) {
             (tabTrigger as HTMLElement).click();
@@ -23,233 +22,63 @@ const UserRoles = () => {
       }
     };
 
-    // Run once on mount
     handleHashChange();
-
-    // Add hash change listener
     window.addEventListener("hashchange", handleHashChange);
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
   }, []);
 
-  const handleRegister = async (role: string) => {
-    try {
-      const subject = `New ${role.charAt(0).toUpperCase() + role.slice(1)} Registration Interest`;
-      const message = `New registration interest for role: ${role}`;
-      
-      await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          access_key: '4673c925-f918-401c-8e5c-9c503fa9e3a6',
-          subject,
-          from_name: 'Venuapp Registration',
-          to: 'hello@venuapp.co.za',
-          message,
-        }),
-      });
-
-      toast({
-        title: "Registration Interest Received",
-        description: "We'll be in touch with you soon!",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit registration. Please try again.",
-        variant: "destructive",
-      });
+  const roleData = {
+    user: {
+      icon: User,
+      title: "Customer",
+      description: "The event-goer looking for a seamless experience",
+      benefits: [
+        "Skip long queues for food, drinks, and merchandise",
+        "Order from your seat without missing any moments",
+        "Browse all available vendors in one convenient app",
+        "Secure payment options with real-time order tracking",
+        "Receive in-seat delivery or pick up from designated points"
+      ]
+    },
+    host: {
+      icon: Building,
+      title: "Host",
+      description: "Venue operators and event organizers",
+      benefits: [
+        "Streamline operations and reduce congestion at venues",
+        "Easily invite and manage merchants for your events",
+        "Gain real-time insights on sales and customer preferences",
+        "Enhance customer experience with a modern ordering system",
+        "Increase revenue with higher merchant participation"
+      ]
+    },
+    merchant: {
+      icon: ShoppingCart,
+      title: "Merchant",
+      description: "Food, beverage, and merchandise vendors",
+      benefits: [
+        "Increase sales volume with wider customer reach",
+        "Eliminate cash handling risks with digital payments",
+        "Access detailed sales analytics and inventory management",
+        "Optimize staffing based on real-time order volumes",
+        "Seamlessly participate in multiple events"
+      ]
+    },
+    fetchman: {
+      icon: Truck,
+      title: "Fetchman",
+      description: "Order collectors and delivery personnel",
+      benefits: [
+        "Flexible earning opportunities at various events",
+        "User-friendly app with easy navigation and order management",
+        "Clear delivery instructions with venue mapping",
+        "Secure transaction handling through the app",
+        "Performance-based incentives and rewards"
+      ]
     }
   };
-
-  const VenuePricingPlans = [
-    {
-      name: "Free Plan",
-      price: "R0",
-      eventPrice: "R0",
-      description: "Perfect for trying out the platform",
-      features: {
-        "Per Event Fee": "R0",
-        "Per Month Fee": "N/A",
-        "Merchant Allowed": "1",
-        "Fetchman Access": "2",
-        "Admin Team Users": "1",
-        "Product Load": "10",
-        "Sales Dashboard & Analytics": "Limited",
-        "Customer Support Priority": "Limited",
-        "Onboarding & Training": "N/A"
-      },
-      highlighted: false
-    },
-    {
-      name: "Starter",
-      price: "R950",
-      eventPrice: "R250.00",
-      description: "For small venues just getting started",
-      features: {
-        "Per Event Fee": "R250.00",
-        "Per Month Fee": "R950.00",
-        "Merchant Allowed": "3",
-        "Fetchman Access": "5",
-        "Admin Team Users": "6", // Updated to double merchants (3)
-        "Product Load": "30",
-        "Sales Dashboard & Analytics": "Basic",
-        "Customer Support Priority": "Standard",
-        "Onboarding & Training": "N/A"
-      },
-      highlighted: false
-    },
-    {
-      name: "Growth",
-      price: "R1,850",
-      eventPrice: "R500.00",
-      description: "For growing venues with regular events",
-      features: {
-        "Per Event Fee": "R500.00",
-        "Per Month Fee": "R1,850.00",
-        "Merchant Allowed": "7",
-        "Fetchman Access": "10",
-        "Admin Team Users": "14", // Updated to double merchants (7)
-        "Product Load": "75",
-        "Sales Dashboard & Analytics": "Standard",
-        "Customer Support Priority": "High",
-        "Onboarding & Training": "Virtual"
-      },
-      highlighted: true
-    },
-    {
-      name: "Pro",
-      price: "R3,000",
-      eventPrice: "R800.00",
-      description: "For established venues with high traffic",
-      features: {
-        "Per Event Fee": "R800.00",
-        "Per Month Fee": "R3,000.00",
-        "Merchant Allowed": "10",
-        "Fetchman Access": "20",
-        "Admin Team Users": "20", // Updated to double merchants (10)
-        "Product Load": "200",
-        "Sales Dashboard & Analytics": "Advanced",
-        "Customer Support Priority": "Priority",
-        "Onboarding & Training": "Virtual"
-      },
-      highlighted: false
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      eventPrice: "Custom",
-      description: "For large-scale venues with unique needs",
-      features: {
-        "Per Event Fee": "Custom",
-        "Per Month Fee": "Custom",
-        "Merchant Allowed": "Unlimited",
-        "Fetchman Access": "Unlimited",
-        "Admin Team Users": "Unlimited",
-        "Product Load": "Unlimited",
-        "Sales Dashboard & Analytics": "Full Suite",
-        "Customer Support Priority": "24/7 Dedicated Manager",
-        "Onboarding & Training": "Venue-based & Ongoing Support"
-      },
-      highlighted: false
-    }
-  ];
-
-  const EventPricingPlans = [
-    {
-      name: "Free Plan",
-      price: "R0",
-      eventPrice: "R0",
-      description: "Perfect for small, one-time events",
-      features: {
-        "Per Event Fee": "R0",
-        "Per Month Fee": "N/A",
-        "Merchant Allowed": "1",
-        "Fetchman Access": "2",
-        "Admin Team Users": "1",
-        "Product Load": "10",
-        "Sales Dashboard & Analytics": "Limited",
-        "Customer Support Priority": "Limited",
-        "Onboarding & Training": "N/A"
-      },
-      highlighted: false
-    },
-    {
-      name: "Starter",
-      price: "R650",
-      eventPrice: "R650.00",
-      description: "For small to medium events",
-      features: {
-        "Per Event Fee": "R650.00",
-        "Per Month Fee": "N/A",
-        "Merchant Allowed": "3",
-        "Fetchman Access": "6",
-        "Admin Team Users": "6", // Updated to double merchants (3)
-        "Product Load": "60",
-        "Sales Dashboard & Analytics": "Basic",
-        "Customer Support Priority": "Standard",
-        "Onboarding & Training": "N/A"
-      },
-      highlighted: false
-    },
-    {
-      name: "Growth",
-      price: "R1,070",
-      eventPrice: "R1,070.00",
-      description: "For larger events with multiple vendors",
-      features: {
-        "Per Event Fee": "R1,070.00",
-        "Per Month Fee": "N/A",
-        "Merchant Allowed": "7",
-        "Fetchman Access": "14",
-        "Admin Team Users": "14", // Updated to double merchants (7)
-        "Product Load": "140",
-        "Sales Dashboard & Analytics": "Standard",
-        "Customer Support Priority": "High",
-        "Onboarding & Training": "Virtual"
-      },
-      highlighted: true
-    },
-    {
-      name: "Pro",
-      price: "R2,160",
-      eventPrice: "R2,160.00",
-      description: "For major events with high attendance",
-      features: {
-        "Per Event Fee": "R2,160.00",
-        "Per Month Fee": "N/A",
-        "Merchant Allowed": "10",
-        "Fetchman Access": "30",
-        "Admin Team Users": "20", // Updated to double merchants (10)
-        "Product Load": "300",
-        "Sales Dashboard & Analytics": "Advanced",
-        "Customer Support Priority": "Priority",
-        "Onboarding & Training": "Venue-based"
-      },
-      highlighted: false
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      eventPrice: "Custom",
-      description: "For festivals and large-scale events",
-      features: {
-        "Per Event Fee": "Custom",
-        "Per Month Fee": "N/A",
-        "Merchant Allowed": "Unlimited",
-        "Fetchman Access": "Unlimited",
-        "Admin Team Users": "Unlimited",
-        "Product Load": "Unlimited",
-        "Sales Dashboard & Analytics": "Full Suite",
-        "Customer Support Priority": "24/7 Dedicated Manager",
-        "Onboarding & Training": "Venue-based & Ongoing Support"
-      },
-      highlighted: false
-    }
-  ];
 
   return (
     <section id="roles" className="py-16 bg-gray-50">
@@ -265,151 +94,29 @@ const UserRoles = () => {
         
         <Tabs defaultValue="user" className="max-w-4xl mx-auto">
           <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-8">
-            <TabsTrigger value="user" data-value="user" className="data-[state=active]:bg-venu-orange data-[state=active]:text-white">
-              <User className="h-4 w-4 mr-2" /> User
-            </TabsTrigger>
-            <TabsTrigger value="host" data-value="host" className="data-[state=active]:bg-venu-orange data-[state=active]:text-white">
-              <Building className="h-4 w-4 mr-2" /> Host
-            </TabsTrigger>
-            <TabsTrigger value="merchant" data-value="merchant" className="data-[state=active]:bg-venu-orange data-[state=active]:text-white">
-              <ShoppingCart className="h-4 w-4 mr-2" /> Merchant
-            </TabsTrigger>
-            <TabsTrigger value="fetchman" data-value="fetchman" className="data-[state=active]:bg-venu-orange data-[state=active]:text-white">
-              <Truck className="h-4 w-4 mr-2" /> Fetchman
-            </TabsTrigger>
+            {Object.entries(roleData).map(([key, data]) => (
+              <TabsTrigger 
+                key={key}
+                value={key} 
+                data-value={key} 
+                className="data-[state=active]:bg-venu-orange data-[state=active]:text-white"
+              >
+                <data.icon className="h-4 w-4 mr-2" /> {data.title}
+              </TabsTrigger>
+            ))}
           </TabsList>
           
-          <TabsContent value="user" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-6 w-6 mr-2 text-venu-orange" />
-                  Customer
-                </CardTitle>
-                <CardDescription>The event-goer looking for a seamless experience</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Benefits:</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Skip long queues for food, drinks, and merchandise</li>
-                    <li>Order from your seat without missing any moments</li>
-                    <li>Browse all available vendors in one convenient app</li>
-                    <li>Secure payment options with real-time order tracking</li>
-                    <li>Receive in-seat delivery or pick up from designated points</li>
-                  </ul>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('user')}>
-                    Register as Customer
-                  </Button>
-                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                    <Download size={18} />
-                    <span>Download App</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="host" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Building className="h-6 w-6 mr-2 text-venu-orange" />
-                  Host
-                </CardTitle>
-                <CardDescription>Venue operators and event organizers</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Benefits:</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Streamline operations and reduce congestion at venues</li>
-                    <li>Easily invite and manage merchants for your events</li>
-                    <li>Gain real-time insights on sales and customer preferences</li>
-                    <li>Enhance customer experience with a modern ordering system</li>
-                    <li>Increase revenue with higher merchant participation</li>
-                  </ul>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('host')}>
-                    Register as Host
-                  </Button>
-                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                    <Download size={18} />
-                    <span>Download App</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="merchant" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <ShoppingCart className="h-6 w-6 mr-2 text-venu-orange" />
-                  Merchant
-                </CardTitle>
-                <CardDescription>Food, beverage, and merchandise vendors</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Benefits:</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Increase sales volume with wider customer reach</li>
-                    <li>Eliminate cash handling risks with digital payments</li>
-                    <li>Access detailed sales analytics and inventory management</li>
-                    <li>Optimize staffing based on real-time order volumes</li>
-                    <li>Seamlessly participate in multiple events</li>
-                  </ul>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('merchant')}>
-                    Register as Merchant
-                  </Button>
-                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                    <Download size={18} />
-                    <span>Download App</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="fetchman" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Truck className="h-6 w-6 mr-2 text-venu-orange" />
-                  Fetchman
-                </CardTitle>
-                <CardDescription>Order collectors and delivery personnel</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Benefits:</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Flexible earning opportunities at various events</li>
-                    <li>User-friendly app with easy navigation and order management</li>
-                    <li>Clear delivery instructions with venue mapping</li>
-                    <li>Secure transaction handling through the app</li>
-                    <li>Performance-based incentives and rewards</li>
-                  </ul>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('fetchman')}>
-                    Register as Fetchman
-                  </Button>
-                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                    <Download size={18} />
-                    <span>Download App</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {Object.entries(roleData).map(([key, data]) => (
+            <TabsContent key={key} value={key} className="space-y-4">
+              <RoleCard
+                icon={data.icon}
+                title={data.title}
+                description={data.description}
+                benefits={data.benefits}
+                onRegister={() => handleRegister(key)}
+              />
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
     </section>
@@ -417,3 +124,4 @@ const UserRoles = () => {
 };
 
 export default UserRoles;
+

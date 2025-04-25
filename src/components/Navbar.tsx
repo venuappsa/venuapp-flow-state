@@ -1,4 +1,3 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
@@ -28,14 +27,21 @@ export default function Navbar() {
   // Fetch roles if the user is logged in
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
 
+  // Log user roles when they change
+  if (user && !rolesLoading) {
+    console.log("Navbar: user.id:", user.id, "userRoles:", userRoles);
+  }
+
   // Mobile nav state
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const logOut = async () => {
     setLoading(true);
+    console.log("Navbar: Logout button clicked");
     try {
       const { error } = await supabase.auth.signOut();
+      console.log("Navbar: supabase.auth.signOut() response error:", error);
       // Handle logout even if session is not found (user already logged out/expired)
       if (error) {
         if (
@@ -54,6 +60,7 @@ export default function Navbar() {
         toast({ title: "Logged out!" });
       }
     } catch (e: any) {
+      console.log("Navbar: Exception during logout:", e);
       // Same logic applies here
       if (
         e.message?.toLowerCase().includes("session not found") ||
@@ -97,6 +104,7 @@ export default function Navbar() {
   let panelRoute: string | null = null;
   if (user && userRoles && !rolesLoading && userRoles.length > 0) {
     panelRoute = getRedirectPageForRoles(userRoles);
+    console.log("Navbar: Calculated panelRoute based on roles:", panelRoute);
   }
 
   return (
@@ -183,7 +191,12 @@ export default function Navbar() {
                 className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
                 variant="outline"
               >
-                <Link to={panelRoute}>
+                <Link
+                  to={panelRoute}
+                  onClick={() => {
+                    console.log("Navbar: Go to Secure Panel link clicked. To:", panelRoute);
+                  }}
+                >
                   Go to Secure Panel
                 </Link>
               </Button>

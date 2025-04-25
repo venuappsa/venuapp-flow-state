@@ -24,15 +24,12 @@ export default function Navbar() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
 
-  // Fetch roles if the user is logged in
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
 
-  // Log user roles when they change
   if (user && !rolesLoading) {
     console.log("Navbar: user.id:", user.id, "userRoles:", userRoles);
   }
 
-  // Mobile nav state
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -42,11 +39,23 @@ export default function Navbar() {
     try {
       const { error } = await supabase.auth.signOut();
       console.log("Navbar: supabase.auth.signOut() response error:", error);
-      // Handle logout even if session is not found (user already logged out/expired)
+
+      localStorage.removeItem("supabase.auth.token");
+      localStorage.removeItem("supabase.auth.refresh-token");
+      localStorage.removeItem("supabase.auth.access-token");
+      localStorage.removeItem("supabase-auth-token");
+      localStorage.removeItem("supabaseSession");
+      localStorage.removeItem("supabase.session");
+
+      await supabase.auth.getSession().then(({ data }) => {
+        console.log("Navbar: Immediately after signOut, getSession() returns:", data.session);
+      });
+
       if (error) {
         if (
           error.message?.toLowerCase().includes("session not found") ||
-          error.message?.toLowerCase().includes("session_from_session_id_claim")
+          error.message?.toLowerCase().includes("session_from_session_id_claim") ||
+          error.message?.toLowerCase().includes("auth session missing")
         ) {
           toast({
             title: "You were already logged out.",
@@ -61,10 +70,10 @@ export default function Navbar() {
       }
     } catch (e: any) {
       console.log("Navbar: Exception during logout:", e);
-      // Same logic applies here
       if (
         e.message?.toLowerCase().includes("session not found") ||
-        e.message?.toLowerCase().includes("session_from_session_id_claim")
+        e.message?.toLowerCase().includes("session_from_session_id_claim") ||
+        e.message?.toLowerCase().includes("auth session missing")
       ) {
         toast({
           title: "You were already logged out.",
@@ -76,11 +85,9 @@ export default function Navbar() {
       }
     }
     setLoading(false);
-    // Always redirect and clear localStorage tokens
     navigate("/auth", { replace: true });
   };
 
-  // Helper to scroll to section by id with smooth behavior
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
     if (section) {
@@ -88,7 +95,6 @@ export default function Navbar() {
     }
   };
 
-  // Handler for navbar items that scroll to homepage sections
   const handleNavLink = (sectionId: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     if (location.pathname === "/") {
@@ -100,7 +106,6 @@ export default function Navbar() {
     if (isMobile) setMobileMenuOpen(false);
   };
 
-  // Determine panel link (if user has roles)
   let panelRoute: string | null = null;
   if (user && userRoles && !rolesLoading && userRoles.length > 0) {
     panelRoute = getRedirectPageForRoles(userRoles);
@@ -110,7 +115,6 @@ export default function Navbar() {
   return (
     <nav className="w-full border-b bg-white shadow z-50 sticky top-0">
       <div className="max-w-7xl mx-auto flex items-center px-4 py-1 sm:py-2">
-        {/* Logo and Brand on left */}
         <Link
           to="/"
           className="flex items-center font-bold text-lg text-black gap-2"
@@ -127,7 +131,6 @@ export default function Navbar() {
           </span>
         </Link>
         <div className="flex-1" />
-        {/* Desktop Menu */}
         {!isMobile && (
           <div className="flex items-center gap-1 sm:gap-2">
             <button
@@ -184,7 +187,6 @@ export default function Navbar() {
             >
               Subscribe
             </Link>
-            {/* Secure Panel Link: Show only to logged-in users with a role */}
             {panelRoute && (
               <Button
                 asChild
@@ -222,7 +224,6 @@ export default function Navbar() {
             )}
           </div>
         )}
-        {/* Mobile Hamburger */}
         {isMobile && (
           <MobileNavMenu
             onNavLink={handleNavLink}

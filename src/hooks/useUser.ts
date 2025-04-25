@@ -11,12 +11,14 @@ export const useUser = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      console.log("useUser: onAuthStateChange event:", _event, "session:", session, "user:", session?.user ?? null);
     });
 
     // THEN get session
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
+      console.log("useUser: getSession check - session:", data.session, "user:", data.session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();

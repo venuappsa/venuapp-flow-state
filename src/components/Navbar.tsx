@@ -178,40 +178,24 @@ export default function Navbar() {
             >
               Subscribe
             </Link>
-            {/* Always show Go to Secure Panel */}
-            <Button
-              asChild
-              className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
-              variant="outline"
-            >
-              <Link
-                to={panelRoute}
-                onClick={() => {
-                  console.log("Navbar: Go to Secure Panel link clicked. To:", panelRoute);
-                }}
-              >
-                Go to Secure Panel
-              </Link>
-            </Button>
+            {/* If NOT logged in, show Go to Secure Panel. If logged in, hide login/goto, as the panel itself will provide logout. */}
             {!user && (
               <Button
                 asChild
-                className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
-                variant="secondary"
-              >
-                <Link to="/auth">Login</Link>
-              </Button>
-            )}
-            {user && (
-              <Button
+                className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
                 variant="outline"
-                onClick={logOut}
-                disabled={loading}
-                className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
               >
-                {loading ? "Logging out..." : "Logout"}
+                <Link
+                  to={panelRoute}
+                  onClick={() => {
+                    console.log("Navbar: Go to Secure Panel link clicked. To:", panelRoute);
+                  }}
+                >
+                  Go to Secure Panel
+                </Link>
               </Button>
             )}
+            {/* Remove Login and Logout from Navbar for logged in users */}
           </div>
         )}
         {isMobile && (

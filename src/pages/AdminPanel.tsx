@@ -1,3 +1,4 @@
+
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useNavigate } from "react-router-dom";
@@ -5,6 +6,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import LogoutButton from "@/components/LogoutButton";
 
 const SECTION_LABELS: Record<string, string> = {
   dashboard: "Dashboard & Oversight",
@@ -37,13 +39,15 @@ export default function AdminPanel() {
         <AdminSidebar selected={selected} onSelect={setSelected} />
         <SidebarInset>
           <div className="p-8 flex flex-col gap-6">
-            <h1 className="text-2xl font-bold">
-              {SECTION_LABELS[selected] || "Admin Panel"}
-            </h1>
+            <div className="flex justify-between items-center">
+              <h1 className="text-2xl font-bold">
+                {SECTION_LABELS[selected] || "Admin Panel"}
+              </h1>
+              <LogoutButton />
+            </div>
             <div className="bg-white shadow rounded p-6 min-h-[300px]">
               {selected === "dashboard" && <div>
                 <p className="text-gray-600">High-level stats dashboard.</p>
-                {/* Placeholder: Later, show users by role, events, revenue, etc. */}
               </div>}
               {selected === "host_vendor" && <div>
                 <p className="text-gray-600">Host, Vendor, and Fetchman management section.</p>
@@ -76,3 +80,4 @@ export default function AdminPanel() {
     </SidebarProvider>
   );
 }
+

@@ -1,9 +1,9 @@
-
 import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, Building, ShoppingCart, Truck, Download } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 const UserRoles = () => {
   // Function to detect role from URL hash
@@ -32,6 +32,224 @@ const UserRoles = () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
   }, []);
+
+  const handleRegister = async (role: string) => {
+    try {
+      const subject = `New ${role.charAt(0).toUpperCase() + role.slice(1)} Registration Interest`;
+      const message = `New registration interest for role: ${role}`;
+      
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: '4673c925-f918-401c-8e5c-9c503fa9e3a6',
+          subject,
+          from_name: 'Venuapp Registration',
+          to: 'hello@venuapp.co.za',
+          message,
+        }),
+      });
+
+      toast({
+        title: "Registration Interest Received",
+        description: "We'll be in touch with you soon!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit registration. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const VenuePricingPlans = [
+    {
+      name: "Free Plan",
+      price: "R0",
+      eventPrice: "R0",
+      description: "Perfect for trying out the platform",
+      features: {
+        "Per Event Fee": "R0",
+        "Per Month Fee": "N/A",
+        "Merchant Allowed": "1",
+        "Fetchman Access": "2",
+        "Admin Team Users": "1",
+        "Product Load": "10",
+        "Sales Dashboard & Analytics": "Limited",
+        "Customer Support Priority": "Limited",
+        "Onboarding & Training": "N/A"
+      },
+      highlighted: false
+    },
+    {
+      name: "Starter",
+      price: "R950",
+      eventPrice: "R250.00",
+      description: "For small venues just getting started",
+      features: {
+        "Per Event Fee": "R250.00",
+        "Per Month Fee": "R950.00",
+        "Merchant Allowed": "3",
+        "Fetchman Access": "5",
+        "Admin Team Users": "6", // Updated to double merchants (3)
+        "Product Load": "30",
+        "Sales Dashboard & Analytics": "Basic",
+        "Customer Support Priority": "Standard",
+        "Onboarding & Training": "N/A"
+      },
+      highlighted: false
+    },
+    {
+      name: "Growth",
+      price: "R1,850",
+      eventPrice: "R500.00",
+      description: "For growing venues with regular events",
+      features: {
+        "Per Event Fee": "R500.00",
+        "Per Month Fee": "R1,850.00",
+        "Merchant Allowed": "7",
+        "Fetchman Access": "10",
+        "Admin Team Users": "14", // Updated to double merchants (7)
+        "Product Load": "75",
+        "Sales Dashboard & Analytics": "Standard",
+        "Customer Support Priority": "High",
+        "Onboarding & Training": "Virtual"
+      },
+      highlighted: true
+    },
+    {
+      name: "Pro",
+      price: "R3,000",
+      eventPrice: "R800.00",
+      description: "For established venues with high traffic",
+      features: {
+        "Per Event Fee": "R800.00",
+        "Per Month Fee": "R3,000.00",
+        "Merchant Allowed": "10",
+        "Fetchman Access": "20",
+        "Admin Team Users": "20", // Updated to double merchants (10)
+        "Product Load": "200",
+        "Sales Dashboard & Analytics": "Advanced",
+        "Customer Support Priority": "Priority",
+        "Onboarding & Training": "Virtual"
+      },
+      highlighted: false
+    },
+    {
+      name: "Enterprise",
+      price: "Custom",
+      eventPrice: "Custom",
+      description: "For large-scale venues with unique needs",
+      features: {
+        "Per Event Fee": "Custom",
+        "Per Month Fee": "Custom",
+        "Merchant Allowed": "Unlimited",
+        "Fetchman Access": "Unlimited",
+        "Admin Team Users": "Unlimited",
+        "Product Load": "Unlimited",
+        "Sales Dashboard & Analytics": "Full Suite",
+        "Customer Support Priority": "24/7 Dedicated Manager",
+        "Onboarding & Training": "Venue-based & Ongoing Support"
+      },
+      highlighted: false
+    }
+  ];
+
+  const EventPricingPlans = [
+    {
+      name: "Free Plan",
+      price: "R0",
+      eventPrice: "R0",
+      description: "Perfect for small, one-time events",
+      features: {
+        "Per Event Fee": "R0",
+        "Per Month Fee": "N/A",
+        "Merchant Allowed": "1",
+        "Fetchman Access": "2",
+        "Admin Team Users": "1",
+        "Product Load": "10",
+        "Sales Dashboard & Analytics": "Limited",
+        "Customer Support Priority": "Limited",
+        "Onboarding & Training": "N/A"
+      },
+      highlighted: false
+    },
+    {
+      name: "Starter",
+      price: "R650",
+      eventPrice: "R650.00",
+      description: "For small to medium events",
+      features: {
+        "Per Event Fee": "R650.00",
+        "Per Month Fee": "N/A",
+        "Merchant Allowed": "3",
+        "Fetchman Access": "6",
+        "Admin Team Users": "6", // Updated to double merchants (3)
+        "Product Load": "60",
+        "Sales Dashboard & Analytics": "Basic",
+        "Customer Support Priority": "Standard",
+        "Onboarding & Training": "N/A"
+      },
+      highlighted: false
+    },
+    {
+      name: "Growth",
+      price: "R1,070",
+      eventPrice: "R1,070.00",
+      description: "For larger events with multiple vendors",
+      features: {
+        "Per Event Fee": "R1,070.00",
+        "Per Month Fee": "N/A",
+        "Merchant Allowed": "7",
+        "Fetchman Access": "14",
+        "Admin Team Users": "14", // Updated to double merchants (7)
+        "Product Load": "140",
+        "Sales Dashboard & Analytics": "Standard",
+        "Customer Support Priority": "High",
+        "Onboarding & Training": "Virtual"
+      },
+      highlighted: true
+    },
+    {
+      name: "Pro",
+      price: "R2,160",
+      eventPrice: "R2,160.00",
+      description: "For major events with high attendance",
+      features: {
+        "Per Event Fee": "R2,160.00",
+        "Per Month Fee": "N/A",
+        "Merchant Allowed": "10",
+        "Fetchman Access": "30",
+        "Admin Team Users": "20", // Updated to double merchants (10)
+        "Product Load": "300",
+        "Sales Dashboard & Analytics": "Advanced",
+        "Customer Support Priority": "Priority",
+        "Onboarding & Training": "Venue-based"
+      },
+      highlighted: false
+    },
+    {
+      name: "Enterprise",
+      price: "Custom",
+      eventPrice: "Custom",
+      description: "For festivals and large-scale events",
+      features: {
+        "Per Event Fee": "Custom",
+        "Per Month Fee": "N/A",
+        "Merchant Allowed": "Unlimited",
+        "Fetchman Access": "Unlimited",
+        "Admin Team Users": "Unlimited",
+        "Product Load": "Unlimited",
+        "Sales Dashboard & Analytics": "Full Suite",
+        "Customer Support Priority": "24/7 Dedicated Manager",
+        "Onboarding & Training": "Venue-based & Ongoing Support"
+      },
+      highlighted: false
+    }
+  ];
 
   return (
     <section id="roles" className="py-16 bg-gray-50">
@@ -82,8 +300,8 @@ const UserRoles = () => {
                   </ul>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full">
-                    <a href="/register?role=user">Register as Customer</a>
+                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('user')}>
+                    Register as Customer
                   </Button>
                   <Button variant="outline" className="w-full flex items-center justify-center gap-2">
                     <Download size={18} />
@@ -115,8 +333,8 @@ const UserRoles = () => {
                   </ul>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full">
-                    <a href="/register?role=host">Register as Host</a>
+                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('host')}>
+                    Register as Host
                   </Button>
                   <Button variant="outline" className="w-full flex items-center justify-center gap-2">
                     <Download size={18} />
@@ -148,8 +366,8 @@ const UserRoles = () => {
                   </ul>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full">
-                    <a href="/register?role=merchant">Register as Merchant</a>
+                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('merchant')}>
+                    Register as Merchant
                   </Button>
                   <Button variant="outline" className="w-full flex items-center justify-center gap-2">
                     <Download size={18} />
@@ -181,8 +399,8 @@ const UserRoles = () => {
                   </ul>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full">
-                    <a href="/register?role=fetchman">Register as Fetchman</a>
+                  <Button className="bg-venu-orange hover:bg-venu-orange/90 w-full" onClick={() => handleRegister('fetchman')}>
+                    Register as Fetchman
                   </Button>
                   <Button variant="outline" className="w-full flex items-center justify-center gap-2">
                     <Download size={18} />

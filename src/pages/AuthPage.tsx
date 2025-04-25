@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 const ROLE_OPTIONS = [
   { value: "customer", label: "Customer" },
@@ -15,6 +17,34 @@ const ROLE_OPTIONS = [
 ];
 
 type AppRole = "admin" | "host" | "merchant" | "customer" | "fetchman";
+
+const ROLE_PRIORITY: AppRole[] = [
+  "admin",
+  "host",
+  "merchant",
+  "fetchman",
+  "customer",
+];
+
+function getRedirectPageForRoles(roles: string[]): string {
+  for (const role of ROLE_PRIORITY) {
+    if (roles.includes(role)) {
+      switch (role) {
+        case "admin":
+          return "/admin";
+        case "host":
+          return "/host";
+        case "merchant":
+          return "/merchant";
+        case "fetchman":
+          return "/fetchman";
+        case "customer":
+          return "/customer";
+      }
+    }
+  }
+  return "/";
+}
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -31,13 +61,29 @@ export default function AuthPage() {
   const [sentOtp, setSentOtp] = useState("");
   const [otpInput, setOtpInput] = useState("");
   const [signupUserId, setSignupUserId] = useState<string | null>(null);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const { data: userRoles, isLoading: rolesLoading } = useUserRoles(userId);
+
+  // After login/signup, redirect user to their role-specific page
+  useEffect(() => {
+    if (pendingRedirect && userId && userRoles && !rolesLoading) {
+      const redirectTo = getRedirectPageForRoles(userRoles);
+      navigate(redirectTo, { replace: true });
+      setPendingRedirect(false);
+    }
+  }, [pendingRedirect, userId, userRoles, rolesLoading, navigate]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/");
+      if (session) {
+        setUserId(session.user.id);
+        setPendingRedirect(true);
+      }
     });
-  }, [navigate]);
+  }, []);
 
   const handleQuickLogin = () => {
     setEmail("test@example.com");
@@ -106,10 +152,13 @@ export default function AuthPage() {
       return;
     }
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      if (data.user) {
+        setUserId(data.user.id);
+        setPendingRedirect(true);
+      }
       toast({ title: "Login successful!" });
-      navigate("/");
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
@@ -122,8 +171,9 @@ export default function AuthPage() {
     if (otpInput === sentOtp && signupUserId) {
       try {
         await createProfileAndRole(signupUserId);
+        setUserId(signupUserId);
+        setPendingRedirect(true);
         toast({ title: "Signup successful!", description: "Welcome!" });
-        navigate("/");
       } catch (e: any) {
         toast({ title: "Error", description: e.message, variant: "destructive" });
       }
@@ -148,7 +198,6 @@ export default function AuthPage() {
                 ? "Login"
                 : "Create an account"}
           </h2>
-
           <div style={{ display: "none" }}>
             <label htmlFor="extra">Leave blank</label>
             <input
@@ -161,7 +210,6 @@ export default function AuthPage() {
               onChange={e => setHoneypot(e.target.value)}
             />
           </div>
-
           {otpStep ? (
             <>
               <Input
@@ -282,3 +330,4 @@ export default function AuthPage() {
     </>
   );
 }
+

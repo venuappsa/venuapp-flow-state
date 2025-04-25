@@ -10,7 +10,7 @@ import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { createProfileAndRole, sendOtp } from "@/hooks/useAuthHelpers";
 import type { Enums } from "@/integrations/supabase/types";
 
-const ROLE_OPTIONS = [
+const ROLE_OPTIONS: { value: Enums<"app_role">; label: string }[] = [
   { value: "customer", label: "Customer" },
   { value: "host", label: "Host/Event Organizer" },
   { value: "merchant", label: "Merchant/Vendor" },
@@ -25,7 +25,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<string>(""); // allow empty string
+  const [role, setRole] = useState<Enums<"app_role"> | "">("");
   const [type, setType] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const [honeypot, setHoneypot] = useState("");
@@ -116,7 +116,11 @@ export default function AuthPage() {
   const onOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (otpInput === sentOtp && signupUserId) {
+    if (
+      otpInput === sentOtp &&
+      signupUserId &&
+      role !== ""
+    ) {
       try {
         await createProfileAndRole({
           userId: signupUserId,
@@ -208,7 +212,7 @@ export default function AuthPage() {
                   <select
                     required
                     value={role}
-                    onChange={e => setRole(e.target.value)}
+                    onChange={e => setRole(e.target.value as Enums<"app_role"> | "")}
                     className="bg-gray-100 border rounded px-3 py-2 text-base"
                   >
                     <option value="">Select your role</option>

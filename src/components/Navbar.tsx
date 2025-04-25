@@ -11,6 +11,8 @@ import {
 import { ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileNavMenu from "./MobileNavMenu";
 
 const VENUAPP_LOGO_SRC = "/lovable-uploads/00295b81-909c-4b6d-b67d-6638afdd5ba3.png";
 
@@ -19,6 +21,10 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
+
+  // Mobile nav state
+  const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const logOut = async () => {
     setLoading(true);
@@ -41,11 +47,10 @@ export default function Navbar() {
     if (location.pathname === "/") {
       scrollToSection(sectionId);
     } else {
-      // Go to homepage, then scroll to the section after navigation
       navigate("/", { replace: false });
-      // Listen for DOM update before scrolling
       setTimeout(() => scrollToSection(sectionId), 100);
     }
+    if (isMobile) setMobileMenuOpen(false);
   };
 
   return (
@@ -68,85 +73,92 @@ export default function Navbar() {
           </span>
         </Link>
         <div className="flex-1" />
-        {/* Menu items on right */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Use button (not Link) for anchor scrolling to About */}
-          <button
-            onClick={handleNavLink("about")}
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
-            style={{ background: "none", border: "none" }}
-          >
-            About
-          </button>
-          {/* Features Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium hover:bg-gray-100 focus:outline-none data-[state=open]:bg-gray-200">
-              Features <ChevronDown size={14} className="ml-1" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-50 bg-white min-w-[10rem]">
-              <DropdownMenuItem asChild>
-                <Link to="/customer" className="text-xs sm:text-sm w-full block">
-                  Customer
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/merchant" className="text-xs sm:text-sm w-full block">
-                  Merchant
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/fetchman" className="text-xs sm:text-sm w-full block">
-                  Fetchman
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                {/* This links to the Host explainer page, NOT a login */}
-                <Link to="/host" className="text-xs sm:text-sm w-full block">
-                  Host
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <button
-            onClick={handleNavLink("pricing")}
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
-            style={{ background: "none", border: "none" }}
-          >
-            Pricing
-          </button>
-          <button
-            onClick={handleNavLink("contact")}
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
-            style={{ background: "none", border: "none" }}
-          >
-            Contact
-          </button>
-          <Link
-            to="/subscribe"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
-          >
-            Subscribe
-          </Link>
-          {!user && (
-            <Button
-              asChild
-              className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
-              variant="secondary"
+        {/* Desktop Menu */}
+        {!isMobile && (
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={handleNavLink("about")}
+              className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
+              style={{ background: "none", border: "none" }}
             >
-              <Link to="/auth">Login</Link>
-            </Button>
-          )}
-          {user && (
-            <Button
-              variant="outline"
-              onClick={logOut}
-              disabled={loading}
-              className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
+              About
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium hover:bg-gray-100 focus:outline-none data-[state=open]:bg-gray-200">
+                Features <ChevronDown size={14} className="ml-1" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="z-50 bg-white min-w-[10rem]">
+                <DropdownMenuItem asChild>
+                  <Link to="/customer" className="text-xs sm:text-sm w-full block">
+                    Customer
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/merchant" className="text-xs sm:text-sm w-full block">
+                    Merchant
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/fetchman" className="text-xs sm:text-sm w-full block">
+                    Fetchman
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/host" className="text-xs sm:text-sm w-full block">
+                    Host
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <button
+              onClick={handleNavLink("pricing")}
+              className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
+              style={{ background: "none", border: "none" }}
             >
-              {loading ? "Logging out..." : "Logout"}
-            </Button>
-          )}
-        </div>
+              Pricing
+            </button>
+            <button
+              onClick={handleNavLink("contact")}
+              className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
+              style={{ background: "none", border: "none" }}
+            >
+              Contact
+            </button>
+            <Link
+              to="/subscribe"
+              className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
+            >
+              Subscribe
+            </Link>
+            {!user && (
+              <Button
+                asChild
+                className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
+                variant="secondary"
+              >
+                <Link to="/auth">Login</Link>
+              </Button>
+            )}
+            {user && (
+              <Button
+                variant="outline"
+                onClick={logOut}
+                disabled={loading}
+                className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
+              >
+                {loading ? "Logging out..." : "Logout"}
+              </Button>
+            )}
+          </div>
+        )}
+        {/* Mobile Hamburger */}
+        {isMobile && (
+          <MobileNavMenu
+            onNavLink={handleNavLink}
+            isOpen={mobileMenuOpen}
+            setIsOpen={setMobileMenuOpen}
+          />
+        )}
       </div>
     </nav>
   );

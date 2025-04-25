@@ -1,3 +1,4 @@
+
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavMenu from "./MobileNavMenu";
 import { toast } from "@/components/ui/use-toast";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 
 const VENUAPP_LOGO_SRC = "/lovable-uploads/00295b81-909c-4b6d-b67d-6638afdd5ba3.png";
 
@@ -21,6 +24,9 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
+
+  // Fetch roles if the user is logged in
+  const { data: userRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
 
   // Mobile nav state
   const isMobile = useIsMobile();
@@ -86,6 +92,12 @@ export default function Navbar() {
     }
     if (isMobile) setMobileMenuOpen(false);
   };
+
+  // Determine panel link (if user has roles)
+  let panelRoute: string | null = null;
+  if (user && userRoles && !rolesLoading && userRoles.length > 0) {
+    panelRoute = getRedirectPageForRoles(userRoles);
+  }
 
   return (
     <nav className="w-full border-b bg-white shadow z-50 sticky top-0">
@@ -164,6 +176,18 @@ export default function Navbar() {
             >
               Subscribe
             </Link>
+            {/* Secure Panel Link: Show only to logged-in users with a role */}
+            {panelRoute && (
+              <Button
+                asChild
+                className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
+                variant="outline"
+              >
+                <Link to={panelRoute}>
+                  Go to Secure Panel
+                </Link>
+              </Button>
+            )}
             {!user && (
               <Button
                 asChild

@@ -105,6 +105,7 @@ export default function AuthPage() {
       if (error) throw error;
       if (data.user) {
         setUserId(data.user.id);
+        // Show redirect overlay IMMEDIATELY after login success:
         setPendingRedirect(true);
       }
       toast({ title: "Login successful!" });
@@ -132,6 +133,7 @@ export default function AuthPage() {
           role,
         });
         setUserId(signupUserId);
+        // Again: Show loader as soon as signup+profile is successful
         setPendingRedirect(true);
         toast({ title: "Signup successful!", description: "Welcome!" });
       } catch (e: any) {
@@ -143,12 +145,12 @@ export default function AuthPage() {
     setLoading(false);
   };
 
-  // New: If redirecting, show loader instead of form
+  // PINNED: Loader overlay immediately takes over UI as soon as pendingRedirect is true
   if (pendingRedirect) {
     return (
       <>
         <Navbar />
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-gray-50">
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-gray-50 transition-none">
           <span className="animate-spin rounded-full border-4 border-venu-orange border-t-transparent w-12 h-12 mb-6" />
           <span className="text-venu-orange mb-2 font-bold text-xl">Redirecting you to your panel...</span>
           <span className="text-gray-500">Please wait</span>

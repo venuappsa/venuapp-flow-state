@@ -19,7 +19,7 @@ import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 const VENUAPP_LOGO_SRC = "/lovable-uploads/00295b81-909c-4b6d-b67d-6638afdd5ba3.png";
 
 export default function Navbar() {
-  const { user } = useUser();
+  const { user, forceClearUser } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -40,12 +40,15 @@ export default function Navbar() {
       const { error } = await supabase.auth.signOut();
       console.log("Navbar: supabase.auth.signOut() response error:", error);
 
-      localStorage.removeItem("supabase.auth.token");
-      localStorage.removeItem("supabase.auth.refresh-token");
-      localStorage.removeItem("supabase.auth.access-token");
-      localStorage.removeItem("supabase-auth-token");
-      localStorage.removeItem("supabaseSession");
-      localStorage.removeItem("supabase.session");
+      localStorage.clear();
+      sessionStorage.clear();
+      if (window && window.caches) {
+        try {
+          window.caches.keys().then(keys => keys.forEach(k => window.caches.delete(k)));
+        } catch (e) { /* ignore */ }
+      }
+
+      if (forceClearUser) forceClearUser();
 
       await supabase.auth.getSession().then(({ data }) => {
         console.log("Navbar: Immediately after signOut, getSession() returns:", data.session);
@@ -86,6 +89,7 @@ export default function Navbar() {
     }
     setLoading(false);
     navigate("/auth", { replace: true });
+    window.location.reload();
   };
 
   const scrollToSection = (sectionId: string) => {

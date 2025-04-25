@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { createProfileAndRole, sendOtp } from "@/hooks/useAuthHelpers";
+import type { Enums } from "@/integrations/supabase/types";
 
 const ROLE_OPTIONS = [
   { value: "customer", label: "Customer" },
@@ -25,7 +25,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<string>("");
+  const [role, setRole] = useState<Enums<"app_role"> | "">("");
   const [type, setType] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const [honeypot, setHoneypot] = useState("");
@@ -208,7 +208,7 @@ export default function AuthPage() {
                   <select
                     required
                     value={role}
-                    onChange={e => setRole(e.target.value)}
+                    onChange={e => setRole(e.target.value as Enums<"app_role">)}
                     className="bg-gray-100 border rounded px-3 py-2 text-base"
                   >
                     <option value="">Select your role</option>

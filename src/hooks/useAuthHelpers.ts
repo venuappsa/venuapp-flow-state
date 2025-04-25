@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, Enums } from "@/integrations/supabase/types";
 
 export async function createProfileAndRole({
   userId,
@@ -14,19 +15,20 @@ export async function createProfileAndRole({
   surname: string;
   email: string;
   phone: string;
-  role: string;
+  role: Enums<"app_role">; // restrict to allowed enum
 }) {
   let { error: profileError } = await supabase
     .from("profiles")
     .insert({ id: userId, name, surname, email, phone });
   if (profileError) throw profileError;
 
+  // Use Supabase types for the insert and restrict role
   let { error: roleError } = await supabase
     .from("user_roles")
     .insert({
       user_id: userId,
-      role: role,
-    });
+      role: role as Enums<"app_role">,
+    } as TablesInsert<"user_roles">);
   if (roleError) throw roleError;
 }
 

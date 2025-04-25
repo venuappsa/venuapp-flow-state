@@ -1,4 +1,3 @@
-
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
@@ -77,7 +76,7 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                {/* This links to the Host explainer page, no login! */}
+                {/* This links to the Host explainer page, NOT a login */}
                 <Link to="/host" className="text-xs sm:text-sm w-full block">
                   Host
                 </Link>

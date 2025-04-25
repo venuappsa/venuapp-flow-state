@@ -6,6 +6,7 @@ import AdminSidebar from "@/components/AdminSidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import LogoutButton from "@/components/LogoutButton";
 import AdminDashboard from "@/components/AdminDashboard";
+import AdminHostVendorManager from "@/components/AdminHostVendorManager";
 
 const SECTION_LABELS: Record<string, string> = {
   dashboard: "Dashboard & Oversight",

@@ -1,4 +1,3 @@
-
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +6,7 @@ import { useState } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import LogoutButton from "@/components/LogoutButton";
+import AdminDashboard from "@/components/AdminDashboard";
 
 const SECTION_LABELS: Record<string, string> = {
   dashboard: "Dashboard & Oversight",
@@ -46,9 +46,7 @@ export default function AdminPanel() {
               <LogoutButton />
             </div>
             <div className="bg-white shadow rounded p-6 min-h-[300px]">
-              {selected === "dashboard" && <div>
-                <p className="text-gray-600">High-level stats dashboard.</p>
-              </div>}
+              {selected === "dashboard" && <AdminDashboard />}
               {selected === "host_vendor" && <div>
                 <p className="text-gray-600">Host, Vendor, and Fetchman management section.</p>
               </div>}
@@ -80,4 +78,3 @@ export default function AdminPanel() {
     </SidebarProvider>
   );
 }
-

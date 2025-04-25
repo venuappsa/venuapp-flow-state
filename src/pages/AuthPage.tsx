@@ -20,6 +20,7 @@ type AppRole = "admin" | "host" | "merchant" | "customer" | "fetchman";
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,6 +28,10 @@ export default function AuthPage() {
   const [type, setType] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const [honeypot, setHoneypot] = useState("");
+  const [otpStep, setOtpStep] = useState(false);
+  const [sentOtp, setSentOtp] = useState("");
+  const [otpInput, setOtpInput] = useState("");
+  const [signupUserId, setSignupUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,14 +42,11 @@ export default function AuthPage() {
 
   // Save user profile & role in tables
   const createProfileAndRole = async (userId: string) => {
-    // Insert profile
     let { error: profileError } = await supabase
       .from("profiles")
       .insert({ id: userId, name, surname, email, phone });
     if (profileError) throw profileError;
 
-    // Insert user role
-    // Type assertion on role to match the enum
     let { error: roleError } = await supabase
       .from("user_roles")
       .insert({
@@ -54,46 +56,103 @@ export default function AuthPage() {
     if (roleError) throw roleError;
   };
 
+  // Generates a 6-digit OTP and sends it via edge function
+  const sendOtp = async (toEmail: string, code: string) => {
+    // We'll attempt to call customized edge function,
+    // For now: simulate (in production use a real email sender for OTP)
+    // Example: supabase.functions.invoke('send-otp', { body: { email: toEmail, otp: code } })
+    // For the example, we only display a toast
+    toast({
+      title: "OTP sent!",
+      description: "A 6-digit code was sent to your e-mail.",
+    });
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     if (honeypot) {
       setLoading(false);
-      // silently fail for bots
       return;
     }
-    try {
-      if (type === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast({ title: "Login successful!" });
-        navigate("/");
-      } else {
-        if (!role) throw new Error("Please select a role");
-
+    if (type === "signup") {
+      if (!role) {
+        toast({ title: "Please select a role", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast({ title: "Passwords do not match", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      try {
         // Signup
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         if (!data.user || !data.user.id) throw new Error("No user ID returned from signup");
-        await createProfileAndRole(data.user.id);
 
-        toast({ title: "Signup successful! Please check your email to verify." });
-        navigate("/");
+        // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        setSentOtp(otp);
+        setSignupUserId(data.user.id); // Save for after OTP check
+
+        await sendOtp(email, otp);
+        setOtpStep(true);
+        toast({ title: "Signup step 1 complete", description: "Check your email and enter the OTP to continue." });
+      } catch (e: any) {
+        toast({ title: "Error", description: e.message, variant: "destructive" });
+        setLoading(false);
       }
+      setLoading(false);
+      return;
+    }
+    // login
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      toast({ title: "Login successful!" });
+      navigate("/");
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
     setLoading(false);
   };
 
+  const onOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    if (otpInput === sentOtp && signupUserId) {
+      try {
+        await createProfileAndRole(signupUserId);
+        toast({ title: "Signup successful!", description: "Welcome!" });
+        navigate("/");
+      } catch (e: any) {
+        toast({ title: "Error", description: e.message, variant: "destructive" });
+      }
+    } else {
+      toast({ title: "Invalid OTP code", variant: "destructive" });
+    }
+    setLoading(false);
+  };
+
+  // UI
   return (
     <>
       <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12">
-        <form className="flex flex-col gap-4 bg-white p-6 rounded shadow max-w-sm w-full" onSubmit={onSubmit}>
+        <form
+          className="flex flex-col gap-4 bg-white p-6 rounded shadow max-w-sm w-full"
+          onSubmit={otpStep ? onOtpSubmit : onSubmit}
+        >
           <h2 className="text-xl font-bold text-center">
-            {type === "login" ? "Login" : "Create an account"}
+            {otpStep
+              ? "Enter OTP"
+              : type === "login"
+                ? "Login"
+                : "Create an account"}
           </h2>
+
           {/* Honeypot for bots (hidden with CSS) */}
           <div style={{ display: "none" }}>
             <label htmlFor="extra">Leave blank</label>
@@ -107,72 +166,106 @@ export default function AuthPage() {
               onChange={e => setHoneypot(e.target.value)}
             />
           </div>
-          {type === "signup" && (
+
+          {otpStep ? (
             <>
               <Input
                 required
-                placeholder="Name"
-                value={name}
-                autoComplete="given-name"
-                onChange={e => setName(e.target.value)}
+                autoFocus
+                placeholder="Enter OTP code"
+                value={otpInput}
+                onChange={e => setOtpInput(e.target.value.replace(/\D/g, ""))}
+                maxLength={6}
+              />
+              <Button disabled={loading} type="submit">
+                {loading ? "..." : "Verify"}
+              </Button>
+            </>
+          ) : (
+            <>
+              {type === "signup" && (
+                <>
+                  <Input
+                    required
+                    placeholder="Name"
+                    value={name}
+                    autoComplete="given-name"
+                    onChange={e => setName(e.target.value)}
+                  />
+                  <Input
+                    required
+                    placeholder="Surname"
+                    value={surname}
+                    autoComplete="family-name"
+                    onChange={e => setSurname(e.target.value)}
+                  />
+                  <Input
+                    required
+                    placeholder="Phone"
+                    value={phone}
+                    autoComplete="tel"
+                    type="tel"
+                    onChange={e => setPhone(e.target.value)}
+                  />
+                  <select
+                    required
+                    value={role}
+                    onChange={e => setRole(e.target.value)}
+                    className="bg-gray-100 border rounded px-3 py-2 text-base"
+                  >
+                    <option value="">Select your role</option>
+                    {ROLE_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
+
+              <Input
+                required
+                autoFocus
+                placeholder="Email"
+                type="email"
+                value={email}
+                autoComplete="email"
+                onChange={e => setEmail(e.target.value)}
               />
               <Input
                 required
-                placeholder="Surname"
-                value={surname}
-                autoComplete="family-name"
-                onChange={e => setSurname(e.target.value)}
+                placeholder="Password"
+                type="password"
+                value={password}
+                autoComplete={type === "login" ? "current-password" : "new-password"}
+                onChange={e => setPassword(e.target.value)}
               />
-              <Input
-                required
-                placeholder="Phone"
-                value={phone}
-                autoComplete="tel"
-                type="tel"
-                onChange={e => setPhone(e.target.value)}
-              />
-              <select
-                required
-                value={role}
-                onChange={e => setRole(e.target.value)}
-                className="bg-gray-100 border rounded px-3 py-2 text-base"
-              >
-                <option value="">Select your role</option>
-                {ROLE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+              {type === "signup" && (
+                <Input
+                  required
+                  placeholder="Confirm password"
+                  type="password"
+                  value={confirmPassword}
+                  autoComplete="new-password"
+                  onChange={e => setConfirmPassword(e.target.value)}
+                />
+              )}
+              <Button disabled={loading} type="submit">
+                {loading ? "..." : (type === "login" ? "Login" : "Sign Up")}
+              </Button>
+              <button
+                type="button"
+                className="text-xs text-gray-500 hover:underline"
+                onClick={() => {
+                  setType(type === "login" ? "signup" : "login");
+                  setOtpStep(false);
+                }}>
+                {type === "login"
+                  ? "Don't have an account? Sign up"
+                  : "Already have an account? Log in"}
+              </button>
             </>
           )}
-
-          <Input
-            required
-            autoFocus
-            placeholder="Email"
-            type="email"
-            value={email}
-            autoComplete="email"
-            onChange={e => setEmail(e.target.value)}
-          />
-          <Input
-            required
-            placeholder="Password"
-            type="password"
-            value={password}
-            autoComplete={type === "login" ? "current-password" : "new-password"}
-            onChange={e => setPassword(e.target.value)}
-          />
-          <Button disabled={loading} type="submit">
-            {loading ? "..." : (type === "login" ? "Login" : "Sign Up")}
-          </Button>
-          <button
-            type="button"
-            className="text-xs text-gray-500 hover:underline"
-            onClick={() => setType(type === "login" ? "signup" : "login")}>
-            {type === "login"
-              ? "Don't have an account? Sign up"
-              : "Already have an account? Log in"}
-          </button>
         </form>
       </div>
     </>

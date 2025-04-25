@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,12 +12,12 @@ import { ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 
-// Use the newly uploaded logo. Ensure path correctness.
 const VENUAPP_LOGO_SRC = "/lovable-uploads/00295b81-909c-4b6d-b67d-6638afdd5ba3.png";
 
 export default function Navbar() {
   const { user } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
 
   const logOut = async () => {
@@ -24,6 +25,27 @@ export default function Navbar() {
     await supabase.auth.signOut();
     setLoading(false);
     navigate("/auth");
+  };
+
+  // Helper to scroll to section by id with smooth behavior
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  // Handler for navbar items that scroll to homepage sections
+  const handleNavLink = (sectionId: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname === "/") {
+      scrollToSection(sectionId);
+    } else {
+      // Go to homepage, then scroll to the section after navigation
+      navigate("/", { replace: false });
+      // Listen for DOM update before scrolling
+      setTimeout(() => scrollToSection(sectionId), 100);
+    }
   };
 
   return (
@@ -48,12 +70,14 @@ export default function Navbar() {
         <div className="flex-1" />
         {/* Menu items on right */}
         <div className="flex items-center gap-1 sm:gap-2">
-          <Link
-            to="/#about"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
+          {/* Use button (not Link) for anchor scrolling to About */}
+          <button
+            onClick={handleNavLink("about")}
+            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
+            style={{ background: "none", border: "none" }}
           >
             About
-          </Link>
+          </button>
           {/* Features Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium hover:bg-gray-100 focus:outline-none data-[state=open]:bg-gray-200">
@@ -83,25 +107,26 @@ export default function Navbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link
-            to="/#pricing"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
+          <button
+            onClick={handleNavLink("pricing")}
+            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
+            style={{ background: "none", border: "none" }}
           >
             Pricing
-          </Link>
-          <Link
-            to="/#contact"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
+          </button>
+          <button
+            onClick={handleNavLink("contact")}
+            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium bg-transparent"
+            style={{ background: "none", border: "none" }}
           >
             Contact
-          </Link>
+          </button>
           <Link
             to="/subscribe"
             className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
           >
             Subscribe
           </Link>
-          {/* User button (Login/Logout) */}
           {!user && (
             <Button
               asChild

@@ -1,7 +1,6 @@
 
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
-import { useUserRoles } from "@/hooks/useUserRoles";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +14,6 @@ import { useState } from "react";
 
 export default function Navbar() {
   const { user } = useUser();
-  const { data: roles } = useUserRoles(user?.id);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +27,7 @@ export default function Navbar() {
   return (
     <nav className="w-full border-b bg-white shadow z-50 sticky top-0">
       <div className="max-w-7xl mx-auto flex items-center px-4 py-1 sm:py-2">
-        {/* Logo and Brand */}
+        {/* Logo and Brand on left */}
         <Link
           to="/"
           className="flex items-center font-bold text-xl text-black gap-2"
@@ -41,62 +39,62 @@ export default function Navbar() {
             className="h-8 w-auto mr-1"
             style={{ maxWidth: 36 }}
           />
-          <span className="whitespace-nowrap text-lg sm:text-xl tracking-tight font-extrabold">
+          <span className="whitespace-nowrap text-base sm:text-lg tracking-tight font-extrabold">
             Venuapp
           </span>
         </Link>
         <div className="flex-1" />
-
-        {/* Menu */}
+        {/* Menu items on right */}
         <div className="flex items-center gap-1 sm:gap-2">
-          <a
-            href="#about"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-sm sm:text-base"
+          <Link
+            to="/#about"
+            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
           >
             About
-          </a>
+          </Link>
+          {/* Features Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-sm sm:text-base font-normal hover:bg-gray-100 focus:outline-none data-[state=open]:bg-gray-200">
-              Features <ChevronDown size={16} className="ml-1" />
+            <DropdownMenuTrigger className="flex items-center text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium hover:bg-gray-100 focus:outline-none data-[state=open]:bg-gray-200">
+              Features <ChevronDown size={14} className="ml-1" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-50 bg-white min-w-[9rem]">
+            <DropdownMenuContent align="end" className="z-50 bg-white min-w-[10rem]">
               <DropdownMenuItem asChild>
-                <Link to="/customer" className="text-sm">Customer</Link>
+                <Link to="/customer" className="text-xs sm:text-sm">Customer</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/merchant" className="text-sm">Merchant</Link>
+                <Link to="/merchant" className="text-xs sm:text-sm">Merchant</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/fetchman" className="text-sm">Fetchman</Link>
+                <Link to="/fetchman" className="text-xs sm:text-sm">Fetchman</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/host" className="text-sm">Host</Link>
+                <Link to="/host" className="text-xs sm:text-sm">Host</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <a
-            href="#pricing"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-sm sm:text-base"
+          <Link
+            to="/#pricing"
+            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
           >
             Pricing
-          </a>
-          <a
-            href="#contact"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-sm sm:text-base"
+          </Link>
+          <Link
+            to="/#contact"
+            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
           >
             Contact
-          </a>
-          <a
-            href="#subscribe"
-            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-sm sm:text-base"
+          </Link>
+          <Link
+            to="/subscribe"
+            className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
           >
             Subscribe
-          </a>
-          {/* Remove admin and host panels from nav, only panel links if needed for secure user roles */}
+          </Link>
+          {/* User button (Login/Logout) */}
           {!user && (
             <Button
               asChild
-              className="ml-2 text-sm sm:text-base font-semibold px-3 py-1.5 sm:px-4"
+              className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
               variant="secondary"
             >
               <Link to="/auth">Login</Link>
@@ -107,7 +105,7 @@ export default function Navbar() {
               variant="outline"
               onClick={logOut}
               disabled={loading}
-              className="ml-2 text-sm sm:text-base font-semibold px-3 py-1.5 sm:px-4"
+              className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4"
             >
               {loading ? "Logging out..." : "Logout"}
             </Button>

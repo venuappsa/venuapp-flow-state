@@ -10,6 +10,7 @@ import { useRoleRedirect } from "@/hooks/useRoleRedirect";
 import { createProfileAndRole, sendOtp } from "@/hooks/useAuthHelpers";
 import type { Enums } from "@/integrations/supabase/types";
 import RedirectLoaderOverlay from "@/components/RedirectLoaderOverlay";
+import useAuthLoadingState from "@/hooks/useAuthLoadingState";
 
 const ROLE_OPTIONS: { value: Enums<"app_role">; label: string }[] = [
   { value: "customer", label: "Customer" },
@@ -38,6 +39,8 @@ export default function AuthPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(userId);
+
+  const isAuthLoading = useAuthLoadingState();
 
   useRoleRedirect({
     pendingRedirect,
@@ -143,8 +146,7 @@ export default function AuthPage() {
     setLoading(false);
   };
 
-  // PINNED: Loader overlay IMMEDIATELY takes over UI as soon as pendingRedirect is true
-  if (pendingRedirect) {
+  if (pendingRedirect || isAuthLoading) {
     return (
       <>
         <Navbar />

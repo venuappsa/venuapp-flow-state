@@ -1,4 +1,3 @@
-
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useNavigate } from "react-router-dom";
@@ -32,55 +31,25 @@ const ADMIN_TASKS = [
   "Change system/platform settings",
 ];
 
-// Improved: SideFrame component
+// Updated: SideFrame component (Notice Board only, no tabs or images)
 function AdminSideFrame() {
-  const [tab, setTab] = useState<"image" | "notice">("image");
   return (
     <div className="w-full md:w-[410px] bg-gradient-to-br from-[#FFF3E4] via-[#E5DEFF] to-[#D3E4FD] rounded-2xl shadow-lg border border-[#f0e6ff] flex flex-col min-h-[330px] p-0 overflow-hidden animate-fade-in">
       <div className="flex px-4 pt-4 gap-2">
-        <button
-          onClick={() => setTab("image")}
-          className={`px-4 py-1 rounded-t-lg text-sm font-semibold transition-colors ${
-            tab === "image"
-              ? "bg-venu-orange text-white shadow-md"
-              : "bg-white text-gray-500 hover:bg-orange-100"
-          }`}
-        >
-          Picture
-        </button>
-        <button
-          onClick={() => setTab("notice")}
-          className={`px-4 py-1 rounded-t-lg text-sm font-semibold transition-colors ${
-            tab === "notice"
-              ? "bg-venu-orange text-white shadow-md"
-              : "bg-white text-gray-500 hover:bg-orange-100"
-          }`}
-        >
+        <div className="text-lg font-bold text-venu-orange/90 drop-shadow">
           Notice Board
-        </button>
+        </div>
         <div className="flex-1" />
       </div>
       <div className="flex-1 min-h-[220px] px-4 pb-4 flex items-center justify-center transition-all duration-300">
-        {tab === "image" ? (
-          <img
-            src="/lovable-uploads/photo-1488590528505-98d2b5aba04b.jpg"
-            alt="Admin Visual"
-            className="rounded-xl w-full h-60 object-cover shadow-lg animate-fade-in"
-            style={{ maxWidth: 350 }}
-          />
-        ) : (
-          <div className="w-full animate-fade-in">
-            <div className="text-lg font-bold mb-2 text-venu-orange/90 drop-shadow">
-              Notice Board
-            </div>
-            <ul className="text-base text-gray-900 list-disc ml-6 space-y-2">
-              <li>⚡ Scheduled platform update: Sat 7pm</li>
-              <li>🎉 New feature: Invite analytics now live</li>
-              <li>🔐 Please set up 2FA for improved security</li>
-              <li>❓ Questions? Contact support@venuapp.com</li>
-            </ul>
-          </div>
-        )}
+        <div className="w-full animate-fade-in">
+          <ul className="text-base text-gray-900 list-disc ml-6 space-y-2">
+            <li>⚡ Scheduled platform update: Sat 7pm</li>
+            <li>🎉 New feature: Invite analytics now live</li>
+            <li>🔐 Please set up 2FA for improved security</li>
+            <li>❓ Questions? Contact support@venuapp.com</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
@@ -95,22 +64,25 @@ export default function AdminPanel() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return; // Wait to verify role before painting ANYTHING
+    // Only allow rendering if role is truly verified
+    if (isLoading) return; // Block painting
     if (!user) {
+      setReady(false);
       navigate("/auth", { replace: true });
       return;
     }
     if (!roles?.includes("admin")) {
+      setReady(false);
       navigate("/", { replace: true });
       return;
     }
-    setReady(true); // Only now is it ok to render portal
+    setReady(true);
   }, [user, roles, isLoading, navigate]);
 
-  // Fix: block ALL rendering (including app bg) until ready, prevent all layout jump
+  // Strict: block ALL rendering (including app bg) until ready to completely prevent layout jump
   if (!ready)
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-gray-50 fixed inset-0 z-[1000] transition-none">
+      <div className="fixed inset-0 z-[1000] w-screen h-screen bg-gray-50 flex items-center justify-center transition-none">
         <div className="flex flex-col items-center gap-4">
           <span className="animate-spin rounded-full border-4 border-venu-orange border-t-transparent w-12 h-12 mb-4" />
           <span className="text-gray-400 text-xl font-semibold">
@@ -160,7 +132,7 @@ export default function AdminPanel() {
                     ))}
                   </ul>
                 </div>
-                {/* Right: Enlarged Side Frame */}
+                {/* Right: Wider Side Frame */}
                 <div className="flex-shrink-0 flex items-center justify-center md:pr-8 pb-6 md:pb-0 w-full md:w-auto">
                   <AdminSideFrame />
                 </div>

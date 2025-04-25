@@ -7,7 +7,8 @@ export function useUserRoles(userId?: string | null) {
     queryKey: ["user-roles", userId],
     queryFn: async () => {
       if (!userId) return [];
-      const { data, error } = await supabase
+      // The explicit 'as any' cast fixes the type error until types are updated with the real schema
+      const { data, error } = await (supabase as any)
         .from("user_roles")
         .select("role")
         .eq("user_id", userId);
@@ -17,3 +18,4 @@ export function useUserRoles(userId?: string | null) {
     enabled: !!userId,
   });
 }
+

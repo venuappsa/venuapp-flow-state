@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Filter, Share2, UserPlus, MapPin } from "lucide-react";
+import { Search, Filter, Share2, UserPlus, MapPin, Phone, Mail } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,8 +17,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Mock vendor data
 const mockVendors = [
@@ -32,7 +41,13 @@ const mockVendors = [
     distance: 2.1, // distance in km
     coordinates: {lat: -33.9249, lng: 18.4241},
     description: "Specialty gourmet burgers with unique flavor combinations",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80",
+    contactName: "John Burger",
+    contactEmail: "john@gourmetburgers.co.za",
+    contactPhone: "+27 82 555 1234",
+    products: ["Classic Burger", "Cheese Burger", "Veggie Burger", "BBQ Burger"],
+    previousEvents: ["Cape Town Food Festival", "Summer Beach Party"],
+    availableDates: ["2025-05-15", "2025-05-16", "2025-05-22", "2025-05-23"]
   },
   {
     id: "v2",
@@ -44,7 +59,13 @@ const mockVendors = [
     distance: 5.3,
     coordinates: {lat: -26.2041, lng: 28.0473},
     description: "Local craft beers and international selections",
-    image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+    image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    contactName: "Mike Brewster",
+    contactEmail: "mike@craftbeerhaven.co.za",
+    contactPhone: "+27 83 777 5678",
+    products: ["IPA", "Lager", "Stout", "Pale Ale", "Wheat Beer"],
+    previousEvents: ["Joburg Beer Fest", "Pretoria Craft Market"],
+    availableDates: ["2025-05-10", "2025-05-11", "2025-05-17", "2025-05-18"]
   },
   {
     id: "v3",
@@ -56,7 +77,13 @@ const mockVendors = [
     distance: 1.2,
     coordinates: {lat: -29.8587, lng: 31.0218},
     description: "Delicious assortment of cakes, cookies, and ice cream",
-    image: "https://images.unsplash.com/photo-1603532648955-039310d9ed75?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
+    image: "https://images.unsplash.com/photo-1603532648955-039310d9ed75?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80",
+    contactName: "Sarah Sweet",
+    contactEmail: "sarah@sweetdelights.co.za",
+    contactPhone: "+27 84 333 9876",
+    products: ["Chocolate Cake", "Cupcakes", "Ice Cream", "Cookies"],
+    previousEvents: ["Durban Food Market", "Beach Festival"],
+    availableDates: ["2025-05-08", "2025-05-09", "2025-05-15", "2025-05-16"]
   },
   {
     id: "v4",
@@ -68,7 +95,13 @@ const mockVendors = [
     distance: 3.8,
     coordinates: {lat: -25.7461, lng: 28.1881},
     description: "Authentic Indian cuisine with a modern twist",
-    image: "https://images.unsplash.com/photo-1567337710282-00832b415979?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
+    image: "https://images.unsplash.com/photo-1567337710282-00832b415979?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80",
+    contactName: "Raj Patel",
+    contactEmail: "raj@spicefusion.co.za",
+    contactPhone: "+27 76 222 4567",
+    products: ["Butter Chicken", "Biryani", "Samosas", "Curry Selection"],
+    previousEvents: ["Pretoria Food Fair", "Cultural Festival"],
+    availableDates: ["2025-05-22", "2025-05-23", "2025-05-29", "2025-05-30"]
   },
   {
     id: "v5",
@@ -80,7 +113,13 @@ const mockVendors = [
     distance: 0.5,
     coordinates: {lat: -33.9249, lng: 18.4241},
     description: "Expertly crafted cocktails and signature drinks",
-    image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
+    image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80",
+    contactName: "Jessica Mix",
+    contactEmail: "jessica@cocktailmasters.co.za",
+    contactPhone: "+27 82 111 3344",
+    products: ["Classic Mojito", "Martini", "Margarita", "Custom Creations"],
+    previousEvents: ["Cape Town Cocktail Week", "Beach Party"],
+    availableDates: ["2025-05-01", "2025-05-02", "2025-05-08", "2025-05-09"]
   }
 ];
 
@@ -91,6 +130,25 @@ export default function VendorDiscovery() {
   const [radiusFilter, setRadiusFilter] = useState(10); // Default 10km
   const [filteredVendors, setFilteredVendors] = useState(mockVendors);
   const [userPosition, setUserPosition] = useState<{lat: number, lng: number} | null>(null);
+  const [selectedVendor, setSelectedVendor] = useState<any>(null);
+  const [vendorDetailsOpen, setVendorDetailsOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteVendor, setInviteVendor] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<string>("");
+  const [selectedVenue, setSelectedVenue] = useState<string>("");
+
+  // Mock data for venue and event selection
+  const mockVenues = [
+    { id: "venue1", name: "Grand Arena" },
+    { id: "venue2", name: "Beach Front" },
+    { id: "venue3", name: "City Hall" }
+  ];
+  
+  const mockEvents = [
+    { id: "event1", name: "Summer Festival", venueId: "venue1", date: "2025-05-15" },
+    { id: "event2", name: "Food Market", venueId: "venue2", date: "2025-05-22" },
+    { id: "event3", name: "Music Concert", venueId: "venue3", date: "2025-06-10" }
+  ];
 
   // Get user's current location when component mounts
   useEffect(() => {
@@ -151,14 +209,44 @@ export default function VendorDiscovery() {
     setFilteredVendors(results);
   };
 
-  const handleInvite = (vendorId: string, vendorName: string) => {
-    toast({
-      title: "Invitation sent",
-      description: `You've invited ${vendorName} to your venue.`,
-    });
+  const openVendorDetails = (vendor: any) => {
+    setSelectedVendor(vendor);
+    setVendorDetailsOpen(true);
   };
 
-  const handleGenerateLink = (vendorId: string) => {
+  const handleInvite = (vendor: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setInviteVendor(vendor);
+    setInviteDialogOpen(true);
+  };
+
+  const sendInvitation = () => {
+    if (!selectedEvent && !selectedVenue) {
+      toast({
+        title: "Selection required",
+        description: "Please select an event or venue for the invitation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const targetName = selectedEvent ? 
+      mockEvents.find(e => e.id === selectedEvent)?.name : 
+      mockVenues.find(v => v.id === selectedVenue)?.name;
+
+    toast({
+      title: "Invitation sent",
+      description: `You've invited ${inviteVendor.name} to ${targetName}.`,
+    });
+    
+    setInviteDialogOpen(false);
+    setSelectedEvent("");
+    setSelectedVenue("");
+  };
+
+  const handleGenerateLink = (vendorId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
     // Generate a shareable link
     const shareableLink = `https://venuapp.co.za/invite/${vendorId}`;
     
@@ -265,7 +353,11 @@ export default function VendorDiscovery() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredVendors.length > 0 ? (
           filteredVendors.map((vendor) => (
-            <Card key={vendor.id} className="overflow-hidden">
+            <Card 
+              key={vendor.id} 
+              className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => openVendorDetails(vendor)}
+            >
               <div className="h-40 overflow-hidden">
                 <img
                   src={vendor.image}
@@ -297,7 +389,7 @@ export default function VendorDiscovery() {
                     variant="outline" 
                     size="sm" 
                     className="flex gap-1"
-                    onClick={() => handleGenerateLink(vendor.id)}
+                    onClick={(e) => handleGenerateLink(vendor.id, e)}
                   >
                     <Share2 size={16} />
                     Share
@@ -305,7 +397,7 @@ export default function VendorDiscovery() {
                   <Button 
                     size="sm" 
                     className="flex gap-1"
-                    onClick={() => handleInvite(vendor.id, vendor.name)}
+                    onClick={(e) => handleInvite(vendor, e)}
                   >
                     <UserPlus size={16} />
                     Invite
@@ -320,6 +412,180 @@ export default function VendorDiscovery() {
           </div>
         )}
       </div>
+
+      {/* Vendor details dialog */}
+      <Dialog open={vendorDetailsOpen} onOpenChange={setVendorDetailsOpen}>
+        {selectedVendor && (
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>{selectedVendor.name}</DialogTitle>
+              <DialogDescription>
+                {selectedVendor.category} • {selectedVendor.subcategory} • {selectedVendor.location}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="h-48 overflow-hidden rounded-md">
+                <img
+                  src={selectedVendor.image}
+                  alt={selectedVendor.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <Tabs defaultValue="info">
+                <TabsList>
+                  <TabsTrigger value="info">Info</TabsTrigger>
+                  <TabsTrigger value="products">Products</TabsTrigger>
+                  <TabsTrigger value="availability">Availability</TabsTrigger>
+                  <TabsTrigger value="history">History</TabsTrigger>
+                </TabsList>
+                <TabsContent value="info" className="space-y-4 pt-4">
+                  <div>
+                    <h3 className="font-medium text-sm mb-1">Description</h3>
+                    <p className="text-gray-600">{selectedVendor.description}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium text-sm mb-1">Rating</h3>
+                    <div className="flex items-center gap-1">
+                      <span className="text-amber-500 font-medium">{selectedVendor.rating}</span>
+                      <span className="text-amber-500">★★★★★</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-sm">Contact Information</h3>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">Contact:</span>
+                      <span>{selectedVendor.contactName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone size={14} className="text-gray-500" />
+                      <span>{selectedVendor.contactPhone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail size={14} className="text-gray-500" />
+                      <span>{selectedVendor.contactEmail}</span>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="products" className="pt-4">
+                  <h3 className="font-medium text-sm mb-2">Product Offerings</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedVendor.products.map((product: string, idx: number) => (
+                      <div key={idx} className="bg-gray-50 p-2 rounded text-sm">{product}</div>
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="availability" className="pt-4">
+                  <h3 className="font-medium text-sm mb-2">Available Dates</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedVendor.availableDates.map((date: string, idx: number) => (
+                      <div key={idx} className="bg-gray-50 p-2 rounded text-sm">
+                        {new Date(date).toLocaleDateString('en-ZA', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="history" className="pt-4">
+                  <h3 className="font-medium text-sm mb-2">Previous Events</h3>
+                  <div className="space-y-2">
+                    {selectedVendor.previousEvents.map((event: string, idx: number) => (
+                      <div key={idx} className="bg-gray-50 p-2 rounded text-sm">{event}</div>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              <DialogFooter className="flex justify-between mt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleGenerateLink(selectedVendor.id, new Event('click') as any)}
+                >
+                  <Share2 size={16} className="mr-2" />
+                  Share
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setInviteVendor(selectedVendor);
+                    setVendorDetailsOpen(false);
+                    setInviteDialogOpen(true);
+                  }}
+                >
+                  <UserPlus size={16} className="mr-2" />
+                  Invite Vendor
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Invite dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        {inviteVendor && (
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Invite {inviteVendor.name}</DialogTitle>
+              <DialogDescription>
+                Choose where you would like to invite this vendor
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Choose an Event</h3>
+                <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an event" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {mockEvents.map(event => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.name} ({new Date(event.date).toLocaleDateString()})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Or choose a Venue</h3>
+                <Select value={selectedVenue} onValueChange={setSelectedVenue}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a venue" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {mockVenues.map(venue => (
+                      <SelectItem key={venue.id} value={venue.id}>{venue.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="bg-amber-50 p-3 rounded-md text-sm text-amber-800">
+                <p>Invitation will be sent to: {inviteVendor.contactEmail}</p>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>Cancel</Button>
+              <Button onClick={sendInvitation}>Send Invitation</Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

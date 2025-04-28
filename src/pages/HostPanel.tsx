@@ -43,6 +43,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "@/components/ui/use-toast";
+import { calculateFetchmanEstimate } from "@/utils/fetchmanCalculator";
 
 export default function HostPanel() {
   const { user } = useUser();
@@ -86,10 +87,14 @@ export default function HostPanel() {
   };
 
   const handleStatsCardClick = (stat: any) => {
-    toast({
-      title: stat.title,
-      description: `View detailed ${stat.title.toLowerCase()} metrics and analytics`,
-    });
+    if (stat.title === "Events") {
+      navigate("/host/events");
+    } else {
+      toast({
+        title: stat.title,
+        description: `View detailed ${stat.title.toLowerCase()} metrics and analytics`,
+      });
+    }
   };
 
   const handleGenerateVenueLink = (venueId: string, venueName: string) => {
@@ -224,9 +229,14 @@ export default function HostPanel() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Upcoming Events</h2>
-          <Button variant="outline" size={isMobile ? "sm" : "default"} className="gap-1">
+          <Button 
+            variant="outline" 
+            size={isMobile ? "sm" : "default"} 
+            className="gap-1"
+            onClick={() => navigate("/host/events")}
+          >
             <CalendarPlus className="h-4 w-4" />
-            <span>Schedule Event</span>
+            <span>View All Events</span>
           </Button>
         </div>
         
@@ -275,11 +285,12 @@ export default function HostPanel() {
                       </Popover>
                     </th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fetchmen</th>
                     <th scope="col" className="relative px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {dummyEvents.filter(event => event.status === 'upcoming').map((event) => (
+                  {dummyEvents.filter(event => event.status === 'upcoming').slice(0, 5).map((event) => (
                     <tr 
                       key={event.id} 
                       className="hover:bg-gray-50 cursor-pointer"
@@ -316,6 +327,9 @@ export default function HostPanel() {
                           R {event.revenue.toLocaleString()}
                         </button>
                       </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                        {calculateFetchmanEstimate(event.capacity, event.vendors || 12)}
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
                         <Button 
                           variant="ghost" 
@@ -333,6 +347,15 @@ export default function HostPanel() {
                   ))}
                 </tbody>
               </table>
+              <div className="text-center p-3">
+                <Button 
+                  variant="ghost" 
+                  className="text-sm text-venu-orange"
+                  onClick={() => navigate("/host/events")}
+                >
+                  View All Events
+                </Button>
+              </div>
             </div>
           </div>
         </div>

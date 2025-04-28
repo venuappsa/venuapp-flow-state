@@ -6,7 +6,7 @@ import { useUser } from "@/hooks/useUser";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -27,6 +27,7 @@ export default function HostHeader() {
   const isMobile = useIsMobile();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { subscribed, subscription_tier, subscription_status } = useSubscription();
+  const location = useLocation();
   
   const displayName = user?.user_metadata?.full_name || 
     user?.user_metadata?.name || 
@@ -44,12 +45,24 @@ export default function HostHeader() {
   const [notifications, setNotifications] = useState([
     { id: 1, title: "New vendor application", content: "Food Truck Masters wants to join your venue", time: "2 hours ago", read: false },
     { id: 2, title: "Subscription renewed", content: "Your premium subscription was renewed successfully", time: "1 day ago", read: true },
+    { id: 3, title: "New event registration", content: "10 new tickets sold for Summer Festival", time: "3 hours ago", read: false },
+    { id: 4, title: "Fetchman assignment", content: "5 fetchmen have been assigned to your event", time: "5 hours ago", read: false },
   ]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllAsRead = () => {
     setNotifications(notifications.map(n => ({ ...n, read: true })));
+  };
+
+  const isActive = (path: string) => {
+    if (path === "/host" && location.pathname === "/host") {
+      return true;
+    }
+    if (path !== "/host" && location.pathname.startsWith(path)) {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -87,7 +100,11 @@ export default function HostHeader() {
                       <Link 
                         key={item.label} 
                         to={item.href}
-                        className="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                        className={`flex items-center px-3 py-2 rounded-md ${
+                          isActive(item.href)
+                            ? "bg-gray-100 text-venu-orange font-medium"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.label}
@@ -140,7 +157,11 @@ export default function HostHeader() {
               <Link 
                 key={item.label} 
                 to={item.href}
-                className="text-sm font-medium text-gray-700 hover:text-venu-orange transition-colors"
+                className={`text-sm font-medium ${
+                  isActive(item.href)
+                    ? "text-venu-orange"
+                    : "text-gray-700 hover:text-venu-orange transition-colors"
+                }`}
               >
                 {item.label}
               </Link>

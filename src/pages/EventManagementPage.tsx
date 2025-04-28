@@ -1,12 +1,9 @@
+
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useUser } from "@/hooks/useUser";
-import { useUserRoles } from "@/hooks/useUserRoles";
-import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
-import HostHeader from "@/components/HostHeader";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useParams, Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -15,490 +12,487 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Calendar,
   Clock,
+  Calendar,
   MapPin,
   Users,
-  Shield,
+  Store,
   FileText,
   AlertTriangle,
   Share2,
-  Settings,
-  ChevronLeft,
-  Building,
-  Tag,
-  Copy,
+  BarChart,
+  Map,
+  Truck,
+  Wallet,
 } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
-import { dummyEvents } from "@/data/hostDummyData";
-import { generateEventSalesData } from "@/data/salesData";
-import SalesBreakdownDialog from "@/components/SalesBreakdownDialog";
 import { Badge } from "@/components/ui/badge";
+import { dummyEvents } from "@/data/hostDummyData";
+import { toast } from "@/components/ui/use-toast";
+import FetchmanEstimation from "@/components/FetchmanEstimation";
 
 export default function EventManagementPage() {
-  const { eventId } = useParams();
-  const navigate = useNavigate();
-  const { user } = useUser();
-  const { data: roles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
-  const [activeTab, setActiveTab] = useState('info');
-  const [loading, setLoading] = useState(true);
+  const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<any>(null);
-  
-  const [salesDialogOpen, setSalesDialogOpen] = useState(false);
-  const [selectedSalesData, setSelectedSalesData] = useState<any>(null);
-  
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+
   useEffect(() => {
-    // Simulate loading event data
+    // Fetch event data
     setTimeout(() => {
-      const foundEvent = dummyEvents.find(e => e.id === eventId);
+      const foundEvent = dummyEvents.find((e) => e.id === eventId);
       if (foundEvent) {
         setEvent(foundEvent);
       }
       setLoading(false);
-    }, 800);
+    }, 300); // Simulate API call
   }, [eventId]);
-  
-  const handleBack = () => {
-    navigate('/host');
-  };
-  
-  const handleOpenSalesBreakdown = () => {
-    if (!event) return;
-    const salesData = generateEventSalesData(event.id, event.name, event.revenue);
-    setSelectedSalesData(salesData);
-    setSalesDialogOpen(true);
-  };
-  
+
   const handleShareEvent = () => {
-    const eventLink = `https://venuapp.co.za/event/${eventId}`;
-    navigator.clipboard.writeText(eventLink).then(
+    if (!event) return;
+    
+    const shareableLink = `https://venuapp.co.za/events/${event.id}`;
+    navigator.clipboard.writeText(shareableLink).then(
       () => {
         toast({
           title: "Link copied",
-          description: `Shareable link for ${event?.name} copied to clipboard`,
+          description: `Shareable link for ${event.name} copied to clipboard`,
         });
       },
       (err) => {
         console.error('Could not copy text: ', err);
+        toast({
+          title: "Error",
+          description: "Could not copy link to clipboard",
+          variant: "destructive",
+        });
       }
     );
   };
 
-  const handleGenerateQR = () => {
-    toast({
-      title: "QR Code Generated",
-      description: "The event QR code has been generated and can be downloaded",
-    });
-    // In a real implementation, this would generate and download a QR code
-  };
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <Skeleton className="h-10 w-1/2 mb-6" />
+        <Skeleton className="h-64 w-full mb-6" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="container mx-auto py-8 px-4 text-center">
+        <h2 className="text-2xl font-bold mb-4">Event not found</h2>
+        <p className="mb-6">The event you're looking for doesn't exist or has been removed.</p>
+        <Button asChild>
+          <Link to="/host">Return to Dashboard</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <AuthTransitionWrapper 
-      requireAuth={true} 
-      allowedRoles={["host"]} 
-      showFallback={true}
-    >
-      <div className="min-h-screen bg-gray-50">
-        <HostHeader />
-        <main className="pt-16 px-4 md:px-6 lg:px-8 pb-8">
-          <div className="max-w-7xl mx-auto py-8">
-            {loading ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-8 w-64" />
-                  <Skeleton className="h-10 w-24" />
-                </div>
-                <Skeleton className="h-12 w-full" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Skeleton className="h-48" />
-                  <Skeleton className="h-48" />
-                  <Skeleton className="h-48" />
-                </div>
+    <div className="min-h-screen bg-gray-50 pt-16">
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Link
+                to="/host"
+                className="text-sm text-gray-500 hover:text-venu-orange"
+              >
+                Dashboard
+              </Link>
+              <span className="text-gray-500">/</span>
+              <Link
+                to="/host"
+                className="text-sm text-gray-500 hover:text-venu-orange"
+              >
+                Events
+              </Link>
+              <span className="text-gray-500">/</span>
+              <span className="text-sm font-medium">{event.name}</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold">{event.name}</h1>
+            <div className="flex items-center mt-2">
+              <Badge
+                className={`${
+                  event.status === "upcoming"
+                    ? "bg-blue-100 text-blue-800"
+                    : event.status === "active"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+              </Badge>
+              <div className="flex items-center ml-4 text-sm text-gray-500">
+                <Calendar className="h-4 w-4 mr-1" />
+                <span>
+                  {new Date(event.date).toLocaleDateString("en-ZA", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
-            ) : !event ? (
-              <div className="text-center py-12">
-                <h2 className="text-2xl font-bold mb-2">Event not found</h2>
-                <p className="text-gray-500 mb-6">The event you're looking for doesn't exist or you don't have permission to view it.</p>
-                <Button onClick={handleBack}>Back to Dashboard</Button>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleBack}>
-                      <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                    <h1 className="text-2xl font-bold">{event.name}</h1>
-                    <Badge className={event.status === "upcoming" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}>
-                      {event.status === "upcoming" ? "Upcoming" : "Past"}
-                    </Badge>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={handleShareEvent}>
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
+            </Button>
+            <Button variant="outline" size="sm">
+              <Clock className="h-4 w-4 mr-2" />
+              Reschedule
+            </Button>
+            <Button size="sm">
+              <FileText className="h-4 w-4 mr-2" />
+              Edit Details
+            </Button>
+          </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="bg-white mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="vendors">Vendors</TabsTrigger>
+            <TabsTrigger value="map">Map</TabsTrigger>
+            <TabsTrigger value="tickets">Tickets</TabsTrigger>
+            <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            <TabsTrigger value="staff">Staff</TabsTrigger>
+            <TabsTrigger value="fetchmen">Fetchmen</TabsTrigger>
+            <TabsTrigger value="finances">Finances</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-500">Venue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start">
+                    <MapPin className="h-4 w-4 text-venu-orange mt-1 mr-2" />
+                    <div>
+                      <div className="font-medium">{event.venueName}</div>
+                      <div className="text-sm text-gray-500">{event.location || "Location details not available"}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-500">Capacity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <Users className="h-4 w-4 text-venu-orange mr-2" />
+                    <div>
+                      <div className="font-medium">{event.capacity} people</div>
+                      <div className="text-sm text-gray-500">{event.ticketsSold} tickets sold</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-500">Vendors</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <Store className="h-4 w-4 text-venu-orange mr-2" />
+                    <div>
+                      <div className="font-medium">{event.vendors || 12} vendors</div>
+                      <div className="text-sm text-gray-500">{event.pendingVendors || 3} pending applications</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-500">Revenue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <Wallet className="h-4 w-4 text-venu-orange mr-2" />
+                    <div>
+                      <div className="font-medium">R {event.revenue.toLocaleString()}</div>
+                      <div className="text-sm text-gray-500">From tickets & vendors</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Event Details</CardTitle>
+                  <CardDescription>Basic information about your event</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">Start Date</h4>
+                        <p>{new Date(event.date).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">Start Time</h4>
+                        <p>{event.startTime || "18:00"}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500">Duration</h4>
+                        <p>{event.duration || "5 hours"}</p>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Description</h4>
+                      <p className="text-sm mt-1">
+                        {event.description || "Join us for an exciting event featuring live music, food vendors, and more. This event promises to be a memorable occasion for all attendees."}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Categories</h4>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {(event.categories || ["Music", "Food", "Entertainment"]).map((category: string, idx: number) => (
+                          <Badge key={idx} variant="outline">{category}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Organizer</h4>
+                      <p>{event.organizer || "Venuapp Host"}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <FetchmanEstimation 
+                capacity={event.capacity} 
+                vendors={event.vendors || 12} 
+                hours={event.durationHours || 5}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    Required Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    <li className="flex items-center justify-between p-2 bg-amber-50 border border-amber-100 rounded-md">
+                      <span className="flex items-center">
+                        <FileText className="h-4 w-4 text-amber-500 mr-2" />
+                        Complete safety compliance documentation
+                      </span>
+                      <Button variant="outline" size="sm">Complete</Button>
+                    </li>
+                    <li className="flex items-center justify-between p-2 bg-amber-50 border border-amber-100 rounded-md">
+                      <span className="flex items-center">
+                        <Users className="h-4 w-4 text-amber-500 mr-2" />
+                        Assign event staff roles
+                      </span>
+                      <Button variant="outline" size="sm">Assign</Button>
+                    </li>
+                    <li className="flex items-center justify-between p-2 bg-amber-50 border border-amber-100 rounded-md">
+                      <span className="flex items-center">
+                        <Truck className="h-4 w-4 text-amber-500 mr-2" />
+                        Confirm vendor setup times
+                      </span>
+                      <Button variant="outline" size="sm">Confirm</Button>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart className="h-5 w-5 text-blue-500" />
+                    Quick Analytics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Ticket Sales</span>
+                        <span className="font-medium">{((event.ticketsSold / event.capacity) * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full">
+                        <div
+                          className="h-2 bg-blue-500 rounded-full"
+                          style={{ width: `${(event.ticketsSold / event.capacity) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Vendor Applications</span>
+                        <span className="font-medium">80%</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full">
+                        <div className="h-2 bg-green-500 rounded-full w-4/5"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Budget Spent</span>
+                        <span className="font-medium">45%</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full">
+                        <div className="h-2 bg-amber-500 rounded-full w-2/5"></div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="vendors">
+            <Card>
+              <CardHeader>
+                <CardTitle>Vendor Management</CardTitle>
+                <CardDescription>Manage vendors for this event</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium">12 vendors participating</h3>
+                    <p className="text-sm text-gray-500">3 applications pending approval</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="gap-1"
-                      onClick={handleShareEvent}
-                    >
-                      <Share2 className="h-4 w-4" />
-                      Share
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      className="gap-1"
-                      onClick={() => toast({
-                        title: "Settings",
-                        description: "Event settings panel will be implemented in the next update."
-                      })}
-                    >
-                      <Settings className="h-4 w-4" />
-                      Settings
-                    </Button>
+                    <Button variant="outline" size="sm">Import Vendors</Button>
+                    <Button size="sm">Add Vendor</Button>
                   </div>
                 </div>
+                <div className="bg-gray-50 p-12 rounded-lg text-center">
+                  <Store className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Vendor management module</h3>
+                  <p className="text-gray-500 mb-4">
+                    This module is coming in the next update. It will allow you to manage vendor 
+                    applications, assign locations, and communicate with vendors.
+                  </p>
+                  <Button onClick={() => toast({ title: "Coming Soon", description: "Vendor management will be available in the next update." })}>
+                    Notify Me
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="map">
+            <Card>
+              <CardHeader>
+                <CardTitle>Event Map</CardTitle>
+                <CardDescription>Interactive map of your event venue</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-50 p-12 rounded-lg text-center">
+                  <Map className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Interactive Venue Map</h3>
+                  <p className="text-gray-500 mb-4">
+                    The interactive map module allows you to assign vendor locations,
+                    plan emergency routes, and visualize your event layout.
+                  </p>
+                  <Button onClick={() => toast({ title: "Coming Soon", description: "Interactive map will be available in the next update." })}>
+                    Notify Me
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="fetchmen" className="space-y-6">
+            <FetchmanEstimation 
+              capacity={event.capacity} 
+              vendors={event.vendors || 12} 
+              hours={event.durationHours || 5}
+            />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Fetchman Scheduling</CardTitle>
+                <CardDescription>Schedule and assign fetchmen for this event</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">Recommended Fetchmen: {calculateFetchmanEstimate(event.capacity, event.vendors || 12)}</h3>
+                  <Button onClick={() => toast({ title: "Request Sent", description: `Request for ${calculateFetchmanEstimate(event.capacity, event.vendors || 12)} fetchmen has been submitted.` })}>
+                    Request Fetchmen
+                  </Button>
+                </div>
                 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="bg-gray-100 grid grid-cols-4 md:grid-cols-8 w-full">
-                    <TabsTrigger value="info">Info</TabsTrigger>
-                    <TabsTrigger value="map">Map</TabsTrigger>
-                    <TabsTrigger value="roles">Roles</TabsTrigger>
-                    <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                    <TabsTrigger value="compliance">Compliance</TabsTrigger>
-                    <TabsTrigger value="emergency">Emergency</TabsTrigger>
-                    <TabsTrigger value="promotions">Promotions</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  </TabsList>
-                  
-                  {/* Info Tab */}
-                  <TabsContent value="info" className="mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Calendar className="h-5 w-5 text-venu-orange" />
-                            Event Details
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Event Name</h3>
-                            <p className="font-medium">{event.name}</p>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Date</h3>
-                            <p className="font-medium">{new Date(event.date).toLocaleDateString()}</p>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Venue</h3>
-                            <p className="font-medium">{event.venueName}</p>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Capacity</h3>
-                            <p className="font-medium">{event.capacity} people</p>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                            <p className="font-medium capitalize">{event.status}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Tag className="h-5 w-5 text-venu-orange" />
-                            Event Links
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Public Link</h3>
-                            <div className="mt-1 flex items-center gap-2">
-                              <code className="text-xs bg-gray-100 p-2 rounded flex-1 overflow-x-auto">
-                                https://venuapp.co.za/e/{eventId}
-                              </code>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0" 
-                                onClick={() => {
-                                  navigator.clipboard.writeText(`https://venuapp.co.za/e/${eventId}`);
-                                  toast({ title: "Copied to clipboard" });
-                                }}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Vendor Registration Link</h3>
-                            <div className="mt-1 flex items-center gap-2">
-                              <code className="text-xs bg-gray-100 p-2 rounded flex-1 overflow-x-auto">
-                                https://venuapp.co.za/vendor-reg/{eventId}
-                              </code>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0" 
-                                onClick={() => {
-                                  navigator.clipboard.writeText(`https://venuapp.co.za/vendor-reg/${eventId}`);
-                                  toast({ title: "Copied to clipboard" });
-                                }}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Admin Link</h3>
-                            <div className="mt-1 flex items-center gap-2">
-                              <code className="text-xs bg-gray-100 p-2 rounded flex-1 overflow-x-auto">
-                                https://venuapp.co.za/admin-event/{eventId}
-                              </code>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0" 
-                                onClick={() => {
-                                  navigator.clipboard.writeText(`https://venuapp.co.za/admin-event/${eventId}`);
-                                  toast({ title: "Copied to clipboard" });
-                                }}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <Button onClick={handleGenerateQR} variant="outline" className="w-full gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-qr-code"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
-                            Generate QR Code
-                          </Button>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-venu-orange" />
-                            Attendance
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Tickets Sold</h3>
-                            <p className="font-medium">{event.ticketsSold} / {event.capacity}</p>
-                            <div className="w-full mt-1 bg-gray-200 rounded-full h-1.5">
-                              <div 
-                                className="bg-venu-orange h-1.5 rounded-full" 
-                                style={{ width: `${(event.ticketsSold / event.capacity) * 100}%` }} 
-                              ></div>
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Revenue</h3>
-                            <p className="font-medium">R {event.revenue.toLocaleString()}</p>
-                          </div>
-                          <Button 
-                            className="w-full gap-2"
-                            onClick={handleOpenSalesBreakdown}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bar-chart-big"><path d="M3 3v18h18"/><rect width="4" height="7" x="7" y="10" rx="1"/><rect width="4" height="12" x="15" y="5" rx="1"/></svg>
-                            View Sales Breakdown
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-                  
-                  {/* Map Tab */}
-                  <TabsContent value="map" className="mt-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-venu-orange" />
-                          Venue Location
-                        </CardTitle>
-                        <CardDescription>
-                          Interactive map showing the event venue, parking areas, and vendor locations
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <div className="text-center">
-                            <MapPin className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                            <h3 className="font-medium mb-2">Map View</h3>
-                            <p className="text-gray-500 max-w-md">
-                              The interactive map view will be implemented in the next update.
-                              This will show the venue location, parking areas, and vendor booth positions.
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  {/* Role Tab */}
-                  <TabsContent value="roles" className="mt-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Users className="h-5 w-5 text-venu-orange" />
-                          Role Management
-                        </CardTitle>
-                        <CardDescription>
-                          Manage user roles and permissions for this event
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-12">
-                          <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                          <h3 className="text-xl font-medium text-gray-700 mb-2">Role Management</h3>
-                          <p className="text-gray-500 max-w-md mx-auto mb-6">
-                            The role management interface will be implemented in the next update.
-                            You'll be able to assign admin, vendor, and fetchman roles here.
-                          </p>
-                          <Button>Add Team Members</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  {/* Other tab content would be similar */}
-                  <TabsContent value="schedule" className="mt-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Clock className="h-5 w-5 text-venu-orange" />
-                          Event Schedule
-                        </CardTitle>
-                        <CardDescription>
-                          Manage event timeline, opening hours, and vendor schedules
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-12">
-                          <Clock className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                          <h3 className="text-xl font-medium text-gray-700 mb-2">Schedule Management</h3>
-                          <p className="text-gray-500 max-w-md mx-auto mb-6">
-                            The schedule management interface will be implemented in the next update.
-                            You'll be able to set opening times, vendor schedules, and event timelines.
-                          </p>
-                          <Button>Set Schedule</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="compliance" className="mt-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Shield className="h-5 w-5 text-venu-orange" />
-                          Compliance Documents
-                        </CardTitle>
-                        <CardDescription>
-                          Manage licenses, permits, and regulatory compliance
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-12">
-                          <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                          <h3 className="text-xl font-medium text-gray-700 mb-2">Compliance Management</h3>
-                          <p className="text-gray-500 max-w-md mx-auto mb-6">
-                            The compliance documentation interface will be implemented in the next update.
-                            You'll be able to upload and manage permits, licenses, and other regulatory documents.
-                          </p>
-                          <Button>Upload Documents</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="emergency" className="mt-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <AlertTriangle className="h-5 w-5 text-venu-orange" />
-                          Emergency Plan
-                        </CardTitle>
-                        <CardDescription>
-                          Manage emergency procedures, contacts, and safety plans
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-12">
-                          <AlertTriangle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                          <h3 className="text-xl font-medium text-gray-700 mb-2">Emergency Planning</h3>
-                          <p className="text-gray-500 max-w-md mx-auto mb-6">
-                            The emergency planning interface will be implemented in the next update.
-                            You'll be able to set up emergency contacts, evacuation routes, and safety procedures.
-                          </p>
-                          <Button>Create Emergency Plan</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="promotions" className="mt-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-venu-orange"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                          Event Promotions
-                        </CardTitle>
-                        <CardDescription>
-                          Manage marketing, promotions, and discounts
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-12">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-400 mb-4"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                          <h3 className="text-xl font-medium text-gray-700 mb-2">Promotions</h3>
-                          <p className="text-gray-500 max-w-md mx-auto mb-6">
-                            The promotions interface will be implemented in the next update.
-                            You'll be able to create discount codes, set up special offers, and manage marketing campaigns.
-                          </p>
-                          <Button>Create Promotion</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="analytics" className="mt-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-venu-orange"><path d="M3 3v18h18"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M6 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M12 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
-                          Event Analytics
-                        </CardTitle>
-                        <CardDescription>
-                          View detailed statistics and performance metrics
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-12">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-400 mb-4"><path d="M3 3v18h18"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M6 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M12 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
-                          <h3 className="text-xl font-medium text-gray-700 mb-2">Analytics Dashboard</h3>
-                          <p className="text-gray-500 max-w-md mx-auto mb-6">
-                            The analytics dashboard will be implemented in the next update.
-                            You'll be able to view detailed statistics, attendance trends, and revenue metrics.
-                          </p>
-                          <Button onClick={handleOpenSalesBreakdown}>View Sales Data</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            )}
-          </div>
+                <div className="bg-gray-50 p-8 rounded-lg text-center">
+                  <Clock className="h-10 w-10 mx-auto text-gray-400 mb-3" />
+                  <h4 className="text-base font-medium mb-2">Scheduling Tool</h4>
+                  <p className="text-gray-500 mb-3">
+                    The detailed scheduling tool will be available in the next update.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tickets">
+            <Card>
+              <CardHeader>
+                <CardTitle>Ticket Management</CardTitle>
+                <CardDescription>Manage tickets for this event</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium">Ticket management module</h3>
+                  <p className="text-gray-500 mt-2 mb-6 max-w-md mx-auto">
+                    This section will be available in the next update. It will allow you to create ticket types, 
+                    set pricing, and track sales.
+                  </p>
+                  <Button onClick={() => toast({ title: "Coming Soon", description: "Ticket management will be available in the next update." })}>
+                    Notify Me
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
           
-          <SalesBreakdownDialog 
-            open={salesDialogOpen} 
-            onOpenChange={setSalesDialogOpen} 
-            salesData={selectedSalesData} 
-          />
-        </main>
+          {["schedule", "staff", "finances"].map((tab) => (
+            <TabsContent key={tab} value={tab}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{tab.charAt(0).toUpperCase() + tab.slice(1)} Management</CardTitle>
+                  <CardDescription>Manage {tab} for this event</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    {tab === "schedule" && <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />}
+                    {tab === "staff" && <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />}
+                    {tab === "finances" && <Wallet className="h-12 w-12 mx-auto text-gray-400 mb-4" />}
+                    <h3 className="text-lg font-medium">{tab.charAt(0).toUpperCase() + tab.slice(1)} management module</h3>
+                    <p className="text-gray-500 mt-2 mb-6 max-w-md mx-auto">
+                      This section will be available in the next update.
+                    </p>
+                    <Button onClick={() => toast({ title: "Coming Soon", description: `${tab.charAt(0).toUpperCase() + tab.slice(1)} management will be available in the next update.` })}>
+                      Notify Me
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
-    </AuthTransitionWrapper>
+    </div>
   );
 }

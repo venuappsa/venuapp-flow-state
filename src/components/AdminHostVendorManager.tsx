@@ -248,7 +248,7 @@ export default function AdminHostVendorManager() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold mb-1 flex items-center gap-2">
-            <Users className="inline h-6 w-6 text-venu-orange" /> Host & Vendor Management
+            <Users className="inline h-6 w-6 text-venu-orange" /> Host &amp; Vendor Management
           </h2>
           <div className="text-sm text-gray-600">
             Review, search and filter registered hosts and vendors. Manage verifications and account status.

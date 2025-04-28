@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,9 @@ import { toast } from "@/components/ui/use-toast";
 import AuthForm from "./AuthForm";
 import OtpStep from "./OtpStep";
 import { ROLE_OPTIONS } from "./roleOptions";
+import useConnectionStatus from "@/hooks/useConnectionStatus";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -33,6 +37,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(userId);
   const isAuthLoading = useAuthLoadingState();
+  const { isConnected, isChecking, checkConnection } = useConnectionStatus();
 
   useRoleRedirect({
     pendingRedirect,
@@ -57,6 +62,45 @@ export default function AuthPage() {
     setType("login");
     toast({ title: "Demo credentials filled!" });
   };
+
+  // Display connection error message
+  if (isConnected === false) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+            <div className="flex flex-col items-center">
+              <div className="bg-amber-100 text-amber-800 p-4 rounded-md mb-6 w-full">
+                <h2 className="text-lg font-medium mb-2">Connection Error</h2>
+                <p className="text-sm mb-4">Unable to connect to the authentication server. This could be due to:</p>
+                <ul className="list-disc pl-5 mb-4 text-sm">
+                  <li>Internet connection issues</li>
+                  <li>Temporary server downtime</li>
+                  <li>Configuration problem</li>
+                </ul>
+                <Button 
+                  onClick={checkConnection} 
+                  className="w-full flex items-center justify-center gap-2"
+                  disabled={isChecking}
+                >
+                  {isChecking ? "Checking..." : "Try Again"} 
+                  {!isChecking && <RefreshCw className="h-4 w-4" />}
+                </Button>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/')}
+                className="w-full"
+              >
+                Return to Home
+              </Button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

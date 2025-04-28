@@ -23,6 +23,7 @@ export default function OtpStep({ loading, otpInput, setOtpInput, onOtpSubmit }:
           value={otpInput}
           onChange={setOtpInput}
           maxLength={6}
+          autoComplete="one-time-code"
           render={({ slots }) => (
             <InputOTPGroup className="gap-2 flex justify-center">
               {slots.map((slot, index) => (
@@ -31,7 +32,6 @@ export default function OtpStep({ loading, otpInput, setOtpInput, onOtpSubmit }:
                   {...slot}
                   className="w-10 h-12 text-lg"
                   aria-label={`Digit ${index + 1} of OTP`}
-                  autoComplete={index === 0 ? "one-time-code" : undefined}
                 />
               ))}
             </InputOTPGroup>

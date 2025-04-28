@@ -24,6 +24,7 @@ import TicketsTab from "@/components/event/TicketsTab";
 import ScheduleTab from "@/components/event/ScheduleTab";
 import StaffTab from "@/components/event/StaffTab";
 import FinancesTab from "@/components/event/FinancesTab";
+import HostPanelLayout from "@/components/layouts/HostPanelLayout";
 
 export default function EventManagementPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -83,28 +84,32 @@ export default function EventManagementPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <Skeleton className="h-10 w-1/2 mb-6" />
-        <Skeleton className="h-64 w-full mb-6" />
-        <Skeleton className="h-64 w-full" />
-      </div>
+      <HostPanelLayout>
+        <div className="container mx-auto py-8 px-4">
+          <Skeleton className="h-10 w-1/2 mb-6" />
+          <Skeleton className="h-64 w-full mb-6" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </HostPanelLayout>
     );
   }
 
   if (!event) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
-        <h2 className="text-2xl font-bold mb-4">Event not found</h2>
-        <p className="mb-6">The event you're looking for doesn't exist or has been removed.</p>
-        <Button asChild>
-          <Link to="/host">Return to Dashboard</Link>
-        </Button>
-      </div>
+      <HostPanelLayout>
+        <div className="container mx-auto py-8 px-4 text-center">
+          <h2 className="text-2xl font-bold mb-4">Event not found</h2>
+          <p className="mb-6">The event you're looking for doesn't exist or has been removed.</p>
+          <Button asChild>
+            <Link to="/host">Return to Dashboard</Link>
+          </Button>
+        </div>
+      </HostPanelLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
+    <HostPanelLayout>
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
@@ -207,6 +212,6 @@ export default function EventManagementPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </HostPanelLayout>
   );
 }

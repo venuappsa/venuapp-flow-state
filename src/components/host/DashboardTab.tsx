@@ -2,32 +2,27 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  Building, 
   CalendarPlus, 
-  PlusCircle, 
-  ChevronRight, 
-  Settings, 
-  Share2, 
-  Users
+  ChevronRight
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { dashboardStats, dummyEvents, dummyVenues } from "@/data/hostDummyData";
+import { useSubscription } from "@/hooks/useSubscription";
+import { dashboardStats, dummyEvents } from "@/data/hostDummyData";
 import NoticeBoard from "@/components/NoticeBoard";
 import SalesBreakdownDialog from "@/components/SalesBreakdownDialog";
 import { generateEventSalesData } from "@/data/salesData";
+import AnalyticsSnapshot from "@/components/analytics/AnalyticsSnapshot";
 
 export default function DashboardTab() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { subscribed, subscription_tier, subscription_status } = useSubscription();
   const [salesDialogOpen, setSalesDialogOpen] = useState(false);
   const [selectedSalesData, setSelectedSalesData] = useState<any>(null);
-  const [venueDialogOpen, setVenueDialogOpen] = useState(false);
-  const [selectedVenue, setSelectedVenue] = useState<any>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -43,12 +38,7 @@ export default function DashboardTab() {
     setSelectedSalesData(salesData);
     setSalesDialogOpen(true);
   };
-
-  const handleOpenVenueDetails = (venue: any) => {
-    setSelectedVenue(venue);
-    setVenueDialogOpen(true);
-  };
-
+  
   const handleStatsCardClick = (stat: any) => {
     if (stat.title === "Events") {
       navigate("/host/events");
@@ -60,21 +50,6 @@ export default function DashboardTab() {
     }
   };
 
-  const handleGenerateVenueLink = (venueId: string, venueName: string) => {
-    const shareableLink = `https://venuapp.co.za/v/${venueId}`;
-    navigator.clipboard.writeText(shareableLink).then(
-      () => {
-        toast({
-          title: "Link copied",
-          description: `Shareable link for ${venueName} copied to clipboard`,
-        });
-      },
-      (err) => {
-        console.error('Could not copy text: ', err);
-      }
-    );
-  };
-  
   const navigateToEvent = (eventId: string) => {
     navigate(`/host/events/${eventId}`);
   };
@@ -111,82 +86,11 @@ export default function DashboardTab() {
         ))}
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">Your Venues</h2>
-          <Button asChild variant="outline" size={isMobile ? "sm" : "default"} className="gap-1">
-            <Link to="/host/venues/new">
-              <PlusCircle className="h-4 w-4" />
-              <span>{isMobile ? "Add" : "Add Venue"}</span>
-            </Link>
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {dummyVenues.map((venue) => (
-            <Card 
-              key={venue.id} 
-              className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleOpenVenueDetails(venue)}
-            >
-              <div className="h-32 overflow-hidden relative">
-                <img 
-                  src={venue.imageUrl} 
-                  alt={venue.name} 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                  <div className={`inline-block text-xs px-2 py-1 rounded ${venue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                    {venue.status === 'active' ? 'Active' : 'Pending'}
-                  </div>
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium truncate">{venue.name}</h3>
-                    <p className="text-sm text-gray-500">{venue.location}</p>
-                  </div>
-                  <Button variant="ghost" size="sm" className="p-0 h-8 w-8" onClick={(e) => {
-                    e.stopPropagation();
-                    toast({
-                      title: "Venue Settings",
-                      description: `Manage settings for ${venue.name}`,
-                    });
-                  }}>
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex items-center text-sm mt-2">
-                  <Users className="h-4 w-4 text-gray-400 mr-1" />
-                  <span className="text-gray-600">Capacity: {venue.capacity}</span>
-                </div>
-                <div className="flex items-center justify-between mt-4">
-                  <div className="flex items-center text-sm">
-                    <CalendarPlus className="h-4 w-4 text-venu-orange mr-1" />
-                    <span>{venue.upcoming_events} upcoming events</span>
-                  </div>
-                  <div className="flex space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="p-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleGenerateVenueLink(venue.id, venue.name);
-                      }}
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="p-1">
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="space-y-6">
+        <AnalyticsSnapshot 
+          subscriptionTier={subscription_tier || "Free"} 
+          subscriptionStatus={subscription_status}
+        />
       </div>
 
       <div className="space-y-4">
@@ -291,66 +195,6 @@ export default function DashboardTab() {
         onOpenChange={setSalesDialogOpen} 
         salesData={selectedSalesData} 
       />
-
-      <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
-        {selectedVenue && (
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>{selectedVenue.name}</DialogTitle>
-              <DialogDescription>
-                {selectedVenue.location} • Capacity: {selectedVenue.capacity}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4 py-4">
-              <div className="h-48 overflow-hidden rounded-md">
-                <img 
-                  src={selectedVenue.imageUrl} 
-                  alt={selectedVenue.name} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <h4 className="text-sm font-medium mb-2">Categories</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedVenue.categories.map((category: string, idx: number) => (
-                        <span key={idx} className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4">
-                    <h4 className="text-sm font-medium mb-2">Status</h4>
-                    <div className={`inline-block text-xs px-2 py-1 rounded ${selectedVenue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                      {selectedVenue.status === 'active' ? 'Active' : 'Pending'}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Created on {new Date(selectedVenue.created_at).toLocaleDateString()}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="flex space-x-2 mt-4">
-                <Button className="flex-1" variant="outline" onClick={() => handleGenerateVenueLink(selectedVenue.id, selectedVenue.name)}>
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share Venue
-                </Button>
-                <Button className="flex-1">
-                  Manage Venue
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        )}
-      </Dialog>
     </div>
   );
 }

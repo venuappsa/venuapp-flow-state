@@ -31,11 +31,14 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin" element={<AdminPanel />} />
+          
+          {/* Host panel routes */}
           <Route path="/host" element={<HostPanel />} />
           <Route path="/host/venues/new" element={<VenueCreate />} />
           <Route path="/host/rules" element={<VendorRules />} />
           <Route path="/host/events" element={<EventsPage />} />
           <Route path="/host/events/:eventId" element={<EventManagementPage />} />
+          
           <Route path="/customer" element={<CustomerPage />} />
           <Route path="/merchant" element={<MerchantPage />} />
           <Route path="/fetchman" element={<FetchmanPage />} />

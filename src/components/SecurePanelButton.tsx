@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Loader, LogOut } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface SecurePanelButtonProps {
   className?: string;
@@ -21,6 +21,8 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [panelRoute, setPanelRoute] = useState("/customer");
+  const buttonClickTimeRef = useRef(0);
+  const MIN_CLICK_INTERVAL = 2000; // ms
 
   // Update panel route whenever roles change
   useEffect(() => {
@@ -53,6 +55,14 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
   const handleButtonClick = async () => {
     if (loading) return;
     
+    // Prevent rapid clicks causing multiple navigations
+    const now = Date.now();
+    if (now - buttonClickTimeRef.current < MIN_CLICK_INTERVAL) {
+      console.log("SecurePanelButton: Click too soon, ignoring");
+      return;
+    }
+    buttonClickTimeRef.current = now;
+    
     setLoading(true);
     console.log("SecurePanelButton: Button clicked, logged in:", isLoggedIn, "roles loading:", rolesLoading);
     
@@ -69,7 +79,10 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
         const roleArray = Array.isArray(userRoles) ? userRoles : [];
         if (roleArray.length > 0) {
           console.log("SecurePanelButton: Navigating to panel route:", panelRoute);
-          navigate(panelRoute);
+          navigate(panelRoute, { 
+            replace: true,
+            state: { skipSessionCheck: true } // Prevent AuthPage from rechecking session
+          });
         } else {
           console.log("SecurePanelButton: No roles found for user");
           toast({ 
@@ -80,7 +93,10 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
         }
       } else {
         console.log("SecurePanelButton: User not logged in, navigating to auth page");
-        navigate("/auth");
+        navigate("/auth", { 
+          replace: true,
+          state: { skipSessionCheck: true } // Prevent AuthPage from rechecking session
+        });
       }
     } catch (err) {
       console.error("SecurePanelButton: Error navigating:", err);
@@ -97,28 +113,50 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
   const logOut = async () => {
     setLoading(true);
     try {
+      console.log("SecurePanelButton: Logging out user");
       const { error } = await supabase.auth.signOut();
+      
+      // Clear any cached state
       localStorage.clear();
       sessionStorage.clear();
+      
+      // Clear browser cache if possible
       if (window && window.caches) {
         try {
           window.caches.keys().then(keys => keys.forEach(k => window.caches.delete(k)));
-        } catch (e) {}
+        } catch (e) {
+          console.error("Failed to clear caches:", e);
+        }
       }
+      
+      // Use our manual clear as a backup
       if (forceClearUser) forceClearUser();
+      
       if (error) {
+        console.error("SecurePanelButton: Logout error:", error);
         toast({ title: "Logout failed", description: error.message, variant: "destructive" });
       } else {
         toast({ title: "Logged out!" });
+        
+        // Add a small delay to ensure state is updated before navigating
+        setTimeout(() => {
+          navigate("/auth", { 
+            replace: true,
+            state: { skipSessionCheck: true, freshLogout: true }
+          });
+          
+          // Force a full page reload after logout
+          setTimeout(() => {
+            window.location.reload();
+          }, 300);
+        }, 400);
       }
-      setTimeout(() => {
-        navigate("/auth", { replace: true });
-        window.location.reload();
-      }, 700);
     } catch (e: any) {
+      console.error("SecurePanelButton: Logout exception:", e);
       toast({ title: "Logout failed", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

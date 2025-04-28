@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -18,67 +18,77 @@ import Footer from "@/components/Footer";
 import RedirectLoaderOverlay from "@/components/RedirectLoaderOverlay";
 
 const Index = () => {
-  const { user, initialized } = useUser();
+  const { user, initialized, loading: userLoading } = useUser();
   const { data: roles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [redirectAttempts, setRedirectAttempts] = useState(0);
+  const redirectCheckedRef = useRef(false);
   
-  // Store the last check time to prevent excessive redirect attempts
-  const [lastCheckTime, setLastCheckTime] = useState(0);
+  // Circuit breaker to stop excessive redirects
+  const MAX_REDIRECT_ATTEMPTS = 2;
+  const REDIRECT_COOLDOWN = 3000; // ms
+  const lastRedirectCheckRef = useRef(0);
 
+  // Only check for redirect once after initialization
   useEffect(() => {
-    // Skip redirect checks until useUser is fully initialized
-    if (!initialized) {
-      console.log("Index: Waiting for auth initialization...");
+    // Don't do anything until auth is initialized and not loading
+    if (!initialized || userLoading) {
+      console.log("Index: Waiting for auth initialization or loading...");
       return;
     }
     
-    // Limit redirect attempts to prevent loops
-    if (redirectAttempts > 2) {
-      console.log("Index: Too many redirect attempts, stopping");
+    // Skip if we've already checked or reached max attempts
+    if (redirectCheckedRef.current || redirectAttempts >= MAX_REDIRECT_ATTEMPTS) {
+      console.log("Index: Redirect already checked or max attempts reached");
       return;
     }
     
-    // Add a delay between redirect checks
+    // Skip if no user or still loading roles
+    if (!user) {
+      console.log("Index: No user, skipping redirect check");
+      redirectCheckedRef.current = true;
+      return;
+    }
+    
+    // Enforce cooldown between redirect checks
     const now = Date.now();
-    if (now - lastCheckTime < 2000) {
+    if (now - lastRedirectCheckRef.current < REDIRECT_COOLDOWN) {
       console.log("Index: Redirect check too soon, skipping");
       return;
     }
-    setLastCheckTime(now);
+    lastRedirectCheckRef.current = now;
     
-    // Skip if no user or still loading roles
-    if (!user || rolesLoading) {
-      console.log("Index: No user or still loading roles, skipping redirect check");
-      return;
-    }
-    
-    // Ensure roles is an array
-    const userRoles = Array.isArray(roles) ? roles : [];
-      
-    if (userRoles.length > 0 && window.location.pathname === "/") {
-      console.log("Index: Detected user with roles:", userRoles);
-      
-      const redirectPath = getRedirectPageForRoles(userRoles as string[]);
-      console.log("Index: Redirect check result:", redirectPath);
-      
-      // Only redirect if we're not already going there
-      if (redirectPath !== "/" && !isRedirecting) {
-        console.log("Index: Starting redirect to:", redirectPath);
-        setIsRedirecting(true);
+    // Only redirect if we have roles and user
+    if (!rolesLoading && user) {
+      // Ensure roles is an array
+      const userRoles = Array.isArray(roles) ? roles : [];
+      redirectCheckedRef.current = true;
         
-        // Small timeout for smoother transition
-        setTimeout(() => {
-          console.log("Index: Executing redirect to:", redirectPath);
-          navigate(redirectPath, { replace: true });
-          setRedirectAttempts(prev => prev + 1);
-        }, 100);
+      if (userRoles.length > 0 && window.location.pathname === "/") {
+        console.log("Index: User has roles, checking for redirect:", userRoles);
+        
+        const redirectPath = getRedirectPageForRoles(userRoles);
+        console.log("Index: Redirect check result:", redirectPath);
+        
+        // Only redirect if path is different and not already redirecting
+        if (redirectPath !== "/" && !isRedirecting) {
+          console.log(`Index: Initiating redirect to: ${redirectPath} (attempt ${redirectAttempts + 1}/${MAX_REDIRECT_ATTEMPTS})`);
+          setIsRedirecting(true);
+          
+          // Use timeout to ensure we don't interrupt render
+          setTimeout(() => {
+            navigate(redirectPath, { replace: true });
+            setRedirectAttempts(prev => prev + 1);
+          }, 300);
+        } else {
+          console.log("Index: No redirect needed or already redirecting");
+        }
+      } else {
+        console.log("Index: No redirect needed. User:", !!user, "Roles:", userRoles, "Path:", window.location.pathname);
       }
-    } else {
-      console.log("Index: No redirect needed. User:", !!user, "Roles:", userRoles, "Path:", window.location.pathname);
     }
-  }, [user, roles, rolesLoading, navigate, initialized, isRedirecting, redirectAttempts, lastCheckTime]);
+  }, [user, roles, rolesLoading, navigate, initialized, userLoading, isRedirecting, redirectAttempts]);
 
   if (isRedirecting) {
     return <RedirectLoaderOverlay message="Redirecting to your dashboard..." />;

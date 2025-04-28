@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -31,12 +31,19 @@ export default function AuthPage() {
   const [sentOtp, setSentOtp] = useState("");
   const [otpInput, setOtpInput] = useState("");
   const [signupUserId, setSignupUserId] = useState<string | null>(null);
+  
   const [pendingRedirect, setPendingRedirect] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { user, initialized } = useUser();
+  const sessionCheckedRef = useRef(false);
+  const redirectAttemptsRef = useRef(0);
+  
+  const MAX_REDIRECT_ATTEMPTS = 2;
+  
+  const { user, initialized, loading: userLoading } = useUser();
   const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(userId);
   
   const isAuthLoading = useAuthLoadingState();
@@ -51,9 +58,6 @@ export default function AuthPage() {
   });
 
   useEffect(() => {
-    let isMounted = true;
-    let sessionCheckTimer: NodeJS.Timeout;
-    
     if (location.state?.skipSessionCheck) {
       console.log("AuthPage: Skipping session check due to explicit navigation");
       return;
@@ -64,37 +68,31 @@ export default function AuthPage() {
       return;
     }
     
+    if (sessionCheckedRef.current) {
+      console.log("AuthPage: Session already checked");
+      return;
+    }
+    
+    sessionCheckedRef.current = true;
+    
     if (user) {
       console.log("AuthPage: User exists from useUser hook, initiating redirect");
       setUserId(user.id);
       setPendingRedirect(true);
-      return;
+    } else {
+      console.log("AuthPage: No user from useUser hook, staying on auth page");
     }
-    
-    sessionCheckTimer = setTimeout(() => {
-      console.log("AuthPage: Double-checking session status...");
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!isMounted) return;
-        
-        if (session) {
-          console.log("AuthPage: Found existing session, initiating redirect...");
-          setUserId(session.user.id);
-          setPendingRedirect(true);
-        } else {
-          console.log("AuthPage: No session found, staying on auth page");
-        }
-      });
-    }, 500);
-    
-    return () => {
-      isMounted = false;
-      clearTimeout(sessionCheckTimer);
-    };
   }, [user, initialized, location.state]);
 
   useEffect(() => {
-    if (userId && userRoles && !rolesLoading && !pendingRedirect && location.pathname === "/auth") {
+    if (pendingRedirect || redirectAttemptsRef.current >= MAX_REDIRECT_ATTEMPTS) {
+      return;
+    }
+    
+    if (userId && userRoles && !rolesLoading && location.pathname === "/auth") {
       console.log("AuthPage: User and roles ready, manual redirect check");
+      redirectAttemptsRef.current += 1;
+      
       const roleArray = Array.isArray(userRoles) ? userRoles : [];
       
       if (roleArray.length > 0) {
@@ -215,24 +213,10 @@ export default function AuthPage() {
       setPendingRedirect(true);
       toast({ title: "Login successful!" });
       
-      const checkAndRedirect = async () => {
-        console.log("[AuthPage] Attempting immediate redirect after login");
-        const { data: rolesData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id);
-          
-        if (rolesData && rolesData.length > 0) {
-          const userRoles = rolesData.map((r: { role: string }) => r.role);
-          console.log("[AuthPage] Immediate redirect with roles:", userRoles);
-          const redirectPath = getRedirectPageForRoles(userRoles);
-          navigate(redirectPath, { replace: true });
-        } else {
-          console.log("[AuthPage] No immediate roles found, relying on hook redirect");
-        }
-      };
-      
-      checkAndRedirect();
+      setTimeout(() => {
+        console.log("[AuthPage] Checking roles after login");
+        navigate(`/${Array.isArray(userRoles) && userRoles.length > 0 ? userRoles[0] : ''}`, { replace: true });
+      }, 500);
     } catch (e: any) {
       console.error("[AuthPage] Login Exception", e);
       toast({ title: "Error", description: e.message, variant: "destructive" });

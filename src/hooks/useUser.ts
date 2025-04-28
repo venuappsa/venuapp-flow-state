@@ -6,57 +6,107 @@ export const useUser = () => {
   const [session, setSession] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [initialized, setInitialized] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
     let lastAuthEvent = '';
     
-    // Debounce flag to prevent multiple rapid state changes
+    // Debounce timer with longer delay
     let debounceTimer: NodeJS.Timeout | null = null;
     
-    // Setup auth state listener first
+    // Track last update time to prevent rapid changes
+    let lastUpdateTime = 0;
+    const MIN_UPDATE_INTERVAL = 800; // ms
+    
+    // Set up auth state listener first before checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       console.log("useUser: onAuthStateChange event:", event, "session:", newSession?.user?.id);
       
-      // Prevent duplicate events in quick succession
-      if (lastAuthEvent === event && Date.now() - (lastAuthEvent ? 300 : 0) < 500) {
-        console.log("useUser: Skipping duplicate auth event");
+      // Don't process duplicate events within cooldown period
+      const now = Date.now();
+      if (event === lastAuthEvent && now - lastUpdateTime < MIN_UPDATE_INTERVAL) {
+        console.log(`useUser: Skipping duplicate auth event '${event}' during cooldown`);
         return;
       }
       
       // Clear any pending debounce timer
-      if (debounceTimer) clearTimeout(debounceTimer);
+      if (debounceTimer) {
+        console.log("useUser: Clearing pending debounce timer");
+        clearTimeout(debounceTimer);
+      }
       
-      // Debounce state updates
+      // Debounce state updates with longer timeout
       debounceTimer = setTimeout(() => {
-        if (!isMounted) return;
-        
-        lastAuthEvent = event;
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        // Failsafe: If signOut, force clear state
-        if (event === "SIGNED_OUT" || !newSession) {
-          setSession(null);
-          setUser(null);
-          console.log("useUser: Reset session/user to null after SIGNED_OUT event");
+        if (!isMounted) {
+          console.log("useUser: Component unmounted, skipping update");
+          return;
         }
         
-        setInitialized(true);
-      }, 100);
+        console.log(`useUser: Processing '${event}' event after debounce`);
+        lastAuthEvent = event;
+        lastUpdateTime = Date.now();
+        
+        if (event === "SIGNED_OUT") {
+          // Immediate clear for sign out events
+          console.log("useUser: SIGNED_OUT - clearing session/user");
+          setSession(null);
+          setUser(null);
+        } else {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+        }
+        
+        // Mark initialization complete
+        if (!initialized) {
+          setInitialized(true);
+        }
+        
+        // Set loading state to false
+        setLoading(false);
+      }, 200); // longer debounce to allow for auth state to settle
     });
 
-    // Force check session at mount, but only once
-    supabase.auth.getSession().then(({ data }) => {
-      if (!isMounted) return;
-      
-      console.log("useUser: Initial session check -", data.session?.user?.id);
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setInitialized(true);
-    });
+    // Force check session at mount, but only once and after listener is set up
+    const checkInitialSession = async () => {
+      try {
+        console.log("useUser: Checking initial session");
+        const { data } = await supabase.auth.getSession();
+        
+        if (!isMounted) {
+          console.log("useUser: Component unmounted during initial session check");
+          return;
+        }
+        
+        console.log("useUser: Initial session check -", data.session?.user?.id);
+        
+        // Only update if we have different values to prevent unnecessary renders
+        const hasUser = !!data.session?.user;
+        const currentHasUser = !!user;
+        
+        if (hasUser !== currentHasUser) {
+          console.log("useUser: Updating initial session state");
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+        }
+        
+        // Mark initialization and loading as complete
+        setInitialized(true);
+        setLoading(false);
+      } catch (error) {
+        console.error("useUser: Error during initial session check:", error);
+        if (isMounted) {
+          setInitialized(true);
+          setLoading(false);
+        }
+      }
+    };
+    
+    // Delay session check slightly to ensure listener is set up first
+    setTimeout(checkInitialSession, 50);
 
     return () => {
+      console.log("useUser: Cleanup - unsubscribing and clearing timers");
       isMounted = false;
       if (debounceTimer) clearTimeout(debounceTimer);
       subscription.unsubscribe();
@@ -64,11 +114,11 @@ export const useUser = () => {
   }, []);
 
   // Manual clear function as a fallback
-  function forceClearUser() {
+  const forceClearUser = () => {
+    console.log("useUser: forceClearUser called - manually clearing auth state");
     setSession(null);
     setUser(null);
-    console.log("useUser: forceClearUser() called; session and user reset to null");
-  }
+  };
 
-  return { session, user, forceClearUser, initialized };
+  return { session, user, forceClearUser, initialized, loading };
 };

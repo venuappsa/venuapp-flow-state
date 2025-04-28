@@ -1,10 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Filter, Share2, UserPlus } from "lucide-react";
+import { Search, Filter, Share2, UserPlus, MapPin } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "@/components/ui/use-toast";
 
 // Mock vendor data
@@ -23,6 +29,8 @@ const mockVendors = [
     subcategory: "Burgers",
     rating: 4.8,
     location: "Cape Town",
+    distance: 2.1, // distance in km
+    coordinates: {lat: -33.9249, lng: 18.4241},
     description: "Specialty gourmet burgers with unique flavor combinations",
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
   },
@@ -33,6 +41,8 @@ const mockVendors = [
     subcategory: "Beer",
     rating: 4.5,
     location: "Johannesburg",
+    distance: 5.3,
+    coordinates: {lat: -26.2041, lng: 28.0473},
     description: "Local craft beers and international selections",
     image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
   },
@@ -43,6 +53,8 @@ const mockVendors = [
     subcategory: "Desserts",
     rating: 4.7,
     location: "Durban",
+    distance: 1.2,
+    coordinates: {lat: -29.8587, lng: 31.0218},
     description: "Delicious assortment of cakes, cookies, and ice cream",
     image: "https://images.unsplash.com/photo-1603532648955-039310d9ed75?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
   },
@@ -53,6 +65,8 @@ const mockVendors = [
     subcategory: "Indian",
     rating: 4.6,
     location: "Pretoria",
+    distance: 3.8,
+    coordinates: {lat: -25.7461, lng: 28.1881},
     description: "Authentic Indian cuisine with a modern twist",
     image: "https://images.unsplash.com/photo-1567337710282-00832b415979?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
   },
@@ -63,6 +77,8 @@ const mockVendors = [
     subcategory: "Cocktails",
     rating: 4.9,
     location: "Cape Town",
+    distance: 0.5,
+    coordinates: {lat: -33.9249, lng: 18.4241},
     description: "Expertly crafted cocktails and signature drinks",
     image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80"
   }
@@ -72,7 +88,31 @@ export default function VendorDiscovery() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
+  const [radiusFilter, setRadiusFilter] = useState(10); // Default 10km
   const [filteredVendors, setFilteredVendors] = useState(mockVendors);
+  const [userPosition, setUserPosition] = useState<{lat: number, lng: number} | null>(null);
+
+  // Get user's current location when component mounts
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserPosition({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          toast({
+            title: "Location access denied",
+            description: "Please enable location access to use proximity-based features",
+            variant: "destructive",
+          });
+        }
+      );
+    }
+  }, []);
 
   const handleSearch = () => {
     let results = mockVendors;
@@ -88,16 +128,23 @@ export default function VendorDiscovery() {
     }
     
     // Apply category filter
-    if (categoryFilter) {
+    if (categoryFilter && categoryFilter !== "all") {
       results = results.filter(
         vendor => vendor.category === categoryFilter
       );
     }
     
     // Apply location filter
-    if (locationFilter) {
+    if (locationFilter && locationFilter !== "all") {
       results = results.filter(
         vendor => vendor.location === locationFilter
+      );
+    }
+    
+    // Apply radius filter if user position is available
+    if (userPosition && radiusFilter > 0) {
+      results = results.filter(
+        vendor => vendor.distance <= radiusFilter
       );
     }
     
@@ -167,6 +214,46 @@ export default function VendorDiscovery() {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* New location radius filter */}
+        <div className="mt-4 flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex items-center gap-2">
+            <MapPin size={18} className="text-gray-500" />
+            <span className="text-sm text-gray-600">Distance radius:</span>
+          </div>
+          
+          <div className="flex-1 flex items-center gap-4">
+            <div className="w-full max-w-md">
+              <Slider 
+                value={[radiusFilter]} 
+                onValueChange={(values) => setRadiusFilter(values[0])} 
+                max={50} 
+                step={1}
+                className="w-full"
+              />
+            </div>
+            <span className="text-sm font-medium w-20">{radiusFilter} km</span>
+          </div>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1">
+                <MapPin size={16} />
+                <span>Map View</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0">
+              <div className="h-72 bg-gray-100 rounded flex items-center justify-center">
+                <div className="text-center text-sm text-gray-500 p-4">
+                  <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                  <p>Map view will be available in the next update.</p>
+                  <p className="mt-2">This will show vendors within your selected {radiusFilter}km radius</p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        
         <div className="flex mt-4 justify-end">
           <Button onClick={handleSearch} className="flex gap-2">
             <Filter size={16} />
@@ -197,6 +284,10 @@ export default function VendorDiscovery() {
                   <Badge variant="outline">{vendor.category}</Badge>
                   <Badge variant="outline">{vendor.subcategory}</Badge>
                   <Badge variant="outline">{vendor.location}</Badge>
+                </div>
+                <div className="flex items-center text-sm text-gray-500 mb-2">
+                  <MapPin size={14} className="mr-1" />
+                  {vendor.distance} km away
                 </div>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                   {vendor.description}

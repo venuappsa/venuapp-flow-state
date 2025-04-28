@@ -4,6 +4,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBreakpoint } from "@/hooks/useResponsive";
+import { Link, useNavigate } from "react-router-dom";
 import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import HostHeader from "@/components/HostHeader";
 import NoticeBoard from "@/components/NoticeBoard";
@@ -26,7 +27,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
 import { dashboardStats, dummyEvents, dummyVenues } from "@/data/hostDummyData";
 import SalesBreakdownDialog from "@/components/SalesBreakdownDialog";
 import { generateEventSalesData } from "@/data/salesData";
@@ -51,6 +51,7 @@ export default function HostPanel() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const isMobile = useIsMobile();
   const breakpoint = useBreakpoint();
+  const navigate = useNavigate();
 
   const [salesDialogOpen, setSalesDialogOpen] = useState(false);
   const [selectedSalesData, setSelectedSalesData] = useState<any>(null);
@@ -104,6 +105,10 @@ export default function HostPanel() {
         console.error('Could not copy text: ', err);
       }
     );
+  };
+  
+  const navigateToEvent = (eventId: string) => {
+    navigate(`/host/events/${eventId}`);
   };
 
   const renderDashboard = () => (
@@ -275,14 +280,21 @@ export default function HostPanel() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {dummyEvents.filter(event => event.status === 'upcoming').map((event) => (
-                    <tr key={event.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={event.id} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => navigateToEvent(event.id)}
+                    >
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">{event.name}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{event.venueName}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{formatDate(event.date)}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                         <button
                           className="text-blue-600 hover:underline focus:outline-none"
-                          onClick={() => handleOpenSalesBreakdown(event.id, event.name, event.revenue)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenSalesBreakdown(event.id, event.name, event.revenue);
+                          }}
                         >
                           {event.ticketsSold} / {event.capacity}
                         </button>
@@ -296,13 +308,24 @@ export default function HostPanel() {
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                         <button
                           className="text-blue-600 hover:underline focus:outline-none"
-                          onClick={() => handleOpenSalesBreakdown(event.id, event.name, event.revenue)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenSalesBreakdown(event.id, event.name, event.revenue);
+                          }}
                         >
                           R {event.revenue.toLocaleString()}
                         </button>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
-                        <Button variant="ghost" size="sm" className="p-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="p-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateToEvent(event.id);
+                          }}
+                        >
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </td>

@@ -4,7 +4,7 @@ import { SalesData } from "@/components/SalesBreakdownDialog";
 // Generate mock transaction data for a given event
 const generateMockTransactions = (eventId: string, eventName: string) => {
   const types = ["ticketSales", "merchantFees", "commission", "foodAndDrinks", "other"] as const;
-  const transactionCount = Math.floor(Math.random() * 10) + 5; // 5-15 transactions
+  const transactionCount = Math.floor(Math.random() * 15) + 10; // 10-25 transactions
   
   const transactions = Array.from({ length: transactionCount }, (_, i) => {
     const type = types[Math.floor(Math.random() * types.length)];
@@ -16,19 +16,19 @@ const generateMockTransactions = (eventId: string, eventName: string) => {
     let description = '';
     switch(type) {
       case 'ticketSales':
-        description = `Tickets sold for ${eventName}`;
+        description = `Tickets sold for ${eventName} - Batch ${Math.floor(Math.random() * 10) + 1}`;
         break;
       case 'merchantFees':
-        description = `Vendor setup fees for ${eventName}`;
+        description = `Vendor setup fees for ${eventName} - ${['Food', 'Drinks', 'Crafts', 'Art', 'Music'][Math.floor(Math.random() * 5)]} section`;
         break;
       case 'commission':
-        description = `Sales commission from vendors`;
+        description = `Sales commission from ${['Food trucks', 'Beverage stands', 'Merchandise vendors', 'Game booths', 'Activity stations'][Math.floor(Math.random() * 5)]}`;
         break;
       case 'foodAndDrinks':
-        description = `Food & beverage sales`;
+        description = `${['Food court', 'Main bar', 'VIP area', 'Children\'s section', 'Staff catering'][Math.floor(Math.random() * 5)]} sales`;
         break;
       case 'other':
-        description = `Miscellaneous revenue`;
+        description = `${['Parking fees', 'Program booklets', 'Event merchandise', 'Photography service', 'Equipment rental'][Math.floor(Math.random() * 5)]} revenue`;
         break;
     }
     

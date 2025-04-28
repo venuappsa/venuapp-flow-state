@@ -15,21 +15,41 @@ import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreakpoint } from "@/hooks/useResponsive";
 import { Badge } from "@/components/ui/badge";
+import { getPricingPlans, PlanType } from "@/utils/pricingUtils";
+import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
+import { Separator } from "@/components/ui/separator";
 
 const PRICE_IDS = {
-  basic: "price_1OT7NbGVnlGQn0rKkm5MNuMp",
-  premium: "price_1OT7NuGVnlGQn0rKYTeHQsrE",
-  enterprise: "price_1OT7OPGVnlGQn0rKqTNCYLhc",
+  venue: {
+    basic: "price_1OT7NbGVnlGQn0rKkm5MNuMp",
+    premium: "price_1OT7NuGVnlGQn0rKYTeHQsrE",
+    enterprise: "price_1OT7OPGVnlGQn0rKqTNCYLhc",
+  },
+  event: {
+    basic: "price_1OT7NbGVnlGQn0rKkm5MNuMq",
+    premium: "price_1OT7NuGVnlGQn0rKYTeHQsrF",
+    enterprise: "price_1OT7OPGVnlGQn0rKqTNCYLhd",
+  }
 };
 
 const SubscribePage = () => {
   const { user } = useUser();
   const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
-  const { subscribed, subscription_tier, subscription_end, isLoading: subLoading, checkSubscription, createCheckout } = useSubscription();
+  const { 
+    subscribed, 
+    subscription_tier, 
+    subscription_end, 
+    subscription_status,
+    isLoading: subLoading, 
+    checkSubscription, 
+    createCheckout 
+  } = useSubscription();
+  
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedPlanType, setSelectedPlanType] = useState<PlanType>("venue");
   const navigate = useNavigate();
   const location = useLocation();
   const breakpoint = useBreakpoint();
@@ -55,6 +75,7 @@ const SubscribePage = () => {
   }, [location.search]);
 
   const isHost = userRoles?.includes("host");
+  const pricingPlans = getPricingPlans(selectedPlanType);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +125,7 @@ const SubscribePage = () => {
   };
 
   const handlePlanSelect = async (planId: string, planName: string) => {
-    await createCheckout(planId, planName);
+    await createCheckout(planId, planName, selectedPlanType);
   };
 
   const renderGuestSubscribeForm = () => (
@@ -220,15 +241,34 @@ const SubscribePage = () => {
     </section>
   );
 
-  const renderHostPricingPlans = () => (
+  const renderPricingPlans = () => (
     <section className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            Host <span className="text-venu-orange">Subscription</span> Plans
+            <span className="text-venu-orange">Subscription</span> Plans
           </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-12">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
             Choose the right plan for your venues and events. All plans include our core features with varying capacities and additional benefits.
+          </p>
+          
+          <PlanTypeSelector 
+            selectedPlanType={selectedPlanType} 
+            onChange={setSelectedPlanType} 
+            className="mb-8"
+          />
+          
+          <div className="inline-flex items-center justify-center w-full">
+            <hr className="w-64 h-px my-8 bg-gray-200 border-0" />
+            <span className="absolute px-3 font-medium text-gray-500 bg-white">
+              {selectedPlanType === "venue" ? "Monthly Venue Plans" : "Per-Event Plans"}
+            </span>
+          </div>
+          
+          <p className="text-sm text-gray-500 mt-4 mb-8">
+            {selectedPlanType === "venue" 
+              ? "Perfect for venues that host multiple events over time. Billed monthly."
+              : "Ideal for one-time events or special occasions. Pay per event."}
           </p>
         </div>
 
@@ -251,20 +291,39 @@ const SubscribePage = () => {
                 </div>
                 <CardDescription>For smaller venues and events</CardDescription>
                 <div className="mt-4">
-                  <span className="text-3xl font-bold">R499</span>
-                  <span className="text-gray-500 ml-2">/month</span>
+                  <span className="text-3xl font-bold">
+                    {selectedPlanType === "venue" ? "R499" : "R250"}
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    /{selectedPlanType === "venue" ? "month" : "event"}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="flex-grow">
                 <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Up to 3 venues</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Up to 5 events per venue monthly</span>
-                  </li>
+                  {selectedPlanType === "venue" ? (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 3 venues</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 5 events per venue monthly</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Single event use</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 3 merchants allowed</span>
+                      </li>
+                    </>
+                  )}
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                     <span>Basic analytics</span>
@@ -288,7 +347,10 @@ const SubscribePage = () => {
                   <Button 
                     className="w-full" 
                     variant={subscription_tier ? "outline" : "default"} 
-                    onClick={() => handlePlanSelect(PRICE_IDS.basic, "Basic")}
+                    onClick={() => handlePlanSelect(
+                      PRICE_IDS[selectedPlanType].basic, 
+                      "Basic"
+                    )}
                     disabled={isSubmitting}
                   >
                     {subscription_tier ? "Switch to Basic" : "Select Basic"}
@@ -310,20 +372,39 @@ const SubscribePage = () => {
                 </div>
                 <CardDescription>For growing businesses</CardDescription>
                 <div className="mt-4">
-                  <span className="text-3xl font-bold">R999</span>
-                  <span className="text-gray-500 ml-2">/month</span>
+                  <span className="text-3xl font-bold">
+                    {selectedPlanType === "venue" ? "R999" : "R650"}
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    /{selectedPlanType === "venue" ? "month" : "event"}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="flex-grow">
                 <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Up to 10 venues</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Unlimited events</span>
-                  </li>
+                  {selectedPlanType === "venue" ? (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 10 venues</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Unlimited events</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Single event use</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 6 merchants allowed</span>
+                      </li>
+                    </>
+                  )}
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                     <span>Advanced analytics and reporting</span>
@@ -346,7 +427,10 @@ const SubscribePage = () => {
                 ) : (
                   <Button 
                     className="w-full bg-venu-orange hover:bg-venu-orange/90"
-                    onClick={() => handlePlanSelect(PRICE_IDS.premium, "Premium")}
+                    onClick={() => handlePlanSelect(
+                      PRICE_IDS[selectedPlanType].premium, 
+                      "Premium"
+                    )}
                     disabled={isSubmitting}
                   >
                     {subscription_tier ? "Switch to Premium" : "Select Premium"}
@@ -366,20 +450,39 @@ const SubscribePage = () => {
                 </div>
                 <CardDescription>For large organizations</CardDescription>
                 <div className="mt-4">
-                  <span className="text-3xl font-bold">R2499</span>
-                  <span className="text-gray-500 ml-2">/month</span>
+                  <span className="text-3xl font-bold">
+                    {selectedPlanType === "venue" ? "R2499" : "R1070"}
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    /{selectedPlanType === "venue" ? "month" : "event"}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="flex-grow">
                 <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Unlimited venues</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Unlimited events with premium features</span>
-                  </li>
+                  {selectedPlanType === "venue" ? (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Unlimited venues</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Unlimited events with premium features</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Single event use</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 10 merchants allowed</span>
+                      </li>
+                    </>
+                  )}
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                     <span>Enterprise analytics with custom reports</span>
@@ -403,7 +506,10 @@ const SubscribePage = () => {
                   <Button 
                     className="w-full" 
                     variant={subscription_tier ? "outline" : "default"} 
-                    onClick={() => handlePlanSelect(PRICE_IDS.enterprise, "Enterprise")}
+                    onClick={() => handlePlanSelect(
+                      PRICE_IDS[selectedPlanType].enterprise, 
+                      "Enterprise"
+                    )}
                     disabled={isSubmitting}
                   >
                     {subscription_tier ? "Switch to Enterprise" : "Select Enterprise"}
@@ -427,6 +533,19 @@ const SubscribePage = () => {
                   <span> Your subscription renews on {new Date(subscription_end).toLocaleDateString()}.</span>
                 )}
               </p>
+              {subscription_status && subscription_status !== "none" && (
+                <p className="mt-1">
+                  Status: <span className="font-medium capitalize">{subscription_status}</span>
+                </p>
+              )}
+              
+              <Button 
+                variant="link" 
+                className="mt-2"
+                onClick={() => navigate("/host/subscription")}
+              >
+                Manage your subscription
+              </Button>
             </div>
           </div>
         )}
@@ -477,22 +596,22 @@ const SubscribePage = () => {
       <main className="flex-grow pt-20">
         {isHost ? (
           <>
-            {renderHostPricingPlans()}
+            {renderPricingPlans()}
             <section className="py-12 bg-white">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
                 <div className="max-w-3xl mx-auto space-y-6">
                   <div className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="font-medium mb-2">Can I change my subscription plan later?</h3>
-                    <p className="text-gray-600">Yes, you can upgrade or downgrade your subscription at any time. Changes take effect at the start of your next billing cycle.</p>
+                    <h3 className="font-medium mb-2">What's the difference between venue and event plans?</h3>
+                    <p className="text-gray-600">Venue plans are monthly subscriptions ideal for venues that host multiple events regularly. Event plans are one-time payments perfect for individual events.</p>
+                  </div>
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h3 className="font-medium mb-2">Can I pause my subscription?</h3>
+                    <p className="text-gray-600">Yes, you can pause your subscription once per quarter for up to 14 days. Visit the subscription management page to use this feature.</p>
                   </div>
                   <div className="bg-gray-50 p-6 rounded-lg">
                     <h3 className="font-medium mb-2">How do commissions work?</h3>
                     <p className="text-gray-600">Commissions are calculated on transaction volume processed through the platform. Higher tier plans offer lower commission rates.</p>
-                  </div>
-                  <div className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="font-medium mb-2">Do you offer custom plans for large organizations?</h3>
-                    <p className="text-gray-600">Yes, for special requirements beyond our Enterprise plan, please contact our sales team for a custom solution.</p>
                   </div>
                 </div>
               </div>

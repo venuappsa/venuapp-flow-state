@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CustomerPage from "./pages/CustomerPage";
@@ -11,6 +12,7 @@ import HostPage from "./pages/HostPage";
 import MerchantPage from "./pages/MerchantPage";
 import FetchmanPage from "./pages/FetchmanPage";
 import SubscribePage from "./pages/SubscribePage";
+import SubscriptionManagementPage from "./pages/SubscriptionManagementPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPanel from "./pages/AdminPanel";
 import HostPanel from "./pages/HostPanel";
@@ -26,37 +28,40 @@ import GuestPage from "./pages/GuestPage";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          
-          {/* Host panel routes */}
-          <Route path="/host" element={<HostPanel />} />
-          <Route path="/host/venues" element={<VenuesPage />} />
-          <Route path="/host/venues/new" element={<VenueCreate />} />
-          <Route path="/host/rules" element={<VendorRules />} />
-          <Route path="/host/events" element={<EventsPage />} />
-          <Route path="/host/events/:eventId" element={<EventManagementPage />} />
-          <Route path="/host/vendors" element={<VendorsPage />} />
-          <Route path="/host/finance" element={<FinancePage />} />
-          <Route path="/host/guests" element={<GuestPage />} />
-          
-          <Route path="/customer" element={<CustomerPage />} />
-          <Route path="/merchant" element={<MerchantPage />} />
-          <Route path="/fetchman" element={<FetchmanPage />} />
-          <Route path="/subscribe" element={<SubscribePage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            
+            {/* Host panel routes */}
+            <Route path="/host" element={<HostPanel />} />
+            <Route path="/host/venues" element={<VenuesPage />} />
+            <Route path="/host/venues/new" element={<VenueCreate />} />
+            <Route path="/host/rules" element={<VendorRules />} />
+            <Route path="/host/events" element={<EventsPage />} />
+            <Route path="/host/events/:eventId" element={<EventManagementPage />} />
+            <Route path="/host/vendors" element={<VendorsPage />} />
+            <Route path="/host/finance" element={<FinancePage />} />
+            <Route path="/host/guests" element={<GuestPage />} />
+            <Route path="/host/subscription" element={<SubscriptionManagementPage />} />
+            
+            <Route path="/customer" element={<CustomerPage />} />
+            <Route path="/merchant" element={<MerchantPage />} />
+            <Route path="/fetchman" element={<FetchmanPage />} />
+            <Route path="/subscribe" element={<SubscribePage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

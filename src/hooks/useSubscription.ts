@@ -3,12 +3,13 @@ import { useState, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { PlanType } from "@/utils/pricingUtils";
 
 export interface SubscriptionData {
   subscribed: boolean;
   subscription_tier?: string;
   subscription_end?: string;
-  subscription_status?: "active" | "expired" | "trial" | "none";
+  subscription_status?: "active" | "paused" | "expired" | "trial" | "none";
   isLoading: boolean;
   error: string | null;
 }
@@ -67,7 +68,7 @@ export function useSubscription() {
     }
   };
 
-  const createCheckout = async (planId: string, planName: string) => {
+  const createCheckout = async (planId: string, planName: string, planType: PlanType = "venue") => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -79,7 +80,7 @@ export function useSubscription() {
 
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { planId, planName },
+        body: { planId, planName, planType },
       });
 
       if (error) {

@@ -7,11 +7,12 @@ import { PlanType } from "@/utils/pricingUtils";
 interface PlanTypeSelectorProps {
   selectedPlanType: PlanType;
   onChange: (type: PlanType) => void;
+  className?: string;
 }
 
-export default function PlanTypeSelector({ selectedPlanType, onChange }: PlanTypeSelectorProps) {
+export default function PlanTypeSelector({ selectedPlanType, onChange, className = "mb-4" }: PlanTypeSelectorProps) {
   return (
-    <div className="flex justify-center mb-4">
+    <div className={`flex justify-center ${className}`}>
       <div className="inline-flex p-1 rounded-lg bg-gray-100">
         <Button 
           variant="ghost" 

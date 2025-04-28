@@ -45,11 +45,11 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     // Parse request body to get plan details
-    const { planId, planName } = await req.json();
+    const { planId, planName, planType = "venue" } = await req.json();
     if (!planId || !planName) {
       throw new Error("Missing plan information");
     }
-    logStep("Received plan details", { planId, planName });
+    logStep("Received plan details", { planId, planName, planType });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
@@ -93,11 +93,12 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/host?subscription=success`,
+      success_url: `${origin}/host/subscription?subscription=success`,
       cancel_url: `${origin}/subscribe?subscription=canceled`,
       metadata: {
         user_id: user.id,
         plan_name: planName,
+        plan_type: planType,
       },
     });
 
@@ -111,6 +112,7 @@ serve(async (req) => {
         stripe_session_id: session.id,
         stripe_customer_id: customerId,
         plan_name: planName,
+        plan_type: planType,
         status: "pending",
         amount: 0, // Will be updated when payment is completed
       });

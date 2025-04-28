@@ -1,5 +1,4 @@
-
-import { Bell, Menu } from "lucide-react";
+import { Bell, Menu, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SecurePanelButton from "@/components/SecurePanelButton";
 import { useUser } from "@/hooks/useUser";
@@ -41,6 +40,7 @@ export default function HostHeader() {
     { label: "Vendors", href: "/host/vendors" },
     { label: "Guests", href: "/host/guests" },
     { label: "Finance", href: "/host/finance" },
+    { label: "Subscription", href: "/host/subscription" },
   ];
 
   const [notifications, setNotifications] = useState([
@@ -88,7 +88,9 @@ export default function HostHeader() {
                         <Badge className={`${
                           subscription_status === "active"
                             ? "bg-green-100 text-green-800"
-                            : "bg-amber-100 text-amber-800"
+                            : subscription_status === "paused"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}>
                           {subscription_tier || "Free"}
                         </Badge>
@@ -146,9 +148,17 @@ export default function HostHeader() {
             </Link>
           )}
           {subscribed && !isMobile && (
-            <Badge className="bg-green-100 text-green-700 ml-2">
-              {subscription_tier || "Premium"}
-            </Badge>
+            <Link to="/host/subscription">
+              <Badge className={`ml-2 ${
+                subscription_status === "active"
+                  ? "bg-green-100 text-green-700"
+                  : subscription_status === "paused"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-gray-100 text-gray-700"
+              } hover:bg-opacity-80 cursor-pointer`}>
+                {subscription_tier || "Premium"}
+              </Badge>
+            </Link>
           )}
         </div>
         

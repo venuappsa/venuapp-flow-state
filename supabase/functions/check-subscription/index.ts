@@ -95,6 +95,32 @@ serve(async (req) => {
       });
     }
 
+    // Check if there's an active pause
+    const { data: activePause } = await supabaseClient
+      .from("subscription_pauses")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    // If there's an active pause, return the subscription as paused
+    if (activePause) {
+      logStep("Found active subscription pause", { pauseId: activePause.id });
+      
+      return new Response(JSON.stringify({
+        subscribed: true,
+        subscription_tier: hostProfile.subscription_tier || "basic",
+        subscription_end: hostProfile.subscription_renewal,
+        subscription_status: "paused",
+        pause_ends_at: activePause.end_date
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
@@ -133,12 +159,16 @@ serve(async (req) => {
     
     const hasActiveSub = subscriptions.data.length > 0;
     let subscriptionTier = "none";
+    let subscriptionPlanType = "venue";
     let subscriptionEnd = null;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      
+      // Check if subscription is in pause collection mode
+      const isPaused = subscription.pause_collection !== null;
       
       // Determine subscription tier from price
       const priceId = subscription.items.data[0].price.id;
@@ -147,14 +177,22 @@ serve(async (req) => {
       const product = await stripe.products.retrieve(productId);
       
       subscriptionTier = product.metadata.tier || "basic";
-      logStep("Determined subscription tier", { priceId, tier: subscriptionTier });
+      subscriptionPlanType = product.metadata.plan_type || "venue";
+      logStep("Determined subscription details", { 
+        priceId, 
+        tier: subscriptionTier,
+        planType: subscriptionPlanType,
+        isPaused 
+      });
       
       // Update host profile with subscription info
       await supabaseClient
         .from("host_profiles")
         .update({
-          subscription_status: "active",
-          subscription_renewal: new Date(subscription.current_period_end * 1000).toISOString(),
+          subscription_status: isPaused ? "paused" : "active",
+          subscription_tier: subscriptionTier,
+          subscription_plan_type: subscriptionPlanType,
+          subscription_renewal: subscriptionEnd,
           updated_at: new Date().toISOString()
         })
         .eq("user_id", user.id);
@@ -176,14 +214,16 @@ serve(async (req) => {
     logStep("Subscription check complete", { 
       subscribed: hasActiveSub, 
       tier: subscriptionTier,
+      planType: subscriptionPlanType,
       end: subscriptionEnd
     });
     
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
+      subscription_plan_type: subscriptionPlanType,
       subscription_end: subscriptionEnd,
-      subscription_status: hasActiveSub ? "active" : (hostProfile.subscription_status || "none")
+      subscription_status: hasActiveSub ? (hostProfile.subscription_status || "active") : (hostProfile.subscription_status || "none")
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

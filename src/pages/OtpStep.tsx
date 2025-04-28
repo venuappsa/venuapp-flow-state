@@ -29,6 +29,7 @@ export default function OtpStep({ loading, otpInput, setOtpInput, onOtpSubmit }:
               {slots.map((slot, index) => (
                 <InputOTPSlot
                   key={index}
+                  index={index}
                   {...slot}
                   className="w-10 h-12 text-lg"
                   aria-label={`Digit ${index + 1} of OTP`}

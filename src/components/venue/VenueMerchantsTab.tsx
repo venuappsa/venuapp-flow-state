@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,6 +27,15 @@ interface VenueMerchantsTabProps {
   venueId: string;
 }
 
+type VendorWithEvents = {
+  id: string;
+  name: string;
+  category: string;
+  contact: string;
+  status: string;
+  events?: number;
+}
+
 export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("approved");
@@ -35,14 +43,11 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Filter vendors by status
   const filteredVendors = dummyVendors.filter(
     vendor => {
-      // First filter by search query
       const matchesSearch = vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           vendor.category.toLowerCase().includes(searchQuery.toLowerCase());
       
-      // Then filter by tab status
       if (activeTab === "approved") {
         return matchesSearch && vendor.status === 'approved';
       } else if (activeTab === "pending") {
@@ -53,7 +58,7 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
       
       return matchesSearch;
     }
-  );
+  ) as VendorWithEvents[];
 
   const handleInviteVendor = () => {
     toast({
@@ -466,7 +471,6 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
         </TabsContent>
       </Tabs>
       
-      {/* Invite Merchant Dialog */}
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -515,7 +519,6 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
         </DialogContent>
       </Dialog>
       
-      {/* QR Code Dialog */}
       <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

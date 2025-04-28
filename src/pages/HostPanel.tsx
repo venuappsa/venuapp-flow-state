@@ -50,46 +50,47 @@ export default function HostPanel() {
           ) : (
             <div className="max-w-7xl mx-auto py-8">
               <div className="mb-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">Host Dashboard</h1>
-                    {!subscribed && breakpoint !== "xs" && (
-                      <Link to="/subscribe">
-                        <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
-                          Upgrade to Premium
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                  <TabsList className="bg-gray-100">
-                    <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                    <TabsTrigger value="venues">Venues</TabsTrigger>
-                    <TabsTrigger value="vendors">Vendors</TabsTrigger>
-                    <TabsTrigger value="events">Events</TabsTrigger>
-                    <TabsTrigger value="finance">Finance</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+                <h1 className="text-2xl font-bold">Host Dashboard</h1>
+                <div className="flex justify-between items-center mt-4">
+                  {!subscribed && breakpoint !== "xs" && (
+                    <Link to="/subscribe">
+                      <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
+                        Upgrade to Premium
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
               
-              <TabsContent value="dashboard" className="mt-0">
-                <DashboardTab />
-              </TabsContent>
-              
-              <TabsContent value="venues" className="mt-0">
-                <VenuesTab />
-              </TabsContent>
-              
-              <TabsContent value="vendors" className="mt-0">
-                <VendorsTab />
-              </TabsContent>
-              
-              <TabsContent value="events" className="mt-0">
-                <EventsTab />
-              </TabsContent>
-              
-              <TabsContent value="finance" className="mt-0">
-                <FinanceTab />
-              </TabsContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                  <TabsTrigger value="venues">Venues</TabsTrigger>
+                  <TabsTrigger value="vendors">Vendors</TabsTrigger>
+                  <TabsTrigger value="events">Events</TabsTrigger>
+                  <TabsTrigger value="finance">Finance</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="dashboard" className="mt-6">
+                  <DashboardTab />
+                </TabsContent>
+                
+                <TabsContent value="venues" className="mt-6">
+                  <VenuesTab />
+                </TabsContent>
+                
+                <TabsContent value="vendors" className="mt-6">
+                  <VendorsTab />
+                </TabsContent>
+                
+                <TabsContent value="events" className="mt-6">
+                  <EventsTab />
+                </TabsContent>
+                
+                <TabsContent value="finance" className="mt-6">
+                  <FinanceTab />
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </main>

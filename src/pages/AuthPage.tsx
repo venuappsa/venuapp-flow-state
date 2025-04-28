@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { useRoleRedirect } from "@/hooks/useRoleRedirect";
+import { useRoleRedirect, getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 import { createProfileAndRole, sendOtp } from "@/hooks/useAuthHelpers";
 import type { Enums } from "@/integrations/supabase/types";
 import RedirectLoaderOverlay from "@/components/RedirectLoaderOverlay";
@@ -46,15 +46,24 @@ export default function AuthPage() {
   });
 
   useEffect(() => {
-    console.log("Checking initial session...");
+    console.log("AuthPage: Checking initial session...");
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        console.log("Found existing session, initiating redirect...");
+        console.log("AuthPage: Found existing session, initiating redirect...");
         setUserId(session.user.id);
         setPendingRedirect(true);
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (userId && userRoles && !rolesLoading && !pendingRedirect) {
+      console.log("AuthPage: User and roles ready, redirecting immediately");
+      const redirectPath = getRedirectPageForRoles(userRoles);
+      console.log("AuthPage: Direct redirect to:", redirectPath);
+      navigate(redirectPath, { replace: true });
+    }
+  }, [userId, userRoles, rolesLoading, pendingRedirect, navigate]);
 
   const handleQuickLogin = () => {
     setEmail("test@example.com");
@@ -139,22 +148,47 @@ export default function AuthPage() {
       return;
     }
     try {
+      console.log("[AuthPage] Attempting login with:", { email });
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      console.log("[AuthPage] Login attempt", { email, password, result: data, error });
+      console.log("[AuthPage] Login attempt result:", { data, error });
+      
       if (error) {
         console.error("[AuthPage] Login ERROR", error);
         toast({ title: "Error", description: error.message, variant: "destructive" });
         setLoading(false);
         return;
       }
+      
       if (!data.user) {
         toast({ title: "Login failed", description: "No user returned.", variant: "destructive" });
         setLoading(false);
         return;
       }
+      
+      console.log("[AuthPage] Login successful, setting userId and pendingRedirect");
       setUserId(data.user.id);
       setPendingRedirect(true);
       toast({ title: "Login successful!" });
+      
+      const checkAndRedirect = async () => {
+        console.log("[AuthPage] Attempting immediate redirect after login");
+        const { data: rolesData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id);
+          
+        if (rolesData && rolesData.length > 0) {
+          const userRoles = rolesData.map((r: { role: string }) => r.role);
+          console.log("[AuthPage] Immediate redirect with roles:", userRoles);
+          const redirectPath = getRedirectPageForRoles(userRoles);
+          navigate(redirectPath, { replace: true });
+        } else {
+          console.log("[AuthPage] No immediate roles found, relying on hook redirect");
+        }
+      };
+      
+      checkAndRedirect();
+      
     } catch (e: any) {
       console.error("[AuthPage] Login Exception", e);
       toast({ title: "Error", description: e.message, variant: "destructive" });
@@ -195,7 +229,7 @@ export default function AuthPage() {
     return (
       <>
         <Navbar />
-        <RedirectLoaderOverlay />
+        <RedirectLoaderOverlay message="Setting up your dashboard..." />
       </>
     );
   }

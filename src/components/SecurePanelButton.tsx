@@ -27,7 +27,7 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
     if (user && userRoles && !rolesLoading) {
       const route = getRedirectPageForRoles(userRoles);
       setPanelRoute(route);
-      console.log("Panel route updated to:", route, "for roles:", userRoles);
+      console.log("SecurePanelButton: Panel route updated to:", route, "for roles:", userRoles);
     }
   }, [user, userRoles, rolesLoading]);
 
@@ -48,16 +48,45 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
       "User";
   }
 
-  const handleButtonClick = () => {
-    if (rolesLoading) return;
+  const handleButtonClick = async () => {
+    if (loading) return;
     
-    if (isLoggedIn && userRoles && userRoles.length > 0) {
-      console.log("Navigating to panel route:", panelRoute);
-      setLoading(true);
-      navigate(panelRoute);
+    setLoading(true);
+    console.log("SecurePanelButton: Button clicked, logged in:", isLoggedIn, "roles loading:", rolesLoading);
+    
+    try {
+      if (isLoggedIn) {
+        if (rolesLoading) {
+          // If roles are loading, wait a moment and try again
+          toast({ title: "Loading your dashboard...", duration: 2000 });
+          setTimeout(() => setLoading(false), 500);
+          return;
+        }
+        
+        if (userRoles && userRoles.length > 0) {
+          console.log("SecurePanelButton: Navigating to panel route:", panelRoute);
+          navigate(panelRoute);
+        } else {
+          console.log("SecurePanelButton: No roles found for user");
+          toast({ 
+            title: "No role assigned", 
+            description: "Your account doesn't have a role assigned.", 
+            variant: "destructive" 
+          });
+        }
+      } else {
+        console.log("SecurePanelButton: User not logged in, navigating to auth page");
+        navigate("/auth");
+      }
+    } catch (err) {
+      console.error("SecurePanelButton: Error navigating:", err);
+      toast({ 
+        title: "Navigation error", 
+        description: "There was a problem navigating to your dashboard.", 
+        variant: "destructive" 
+      });
+    } finally {
       setLoading(false);
-    } else {
-      navigate("/auth");
     }
   };
 
@@ -95,9 +124,9 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
           className="text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10 min-w-[100px] justify-center"
           variant="outline"
           onClick={handleButtonClick}
-          disabled={rolesLoading || loading}
+          disabled={loading}
         >
-          {(rolesLoading || loading) ? (
+          {loading ? (
             <Loader className="h-4 w-4 animate-spin" />
           ) : buttonLabel}
         </Button>

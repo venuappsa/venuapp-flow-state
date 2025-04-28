@@ -41,44 +41,47 @@ export default function AuthTransitionWrapper({
     let redirectTimer: NodeJS.Timeout;
     
     const checkAuthAndRedirect = async () => {
-      console.log("AuthTransitionWrapper: Checking auth state:", { user, roles, rolesLoading });
+      // If no auth required and no roles to check, render immediately
+      if (!requireAuth && !allowedRoles.length) {
+        setIsTransitioning(false);
+        return;
+      }
 
-      // Don't do anything if roles are still loading, unless we know there's no user
+      // Handle no user case
       if (requireAuth && !user) {
         console.log("AuthTransitionWrapper: No user found, redirecting to login");
-        setMessage("Redirecting to login...");
+        setMessage("Please log in to continue...");
         navigate(redirectTo, { replace: true });
         return;
       }
 
-      // Wait for roles to load if we need to check them
-      if (user && !rolesLoading) {
-        console.log("AuthTransitionWrapper: Checking roles:", { allowedRoles, userRoles: roles });
-        
-        if (allowedRoles.length > 0) {
-          // Ensure roles is treated as string[]
-          const userRoles = Array.isArray(roles) ? roles : [];
-          const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
-          
-          if (!hasAllowedRole) {
-            console.log("AuthTransitionWrapper: User lacks required role, redirecting...");
-            setMessage("Redirecting to appropriate page...");
-            const redirectPath = getRedirectPageForRoles(userRoles);
-            
-            // Use a small delay for smoother transition
-            redirectTimer = setTimeout(() => {
-              navigate(redirectPath, { replace: true });
-            }, 100);
-            return;
-          }
-        }
-        
-        // If we get here, user is authorized
-        setIsTransitioning(false);
-      } else if (!requireAuth && !allowedRoles.length) {
-        // If no auth requirements, don't block rendering
-        setIsTransitioning(false);
+      // Wait for roles to load if needed
+      if (user && rolesLoading) {
+        console.log("AuthTransitionWrapper: Waiting for roles to load...");
+        return;
       }
+
+      // Check roles if needed
+      if (user && !rolesLoading && allowedRoles.length > 0) {
+        const userRoles = Array.isArray(roles) ? roles : [];
+        const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
+        
+        if (!hasAllowedRole) {
+          console.log("AuthTransitionWrapper: User lacks required role");
+          setMessage("Redirecting to appropriate page...");
+          const redirectPath = getRedirectPageForRoles(userRoles);
+          
+          redirectTimer = setTimeout(() => {
+            if (mounted) {
+              navigate(redirectPath, { replace: true });
+            }
+          }, 100);
+          return;
+        }
+      }
+      
+      // If we get here, user is authorized
+      setIsTransitioning(false);
     };
 
     checkAuthAndRedirect();

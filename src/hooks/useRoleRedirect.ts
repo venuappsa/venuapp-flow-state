@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -49,7 +48,6 @@ export function useRoleRedirect({
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Track if component is mounted to prevent state updates after unmount
     let isMounted = true;
     let redirectTimer: NodeJS.Timeout;
     
@@ -60,7 +58,6 @@ export function useRoleRedirect({
       console.log("Redirecting to:", redirectTo);
       
       if (redirectTo !== window.location.pathname) {
-        // Use a small timeout to ensure smoother transitions
         redirectTimer = setTimeout(() => {
           if (isMounted) {
             navigate(redirectTo, { replace: true });
@@ -74,7 +71,6 @@ export function useRoleRedirect({
       }
     }
     
-    // Clean up timer when component unmounts
     return () => {
       isMounted = false;
       if (redirectTimer) clearTimeout(redirectTimer);

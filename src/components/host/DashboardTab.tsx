@@ -60,6 +60,10 @@ export default function DashboardTab() {
         case "active vendors":
           navigate("/host/vendors");
           break;
+        case "subscription":
+        case "growth":
+          navigate("/host/subscription");
+          break;
         default:
           toast({
             title: stat.title,

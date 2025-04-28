@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Calendar, CheckCircle, Clock, ExternalLink, Pause, RefreshCcw } from "lucide-react";
+import { AlertTriangle, Calendar, CheckCircle, Clock, ExternalLink, Pause, RefreshCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
@@ -22,7 +22,8 @@ export function SubscriptionManagement() {
     subscription_end, 
     subscription_status, 
     isLoading,
-    checkSubscription
+    checkSubscription,
+    createCheckout
   } = useSubscription();
   
   const [pauseHistory, setPauseHistory] = useState<any[]>([]);
@@ -30,6 +31,7 @@ export function SubscriptionManagement() {
   const [isPausing, setIsPausing] = useState(false);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [selectedPlanType, setSelectedPlanType] = useState<PlanType>("venue");
+  const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({});
   
   // For this quarter's pause metrics
   const [currentQuarterUsed, setCurrentQuarterUsed] = useState(0);
@@ -115,6 +117,13 @@ export function SubscriptionManagement() {
     }
   };
 
+  const toggleFeatures = (planName: string) => {
+    setExpandedFeatures(prev => ({
+      ...prev,
+      [planName]: !prev[planName]
+    }));
+  };
+
   // Create plan feature lists
   const venuePlans = [
     {
@@ -183,6 +192,22 @@ export function SubscriptionManagement() {
         "Up to 2 merchants allowed"
       ],
       priceId: "price_venue_payg"
+    },
+    {
+      name: "Free",
+      price: "R0",
+      period: "",
+      description: "Limited trial access",
+      features: [
+        "1 venue only",
+        "Up to 2 events",
+        "Basic analytics",
+        "Email support only",
+        "8% commission on transactions",
+        "0.4% marketing rebate",
+        "1 merchant allowed"
+      ],
+      priceId: "price_free_tier"
     }
   ];
 
@@ -249,6 +274,21 @@ export function SubscriptionManagement() {
         "0.7% marketing rebate"
       ],
       priceId: "price_event_payg"
+    },
+    {
+      name: "Free",
+      price: "R0",
+      period: "",
+      description: "Limited trial access",
+      features: [
+        "1 event only",
+        "Up to 2 merchants",
+        "Basic analytics",
+        "Email support only",
+        "8% commission on transactions",
+        "0.7% marketing rebate"
+      ],
+      priceId: "price_free_tier_event"
     }
   ];
 
@@ -443,10 +483,10 @@ export function SubscriptionManagement() {
                 <Separator className="flex-grow ml-4" />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {venuePlans.map((plan, index) => (
                   <Card key={index} className={`flex flex-col ${plan.popular ? 'border-venu-orange shadow-lg' : ''}`}>
-                    <CardHeader>
+                    <CardHeader className="pb-4">
                       <div className="flex justify-between items-center">
                         <CardTitle>{plan.name}</CardTitle>
                         {plan.popular && (
@@ -463,20 +503,34 @@ export function SubscriptionManagement() {
                       </div>
                     </CardHeader>
                     <CardContent className="flex-grow">
-                      <ul className="space-y-3">
-                        {plan.features.map((feature, i) => (
-                          <li key={i} className="flex items-start">
-                            <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="mb-4">
+                        <h4 className="font-medium flex items-center justify-between cursor-pointer" 
+                            onClick={() => toggleFeatures(`venue-${plan.name}`)}>
+                          Features
+                          {expandedFeatures[`venue-${plan.name}`] ? 
+                            <ChevronUp className="h-4 w-4" /> : 
+                            <ChevronDown className="h-4 w-4" />
+                          }
+                        </h4>
+                      </div>
+                      
+                      {expandedFeatures[`venue-${plan.name}`] && (
+                        <ul className="space-y-3 mt-3">
+                          {plan.features.map((feature, i) => (
+                            <li key={i} className="flex items-start">
+                              <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </CardContent>
                     <CardFooter>
                       <Button 
                         className={`w-full ${plan.popular && !subscription_tier ? 'bg-venu-orange hover:bg-venu-orange/90' : ''}`}
                         variant={subscription_tier === plan.name.toLowerCase() ? "outline" : "default"}
                         disabled={subscription_tier === plan.name.toLowerCase()}
+                        onClick={() => createCheckout(plan.priceId, plan.name, "venue")}
                       >
                         {subscription_tier === plan.name.toLowerCase() ? "Current Plan" : "Select Plan"}
                       </Button>
@@ -494,10 +548,10 @@ export function SubscriptionManagement() {
                 <Separator className="flex-grow ml-4" />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {eventPlans.map((plan, index) => (
                   <Card key={index} className={`flex flex-col ${plan.popular ? 'border-venu-orange shadow-lg' : ''}`}>
-                    <CardHeader>
+                    <CardHeader className="pb-4">
                       <div className="flex justify-between items-center">
                         <CardTitle>{plan.name}</CardTitle>
                         {plan.popular && (
@@ -514,20 +568,34 @@ export function SubscriptionManagement() {
                       </div>
                     </CardHeader>
                     <CardContent className="flex-grow">
-                      <ul className="space-y-3">
-                        {plan.features.map((feature, i) => (
-                          <li key={i} className="flex items-start">
-                            <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="mb-4">
+                        <h4 className="font-medium flex items-center justify-between cursor-pointer" 
+                            onClick={() => toggleFeatures(`event-${plan.name}`)}>
+                          Features
+                          {expandedFeatures[`event-${plan.name}`] ? 
+                            <ChevronUp className="h-4 w-4" /> : 
+                            <ChevronDown className="h-4 w-4" />
+                          }
+                        </h4>
+                      </div>
+                      
+                      {expandedFeatures[`event-${plan.name}`] && (
+                        <ul className="space-y-3 mt-3">
+                          {plan.features.map((feature, i) => (
+                            <li key={i} className="flex items-start">
+                              <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </CardContent>
                     <CardFooter>
                       <Button 
                         className={`w-full ${plan.popular && !subscription_tier ? 'bg-venu-orange hover:bg-venu-orange/90' : ''}`}
                         variant={subscription_tier === plan.name.toLowerCase() ? "outline" : "default"}
                         disabled={subscription_tier === plan.name.toLowerCase()}
+                        onClick={() => createCheckout(plan.priceId, plan.name, "event")}
                       >
                         {subscription_tier === plan.name.toLowerCase() ? "Current Plan" : "Select Plan"}
                       </Button>

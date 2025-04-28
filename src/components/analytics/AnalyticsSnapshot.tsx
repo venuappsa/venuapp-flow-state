@@ -4,9 +4,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Info, TrendingUp, Lock, ArrowRight, BarChart } from "lucide-react";
+import { Info, TrendingUp, Lock, ArrowRight, BarChart as BarChartIcon } from "lucide-react";
 import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  BarChart, 
+  Bar, 
+  LineChart, 
+  Line, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend 
+} from "recharts";
 import { toast } from "@/components/ui/use-toast";
 import { generateMockAnalyticsData } from "@/data/analyticsData";
 import DetailedAnalytics from "./DetailedAnalytics";
@@ -21,7 +37,6 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
   const navigate = useNavigate();
   const data = generateMockAnalyticsData(subscriptionTier);
   
-  // Map subscription tier to numeric level for feature gating
   const tierLevels = {
     "Free": 0,
     "Starter": 1,
@@ -45,7 +60,6 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
     });
   };
 
-  // Function to navigate to the Guest Analytics page
   const navigateToGuestAnalytics = () => {
     navigate('/host/guests');
   };
@@ -692,19 +706,17 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
         </TabsContent>
       </Tabs>
 
-      {/* Add View Detailed Analytics Button at the bottom */}
       <div className="mt-8 flex justify-end">
         <Button 
           variant="outline" 
           className="gap-2 text-venu-orange border-venu-orange hover:bg-venu-orange/10"
           onClick={navigateToGuestAnalytics}
         >
-          <BarChart className="h-4 w-4" />
+          <BarChartIcon className="h-4 w-4" />
           View Detailed Guest Analytics
         </Button>
       </div>
 
-      {/* Add DetailedAnalytics component */}
       {currentTierLevel >= 2 && (
         <div className="mt-8">
           <DetailedAnalytics subscriptionTier={subscriptionTier} />

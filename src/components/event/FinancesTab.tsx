@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -94,6 +95,9 @@ export default function EventFinancesTab({ eventId, eventData }: { eventId: stri
       year: 'numeric'
     });
   };
+
+  // Helper function to format currency values for YAxis
+  const formatYAxisValue = (value: number) => `R${value / 1000}K`;
 
   return (
     <div className="space-y-6">
@@ -257,7 +261,7 @@ export default function EventFinancesTab({ eventId, eventData }: { eventId: stri
                   <RechartsBarChart data={mockRevenueTimeline}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
-                    <YAxis format={(value) => `R${value / 1000}K`} />
+                    <YAxis tickFormatter={(value) => `R${value / 1000}K`} />
                     <Tooltip formatter={(value) => `R ${Number(value).toLocaleString()}`} />
                     <Bar dataKey="amount" name="Revenue" fill="var(--color-amount)" />
                   </RechartsBarChart>

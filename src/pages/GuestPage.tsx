@@ -48,6 +48,14 @@ const GuestAnalyticsPage = () => {
     { category: "Venue Facilities", rating: 4.1 }
   ];
 
+  // Fixed colors for group size chart
+  const groupSizeColors = [
+    { name: "Solo", color: "#f59e0b" },
+    { name: "Couples", color: "#ff6b00" },
+    { name: "Groups (3-5)", color: "#ef4444" },
+    { name: "Large Groups (6+)", color: "#8b5cf6" }
+  ];
+
   return (
     <HostPanelLayout>
       <div className="max-w-7xl mx-auto py-8">
@@ -292,7 +300,7 @@ const GuestAnalyticsPage = () => {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {data.categoryDistributionData.map((entry, index) => (
+                            {groupSizeColors.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>

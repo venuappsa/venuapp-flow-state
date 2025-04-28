@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -178,19 +177,14 @@ export default function AdminHostVendorManager() {
     if (!data) return [];
     
     return data.filter(record => {
-      // Role filter
       if (roleFilter !== "all" && record.type !== roleFilter) return false;
       
-      // Verification filter
       if (verificationFilter !== "all" && record.verification_status !== verificationFilter) return false;
       
-      // Subscription filter
       if (subscriptionFilter !== "all" && record.subscription_status !== subscriptionFilter) return false;
       
-      // Suspension filter
       if (suspensionFilter !== "all" && record.is_suspended !== suspensionFilter) return false;
       
-      // Search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
@@ -610,7 +604,10 @@ export default function AdminHostVendorManager() {
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Type</dt>
                         <dd className="flex items-center gap-1 font-medium">
-                          {TYPE_DISPLAY[detailView.type].icon && <TYPE_DISPLAY[detailView.type].icon className="h-4 w-4" />}
+                          {(() => {
+                            const Icon = TYPE_DISPLAY[detailView.type].icon;
+                            return <Icon className="h-4 w-4" />;
+                          })()}
                           {TYPE_DISPLAY[detailView.type].label}
                         </dd>
                       </div>

@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -83,7 +84,8 @@ const SUBSCRIPTION_COLOR: Record<string, string> = {
 export default function AdminHostVendorManager() {
   const [roleFilter, setRoleFilter] = useState<RoleType | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [verificationFilter, setVerificationFilter] = useState<string | "all">("all");
+  // Fix: Explicitly type this as "all" | "pending" | "verified" | "declined" to match verification_status type
+  const [verificationFilter, setVerificationFilter] = useState<"all" | "pending" | "verified" | "declined">("all");
   const [subscriptionFilter, setSubscriptionFilter] = useState<string | "all">("all");
   const [suspensionFilter, setSuspensionFilter] = useState<boolean | "all">("all");
   

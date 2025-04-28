@@ -542,7 +542,13 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
                               dataKey="value"
                               label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                             >
-                              {data.ageDistributionData?.map((entry, index) => (
+                              {[
+                                { name: "18-24", value: 28, color: "#22c55e" },
+                                { name: "25-34", value: 35, color: "#16a34a" },
+                                { name: "35-44", value: 22, color: "#15803d" },
+                                { name: "45-54", value: 10, color: "#166534" },
+                                { name: "55+", value: 5, color: "#14532d" }
+                              ].map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
                               ))}
                             </Pie>

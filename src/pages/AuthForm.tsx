@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -91,92 +92,118 @@ export default function AuthForm({
 
       {type === "signup" && (
         <>
-          <Input
-            required
-            placeholder="Name"
-            name="given-name"
-            id="given-name"
-            value={name}
-            autoComplete="given-name"
-            onChange={e => setName(e.target.value)}
-            aria-label="First name"
-          />
-          <Input
-            required
-            placeholder="Surname"
-            name="family-name"
-            id="family-name"
-            value={surname}
-            autoComplete="family-name"
-            onChange={e => setSurname(e.target.value)}
-            aria-label="Last name"
-          />
-          <Input
-            required
-            placeholder="Phone"
-            name="tel"
-            id="tel"
-            value={phone}
-            autoComplete="tel"
-            type="tel"
-            onChange={e => setPhone(e.target.value)}
-            aria-label="Phone number"
-          />
-          <select
-            required
-            value={role}
-            name="role"
-            id="role"
-            autoComplete="off"
-            onChange={e => setRole(e.target.value as Enums<"app_role"> | "")}
-            className="bg-gray-100 border rounded px-3 py-2 text-base"
-            aria-label="Select your role"
-          >
-            <option value="">Select your role</option>
-            {ROLE_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-2">
+            <label htmlFor="given-name" className="text-sm font-medium">First Name</label>
+            <Input
+              required
+              id="given-name"
+              name="given-name"
+              placeholder="Enter your first name"
+              value={name}
+              autoComplete="given-name"
+              onChange={e => setName(e.target.value)}
+              aria-label="First name"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="family-name" className="text-sm font-medium">Last Name</label>
+            <Input
+              required
+              id="family-name"
+              name="family-name"
+              placeholder="Enter your last name"
+              value={surname}
+              autoComplete="family-name"
+              onChange={e => setSurname(e.target.value)}
+              aria-label="Last name"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="tel" className="text-sm font-medium">Phone Number</label>
+            <Input
+              required
+              id="tel"
+              name="tel"
+              placeholder="Enter your phone number"
+              value={phone}
+              autoComplete="tel"
+              type="tel"
+              onChange={e => setPhone(e.target.value)}
+              aria-label="Phone number"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="role" className="text-sm font-medium">Role</label>
+            <select
+              required
+              id="role"
+              name="role"
+              value={role}
+              autoComplete="off"
+              onChange={e => setRole(e.target.value as Enums<"app_role"> | "")}
+              className="w-full bg-gray-100 border rounded px-3 py-2 text-base"
+              aria-label="Select your role"
+            >
+              <option value="">Select your role</option>
+              {ROLE_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </>
       )}
-      <Input
-        required
-        autoFocus
-        placeholder="Email"
-        name="email"
-        id="email"
-        type="email"
-        value={email}
-        autoComplete="email"
-        onChange={e => setEmail(e.target.value)}
-        aria-label="Email address"
-      />
-      <Input
-        required
-        placeholder="Password"
-        name={type === "login" ? "current-password" : "new-password"}
-        id={type === "login" ? "current-password" : "new-password"}
-        type="password"
-        value={password}
-        autoComplete={type === "login" ? "current-password" : "new-password"}
-        onChange={e => setPassword(e.target.value)}
-        aria-label="Password"
-      />
-      {type === "signup" && (
+
+      <div className="space-y-2">
+        <label htmlFor="email" className="text-sm font-medium">Email</label>
         <Input
           required
-          placeholder="Confirm password"
-          name="confirm-password"
-          id="confirm-password"
-          type="password"
-          value={confirmPassword}
-          autoComplete="new-password"
-          onChange={e => setConfirmPassword(e.target.value)}
-          aria-label="Confirm password"
+          id="email"
+          name="email"
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          autoComplete="email"
+          onChange={e => setEmail(e.target.value)}
+          aria-label="Email address"
         />
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor={type === "login" ? "current-password" : "new-password"} className="text-sm font-medium">
+          Password
+        </label>
+        <Input
+          required
+          id={type === "login" ? "current-password" : "new-password"}
+          name={type === "login" ? "current-password" : "new-password"}
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          autoComplete={type === "login" ? "current-password" : "new-password"}
+          onChange={e => setPassword(e.target.value)}
+          aria-label="Password"
+        />
+      </div>
+
+      {type === "signup" && (
+        <div className="space-y-2">
+          <label htmlFor="confirm-password" className="text-sm font-medium">Confirm Password</label>
+          <Input
+            required
+            id="confirm-password"
+            name="confirm-password"
+            type="password"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            autoComplete="new-password"
+            onChange={e => setConfirmPassword(e.target.value)}
+            aria-label="Confirm password"
+          />
+        </div>
       )}
+
       <Button disabled={loading} type="submit">
         {loading ? "..." : (type === "login" ? "Login" : "Sign Up")}
       </Button>
@@ -192,18 +219,22 @@ export default function AuthForm({
             Quick Login (demo)
           </Button>
           <div className="text-xs text-gray-500 text-center">
-            Fills in demo credentials for <b>test@example.com</b> / <b>password123</b>.<br />
-            Sign up with these first, then use Quick Login for fast access.
+            <p>
+              Fills in demo credentials for <b>test@example.com</b> / <b>password123</b>.<br />
+              Sign up with these first, then use Quick Login for fast access.
+            </p>
           </div>
         </>
       )}
+      
       <button
         type="button"
         className="text-xs text-gray-500 hover:underline"
         onClick={() => {
           onTypeChange(type === "login" ? "signup" : "login");
           setOtpStep(false);
-        }}>
+        }}
+      >
         {type === "login"
           ? "Don't have an account? Sign up"
           : "Already have an account? Log in"}

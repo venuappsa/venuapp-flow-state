@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,8 @@ import { toast } from "@/components/ui/use-toast";
 import { dummyVenues } from "@/data/hostDummyData";
 
 export default function VenuesTab() {
+  const navigate = useNavigate();
+
   const handleGenerateVenueLink = (venueId: string, venueName: string) => {
     const shareableLink = `https://venuapp.co.za/v/${venueId}`;
     navigator.clipboard.writeText(shareableLink).then(
@@ -23,11 +26,15 @@ export default function VenuesTab() {
     );
   };
 
+  const handleNavigateToVenue = (venueId: string) => {
+    navigate(`/host/venues/${venueId}`);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">Your Venues</h2>
-        <Button onClick={() => toast({ title: "Coming Soon", description: "Venue creation will be available in the next update." })}>
+        <Button onClick={() => navigate("/host/venues/new")}>
           <CalendarPlus className="h-4 w-4 mr-2" />
           Add Venue
         </Button>
@@ -38,6 +45,7 @@ export default function VenuesTab() {
           <Card 
             key={venue.id} 
             className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => handleNavigateToVenue(venue.id)}
           >
             <div className="h-32 overflow-hidden relative">
               <img 
@@ -57,7 +65,15 @@ export default function VenuesTab() {
                   <h3 className="font-medium truncate">{venue.name}</h3>
                   <p className="text-sm text-gray-500">{venue.location}</p>
                 </div>
-                <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-0 h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/host/venues/${venue.id}`);
+                  }}
+                >
                   <Settings className="h-4 w-4" />
                 </Button>
               </div>
@@ -75,11 +91,22 @@ export default function VenuesTab() {
                     variant="ghost" 
                     size="sm" 
                     className="p-1"
-                    onClick={() => handleGenerateVenueLink(venue.id, venue.name)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleGenerateVenueLink(venue.id, venue.name);
+                    }}
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="p-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigateToVenue(venue.id);
+                    }}
+                  >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>

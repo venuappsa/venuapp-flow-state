@@ -22,6 +22,7 @@ import EventsPage from "./pages/EventsPage";
 import VendorsPage from "./pages/VendorsPage";
 import FinancePage from "./pages/FinancePage";
 import VenuesPage from "./pages/VenuesPage";
+import VenueManagementPage from "./pages/VenueManagementPage";
 import GuestPage from "./pages/GuestPage";
 import MerchantsPage from "./pages/MerchantsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/host" element={<HostPanel />} />
           <Route path="/host/venues" element={<VenuesPage />} />
           <Route path="/host/venues/new" element={<VenueCreate />} />
+          <Route path="/host/venues/:venueId" element={<VenueManagementPage />} />
           <Route path="/host/rules" element={<VendorRules />} />
           <Route path="/host/events" element={<EventsPage />} />
           <Route path="/host/events/new" element={<EventManagementPage />} />

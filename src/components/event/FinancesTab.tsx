@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -31,7 +30,6 @@ import {
   Cell 
 } from "recharts";
 
-// Mock finance data
 const mockRevenueBreakdown = [
   { name: 'Ticket Sales', value: 82500, fill: '#f59e0b' },
   { name: 'Food & Beverage', value: 23750, fill: '#10b981' },
@@ -49,7 +47,6 @@ const mockRevenueTimeline = [
   { date: '6 May', amount: 102200 },
 ];
 
-// Mock recent transactions
 const mockTransactions = [
   {
     id: 'trans-1',
@@ -88,10 +85,8 @@ const mockTransactions = [
 export default function EventFinancesTab({ eventId, eventData }: { eventId: string, eventData?: any }) {
   const [viewMode, setViewMode] = useState<'revenue' | 'reports'>('revenue');
 
-  // Calculate total revenue
   const totalRevenue = mockRevenueBreakdown.reduce((sum, item) => sum + item.value, 0);
   
-  // Format timestamp to readable date
   const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleDateString('en-ZA', {
       day: 'numeric',
@@ -262,7 +257,7 @@ export default function EventFinancesTab({ eventId, eventData }: { eventId: stri
                   <RechartsBarChart data={mockRevenueTimeline}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
-                    <YAxis formatter={(value) => `R${value / 1000}K`} />
+                    <YAxis format={(value) => `R${value / 1000}K`} />
                     <Tooltip formatter={(value) => `R ${Number(value).toLocaleString()}`} />
                     <Bar dataKey="amount" name="Revenue" fill="var(--color-amount)" />
                   </RechartsBarChart>

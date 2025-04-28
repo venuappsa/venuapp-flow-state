@@ -48,7 +48,7 @@ export default function FetchmanEstimation({
   const [requestSent, setRequestSent] = useState(false);
 
   const fetchmenCount = calculateFetchmanEstimate(capacity, vendors);
-  const cost = calculateFetchmanCost(fetchmenCount, hours, rate);
+  const cost = calculateFetchmanCost(fetchmenCount, hours);
   const staffingPlan = generateFetchmanStaffingPlan(fetchmenCount, hours);
   const allocation = calculateFetchmanAllocation(capacity, floorArea, multiLevel);
   const totalCostWithOvertime = calculateOvertimeCosts(hours, overtimeHours, fetchmenCount, rate);

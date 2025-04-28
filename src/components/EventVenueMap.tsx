@@ -125,10 +125,7 @@ export default function EventVenueMap({
     if (activeLayer === 'all' || activeLayer === 'staff') {
       // Draw fetchmen
       ctx.fillStyle = '#f59e0b'; // Amber
-      const totalFetchmen = 
-        fetchmanAllocation.entranceFetchmen + 
-        fetchmanAllocation.internalFetchmen + 
-        fetchmanAllocation.vendorFetchmen;
+      const totalFetchmen = fetchmanAllocation.totalFetchmen;
       
       // Position fetchmen around the venue
       const fetchmenPerSide = Math.ceil(totalFetchmen / 4);
@@ -221,7 +218,7 @@ export default function EventVenueMap({
     ctx.fillStyle = '#333';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`${vendorCount} Vendors | ${totalFetchmen} Fetchmen | ${fetchmanAllocation.securityStaff} Security`, 30, canvas.height - 10);
+    ctx.fillText(`${vendorCount} Vendors | ${fetchmanAllocation.totalFetchmen} Fetchmen | ${fetchmanAllocation.securityStaff} Security`, 30, canvas.height - 10);
 
   }, [venueName, vendorCount, fetchmanAllocation, activeLayer]);
 

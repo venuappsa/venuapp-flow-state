@@ -8,9 +8,10 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import DashboardTab from "@/components/host/DashboardTab";
+import UnifiedDashboard from "@/components/host/UnifiedDashboard";
 import VenuesTab from "@/components/host/VenuesTab";
 import EventsTab from "@/components/host/EventsTab";
+import MerchantManagement from "@/components/host/MerchantManagement";
 import VendorsTab from "@/components/host/VendorsTab";
 import FinanceTab from "@/components/host/FinanceTab";
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
@@ -52,21 +53,23 @@ export default function HostPanel() {
             <TabsList className="bg-gray-100">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="venues">Venues</TabsTrigger>
-              <TabsTrigger value="vendors">Vendors</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
+              <TabsTrigger value="merchants">Merchants</TabsTrigger>
               <TabsTrigger value="finance">Finance</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard" className="mt-6">
-              <DashboardTab />
+              <UnifiedDashboard />
             </TabsContent>
             
             <TabsContent value="venues" className="mt-6">
               <VenuesTab />
             </TabsContent>
             
-            <TabsContent value="vendors" className="mt-6">
-              <VendorsTab />
+            <TabsContent value="merchants" className="mt-6">
+              <MerchantManagement />
             </TabsContent>
             
             <TabsContent value="events" className="mt-6">
@@ -75,6 +78,20 @@ export default function HostPanel() {
             
             <TabsContent value="finance" className="mt-6">
               <FinanceTab />
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="mt-6">
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold">Analytics</h2>
+                <p>Advanced analytics will be available based on your subscription tier.</p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="settings" className="mt-6">
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold">Settings</h2>
+                <p>Configure your host settings, rules, and notification preferences.</p>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

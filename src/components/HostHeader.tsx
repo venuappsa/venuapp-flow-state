@@ -1,4 +1,5 @@
-import { Bell, Menu, CreditCard } from "lucide-react";
+
+import { Bell, Menu, CreditCard, MessageSquare, Book, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SecurePanelButton from "@/components/SecurePanelButton";
 import { useUser } from "@/hooks/useUser";
@@ -37,20 +38,29 @@ export default function HostHeader() {
     { label: "Dashboard", href: "/host" },
     { label: "Venues", href: "/host/venues" },
     { label: "Events", href: "/host/events" },
-    { label: "Vendors", href: "/host/vendors" },
-    { label: "Guests", href: "/host/guests" },
+    { label: "Merchants", href: "/host/merchants" },
     { label: "Finance", href: "/host/finance" },
+    { label: "Analytics", href: "/host/analytics" },
+    { label: "Settings", href: "/host/settings" },
+    { label: "Knowledge Base", href: "/host/knowledge" },
     { label: "Subscription", href: "/host/subscription" },
   ];
 
   const [notifications, setNotifications] = useState([
-    { id: 1, title: "New vendor application", content: "Food Truck Masters wants to join your venue", time: "2 hours ago", read: false },
+    { id: 1, title: "New merchant application", content: "Food Truck Masters wants to join your venue", time: "2 hours ago", read: false },
     { id: 2, title: "Subscription renewed", content: "Your premium subscription was renewed successfully", time: "1 day ago", read: true },
     { id: 3, title: "New event registration", content: "10 new tickets sold for Summer Festival", time: "3 hours ago", read: false },
     { id: 4, title: "Fetchman assignment", content: "5 fetchmen have been assigned to your event", time: "5 hours ago", read: false },
   ]);
 
+  const [messages, setMessages] = useState([
+    { id: 1, sender: "John Smith (Vendor)", content: "When should I arrive to set up my stall?", time: "30 min ago", read: false },
+    { id: 2, sender: "Support Team", content: "Your ticket #4532 has been resolved", time: "1 day ago", read: true },
+    { id: 3, sender: "Sarah (Guest)", content: "Is there vegetarian food available?", time: "2 hours ago", read: false },
+  ]);
+
   const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadMessages = messages.filter(m => !m.read).length;
 
   const markAllAsRead = () => {
     setNotifications(notifications.map(n => ({ ...n, read: true })));
@@ -164,7 +174,7 @@ export default function HostHeader() {
         
         {!isMobile && (
           <nav className="hidden md:flex items-center space-x-6">
-            {menuItems.map((item) => (
+            {menuItems.slice(0, 7).map((item) => (
               <Link 
                 key={item.label} 
                 to={item.href}
@@ -181,6 +191,49 @@ export default function HostHeader() {
         )}
         
         <div className="flex items-center space-x-4">
+          {/* Messages Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <MessageSquare className="h-5 w-5" />
+                {unreadMessages > 0 && (
+                  <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-blue-500 rounded-full" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[300px] md:w-80 bg-white">
+              <DropdownMenuLabel className="flex items-center justify-between">
+                <span>Messages</span>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => {}}>
+                  Mark all as read
+                </Button>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {messages.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No messages
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <DropdownMenuItem key={message.id} className="p-0 focus:bg-transparent">
+                    <div className={`w-full p-3 ${!message.read ? 'bg-blue-50' : ''}`}>
+                      <div className="flex items-start justify-between">
+                        <div className="font-medium text-sm">{message.sender}</div>
+                        <div className="text-xs text-gray-500">{message.time}</div>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">{message.content}</div>
+                    </div>
+                  </DropdownMenuItem>
+                ))
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-center text-sm text-blue-600 cursor-pointer">
+                <Link to="/host/messages" className="w-full">View all messages</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Notifications Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -219,10 +272,20 @@ export default function HostHeader() {
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-center text-sm text-blue-600 cursor-pointer">
-                View all notifications
+                <Link to="/host/notifications" className="w-full">View all notifications</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          
+          {/* Knowledge Base */}
+          {!isMobile && (
+            <Button variant="ghost" size="icon" className="relative" asChild>
+              <Link to="/host/knowledge">
+                <Book className="h-5 w-5" />
+              </Link>
+            </Button>
+          )}
+          
           <SecurePanelButton showWelcome />
         </div>
       </div>

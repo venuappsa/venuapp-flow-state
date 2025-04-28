@@ -23,6 +23,12 @@ import VendorsPage from "./pages/VendorsPage";
 import FinancePage from "./pages/FinancePage";
 import VenuesPage from "./pages/VenuesPage";
 import GuestPage from "./pages/GuestPage";
+import MerchantsPage from "./pages/MerchantsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import SettingsPage from "./pages/SettingsPage";
+import KnowledgeBasePage from "./pages/KnowledgeBasePage";
+import MessagesPage from "./pages/MessagesPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 const queryClient = new QueryClient();
 
@@ -43,11 +49,18 @@ const App = () => (
           <Route path="/host/venues/new" element={<VenueCreate />} />
           <Route path="/host/rules" element={<VendorRules />} />
           <Route path="/host/events" element={<EventsPage />} />
+          <Route path="/host/events/new" element={<EventManagementPage />} />
           <Route path="/host/events/:eventId" element={<EventManagementPage />} />
+          <Route path="/host/merchants" element={<MerchantsPage />} />
           <Route path="/host/vendors" element={<VendorsPage />} />
           <Route path="/host/finance" element={<FinancePage />} />
           <Route path="/host/guests" element={<GuestPage />} />
           <Route path="/host/subscription" element={<SubscriptionManagementPage />} />
+          <Route path="/host/analytics" element={<AnalyticsPage />} />
+          <Route path="/host/settings" element={<SettingsPage />} />
+          <Route path="/host/knowledge" element={<KnowledgeBasePage />} />
+          <Route path="/host/messages" element={<MessagesPage />} />
+          <Route path="/host/notifications" element={<NotificationsPage />} />
           
           <Route path="/customer" element={<CustomerPage />} />
           <Route path="/merchant" element={<MerchantPage />} />

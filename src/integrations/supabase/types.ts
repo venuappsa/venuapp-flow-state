@@ -54,6 +54,38 @@ export type Database = {
         }
         Relationships: []
       }
+      host_wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          host_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          host_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          host_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "host_wallets_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "host_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -81,6 +113,47 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_transactions: {
+        Row: {
+          amount: number
+          host_id: string
+          id: string
+          plan_name: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          transaction_date: string
+        }
+        Insert: {
+          amount: number
+          host_id: string
+          id?: string
+          plan_name: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          transaction_date?: string
+        }
+        Update: {
+          amount?: number
+          host_id?: string
+          id?: string
+          plan_name?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          transaction_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_transactions_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "host_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -96,6 +169,27 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vendor_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -143,6 +237,98 @@ export type Database = {
           verification_status?: Database["public"]["Enums"]["verification_status"]
         }
         Relationships: []
+      }
+      vendor_types: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          vendor_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          vendor_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_types_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_types_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_vendor_rules: {
+        Row: {
+          allowed_categories: string[]
+          capacity_limit: number | null
+          created_at: string
+          host_id: string
+          id: string
+          max_price: number | null
+          min_price: number | null
+          operating_hours_end: string | null
+          operating_hours_start: string | null
+          other_requirements: string | null
+          required_licenses: string[] | null
+          updated_at: string
+          venue_name: string
+        }
+        Insert: {
+          allowed_categories?: string[]
+          capacity_limit?: number | null
+          created_at?: string
+          host_id: string
+          id?: string
+          max_price?: number | null
+          min_price?: number | null
+          operating_hours_end?: string | null
+          operating_hours_start?: string | null
+          other_requirements?: string | null
+          required_licenses?: string[] | null
+          updated_at?: string
+          venue_name: string
+        }
+        Update: {
+          allowed_categories?: string[]
+          capacity_limit?: number | null
+          created_at?: string
+          host_id?: string
+          id?: string
+          max_price?: number | null
+          min_price?: number | null
+          operating_hours_end?: string | null
+          operating_hours_start?: string | null
+          other_requirements?: string | null
+          required_licenses?: string[] | null
+          updated_at?: string
+          venue_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_vendor_rules_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "host_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

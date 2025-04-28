@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,8 @@ import SubscribePage from "./pages/SubscribePage";
 import AuthPage from "./pages/AuthPage";
 import AdminPanel from "./pages/AdminPanel";
 import HostPanel from "./pages/HostPanel";
+import VenueCreate from "./pages/VenueCreate";
+import VendorRules from "./pages/VendorRules";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +29,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/host" element={<HostPage />} />
+          <Route path="/host" element={<HostPanel />} />
+          <Route path="/host/venues/new" element={<VenueCreate />} />
+          <Route path="/host/rules" element={<VendorRules />} />
           <Route path="/customer" element={<CustomerPage />} />
           <Route path="/merchant" element={<MerchantPage />} />
           <Route path="/fetchman" element={<FetchmanPage />} />

@@ -13,6 +13,9 @@ export const VenuePricingPlans = [
       "Admin Team Users": "1",
       "Product Load": "10",
       "Sales Dashboard & Analytics": "Limited",
+      "Guest Analytics": "Basic",
+      "Vendor Analytics": "N/A",
+      "Forecast & Predictive Analytics": "N/A",
       "Customer Support Priority": "Limited",
       "Onboarding & Training": "N/A"
     },
@@ -31,6 +34,9 @@ export const VenuePricingPlans = [
       "Admin Team Users": "6",
       "Product Load": "30",
       "Sales Dashboard & Analytics": "Basic",
+      "Guest Analytics": "Standard",
+      "Vendor Analytics": "N/A",
+      "Forecast & Predictive Analytics": "N/A",
       "Customer Support Priority": "Standard",
       "Onboarding & Training": "N/A"
     },
@@ -49,6 +55,9 @@ export const VenuePricingPlans = [
       "Admin Team Users": "14",
       "Product Load": "75",
       "Sales Dashboard & Analytics": "Standard",
+      "Guest Analytics": "Advanced",
+      "Vendor Analytics": "Standard",
+      "Forecast & Predictive Analytics": "N/A",
       "Customer Support Priority": "High",
       "Onboarding & Training": "Virtual"
     },
@@ -67,6 +76,9 @@ export const VenuePricingPlans = [
       "Admin Team Users": "20",
       "Product Load": "200",
       "Sales Dashboard & Analytics": "Advanced",
+      "Guest Analytics": "Premium",
+      "Vendor Analytics": "Advanced",
+      "Forecast & Predictive Analytics": "Standard",
       "Customer Support Priority": "Priority",
       "Onboarding & Training": "Virtual"
     },
@@ -85,10 +97,12 @@ export const VenuePricingPlans = [
       "Admin Team Users": "Unlimited",
       "Product Load": "Unlimited",
       "Sales Dashboard & Analytics": "Full Suite",
+      "Guest Analytics": "Full Suite",
+      "Vendor Analytics": "Full Suite", 
+      "Forecast & Predictive Analytics": "Full Suite",
       "Customer Support Priority": "24/7 Dedicated Manager",
       "Onboarding & Training": "Venue-based & Ongoing Support"
     },
     highlighted: false
   }
 ];
-

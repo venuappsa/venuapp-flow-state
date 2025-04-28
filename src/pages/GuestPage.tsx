@@ -1,15 +1,26 @@
-
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import { ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import { generateMockAnalyticsData } from "@/data/analyticsData";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
+import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
+import { PlanType, getTierLevel } from "@/utils/pricingUtils";
+import AnalyticsFeaturesList from "@/components/analytics/AnalyticsFeaturesList";
 
 const GuestAnalyticsPage = () => {
   const [selectedTab, setSelectedTab] = useState<string>("demographics");
-  const data = generateMockAnalyticsData("Pro"); // Use Pro tier data for richer visualization
+  const [planType, setPlanType] = useState<PlanType>("venue");
+  const navigate = useNavigate();
+  const { subscribed, subscription_tier } = useSubscription();
+  const currentTier = subscription_tier || "Free Plan";
+  const data = generateMockAnalyticsData(currentTier);
+  const tierLevel = getTierLevel(currentTier);
 
   const ageData = [
     { name: "18-24", value: 28, color: "#22c55e" },
@@ -56,13 +67,37 @@ const GuestAnalyticsPage = () => {
     { name: "Large Groups (6+)", color: "#8b5cf6" }
   ];
 
+  const navigateBack = () => {
+    navigate('/host/dashboard');
+  };
+
   return (
     <HostPanelLayout>
       <div className="max-w-7xl mx-auto py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Guest Analytics</h1>
-          <p className="text-gray-500">Comprehensive insights on guest profiles and behavior</p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <Button variant="ghost" onClick={navigateBack} className="mb-2">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold">Guest Analytics</h1>
+            <p className="text-gray-500">Comprehensive insights on guest profiles and behavior</p>
+          </div>
+          
+          {planType === "venue" ? (
+            <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+              Venue Plan: {currentTier}
+            </div>
+          ) : (
+            <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+              Event Plan: {currentTier}
+            </div>
+          )}
         </div>
+
+        <PlanTypeSelector
+          selectedPlanType={planType}
+          onChange={setPlanType}
+        />
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
           <TabsList className="bg-white border p-1 rounded-lg">
@@ -426,6 +461,10 @@ const GuestAnalyticsPage = () => {
             </div>
           </TabsContent>
         </Tabs>
+        
+        <div className="mt-8">
+          <AnalyticsFeaturesList tier={currentTier} planType={planType} />
+        </div>
       </div>
     </HostPanelLayout>
   );

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Info, TrendingUp, Lock, ArrowRight, BarChart as BarChartIcon } from "lucide-react";
+import { Info, TrendingUp, Lock, ArrowRight, BarChart as BarChartIcon, Users } from "lucide-react";
 import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { 
   ResponsiveContainer, 
@@ -26,27 +26,22 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { generateMockAnalyticsData } from "@/data/analyticsData";
 import DetailedAnalytics from "./DetailedAnalytics";
+import PlanTypeSelector from "./PlanTypeSelector";
+import AnalyticsFeaturesList from "./AnalyticsFeaturesList";
+import { PlanType, getTierLevel, isPremiumFeature, getPricingPlans } from "@/utils/pricingUtils";
 
 interface AnalyticsSnapshotProps {
   subscriptionTier?: string;
   subscriptionStatus?: string;
 }
 
-export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscriptionStatus = "active" }: AnalyticsSnapshotProps) {
+export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subscriptionStatus = "active" }: AnalyticsSnapshotProps) {
   const [selectedTab, setSelectedTab] = useState<string>("revenue");
+  const [planType, setPlanType] = useState<PlanType>("venue");
   const navigate = useNavigate();
   const data = generateMockAnalyticsData(subscriptionTier);
   
-  const tierLevels = {
-    "Free": 0,
-    "Starter": 1,
-    "Growth": 2,
-    "Pro": 3,
-    "Enterprise": 4,
-    "Custom": 4
-  };
-  
-  const currentTierLevel = tierLevels[subscriptionTier as keyof typeof tierLevels] || 0;
+  const currentTierLevel = getTierLevel(subscriptionTier);
   
   const handleLockedFeatureClick = () => {
     toast({
@@ -64,18 +59,50 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
     navigate('/host/guests');
   };
 
+  const getDataWindowLabel = () => {
+    if (planType === "venue") {
+      switch (currentTierLevel) {
+        case 0: return "Last 7 days";
+        case 1: return "Last 30 days";
+        case 2: return "Last 90 days";
+        case 3:
+        case 4: return "Last 12 months";
+        default: return "Last 7 days";
+      }
+    } else {
+      return currentTierLevel === 0 ? "Current event only" : "All events";
+    }
+  };
+
+  const getPlanDescription = () => {
+    if (planType === "venue") {
+      switch (subscriptionTier) {
+        case "Free Plan": return "Basic metrics available on free plan";
+        case "Starter": return "30-day data window with basic metrics";
+        case "Growth": return "90-day data window with standard analytics";
+        case "Pro": return "1-year data window with advanced metrics";
+        case "Enterprise": return "Full analytics suite with unlimited history";
+        default: return "Basic analytics package";
+      }
+    } else {
+      switch (subscriptionTier) {
+        case "Free Plan": return "Basic metrics for single events";
+        case "Starter": return "Standard metrics for events";
+        case "Growth": return "Enhanced analytics for events";
+        case "Pro": return "Advanced analytics for major events";
+        case "Enterprise": return "Full analytics suite for large-scale events";
+        default: return "Basic event analytics";
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold">Analytics {currentTierLevel < 1 && "(Limited)"}</h2>
           <p className="text-sm text-gray-500">
-            {subscriptionTier === "Free" && "Basic metrics available on free plan"}
-            {subscriptionTier === "Starter" && "30-day data window with basic metrics"}
-            {subscriptionTier === "Growth" && "90-day data window with standard analytics"}
-            {subscriptionTier === "Pro" && "1-year data window with advanced metrics"}
-            {subscriptionTier === "Enterprise" && "Full analytics suite with unlimited history"}
-            {subscriptionTier === "Custom" && "Customized analytics package"}
+            {getPlanDescription()}
           </p>
         </div>
         {currentTierLevel < 4 && (
@@ -88,6 +115,11 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
         )}
       </div>
       
+      <PlanTypeSelector
+        selectedPlanType={planType}
+        onChange={setPlanType}
+      />
+      
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="w-full bg-white border border-gray-100 p-1 rounded-lg">
           <TabsTrigger value="revenue" className="flex-1">Revenue</TabsTrigger>
@@ -98,6 +130,15 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
               </div>
             ) : (
               "Guests"
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="guestDetails" className="flex-1" disabled={currentTierLevel < 2}>
+            {currentTierLevel < 2 ? (
+              <div className="flex items-center gap-1" onClick={handleLockedFeatureClick}>
+                Guest Details <Lock className="h-3 w-3" />
+              </div>
+            ) : (
+              "Guest Details"
             )}
           </TabsTrigger>
           <TabsTrigger value="vendors" className="flex-1" disabled={currentTierLevel < 2}>
@@ -472,6 +513,233 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
           )}
         </TabsContent>
         
+        <TabsContent value="guestDetails" className="space-y-4">
+          {currentTierLevel >= 2 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Guest Demographics</CardTitle>
+                    <CardDescription>Breakdown of attendees by age group and gender</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px]">
+                      <ChartContainer config={{}}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: "18-24", value: 28, color: "#22c55e" },
+                                { name: "25-34", value: 35, color: "#16a34a" },
+                                { name: "35-44", value: 22, color: "#15803d" },
+                                { name: "45-54", value: 10, color: "#166534" },
+                                { name: "55+", value: 5, color: "#14532d" }
+                              ]}
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={100}
+                              fill="#8884d8"
+                              dataKey="value"
+                              label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            >
+                              {data.ageDistributionData?.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => `${value}%`} />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Regional Distribution</CardTitle>
+                    <CardDescription>Where your guests are coming from</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px]">
+                      <ChartContainer config={{}}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            layout="vertical"
+                            data={[
+                              { region: "Johannesburg", value: 35 },
+                              { region: "Pretoria", value: 22 },
+                              { region: "Cape Town", value: 15 },
+                              { region: "Durban", value: 12 },
+                              { region: "Port Elizabeth", value: 8 },
+                              { region: "Other", value: 8 }
+                            ]}
+                            margin={{ top: 5, right: 20, left: 100, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                            <XAxis type="number" />
+                            <YAxis dataKey="region" type="category" width={80} />
+                            <Tooltip formatter={(value) => `${value}%`} />
+                            <Bar dataKey="value" fill="#ff6b00" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Guest Behavior</CardTitle>
+                    <CardDescription>Attendance patterns by day of week</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px]">
+                      <ChartContainer config={{}}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              { day: "Monday", attendance: 450 },
+                              { day: "Tuesday", attendance: 380 },
+                              { day: "Wednesday", attendance: 510 },
+                              { day: "Thursday", attendance: 720 },
+                              { day: "Friday", attendance: 950 },
+                              { day: "Saturday", attendance: 1200 },
+                              { day: "Sunday", attendance: 880 }
+                            ]}
+                            margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="day" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="attendance" fill="#22c55e" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {currentTierLevel >= 3 ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Guest Retention</CardTitle>
+                      <CardDescription>First-time vs. returning guests</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[300px]">
+                        <ChartContainer config={{}}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={[
+                                  { name: "First-time", value: 65, color: "#3b82f6" },
+                                  { name: "Returning", value: 35, color: "#8b5cf6" }
+                                ]}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={100}
+                                fill="#8884d8"
+                                dataKey="value"
+                                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {[
+                                  { name: "First-time", value: 65, color: "#3b82f6" },
+                                  { name: "Returning", value: 35, color: "#8b5cf6" }
+                                ].map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip formatter={(value) => `${value}%`} />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="border-dashed border-gray-300 bg-gray-50">
+                    <CardContent className="p-6 text-center">
+                      <Lock className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                      <h3 className="font-medium mb-1">Guest Retention Analytics</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Upgrade to our Pro plan to access insights on first-time vs returning guests,
+                        retention rate trends, and loyalty metrics.
+                      </p>
+                      <Link to="/subscribe">
+                        <Button>Upgrade to Pro</Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Guest Satisfaction Ratings</CardTitle>
+                  <CardDescription>Average ratings across categories (out of 5)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ChartContainer config={{}}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={[
+                            { category: "Overall Experience", rating: 4.2 },
+                            { category: "Event Quality", rating: 4.5 },
+                            { category: "Food & Beverage", rating: 3.9 },
+                            { category: "Staff Service", rating: 4.3 },
+                            { category: "Value for Money", rating: 3.8 },
+                            { category: "Venue Facilities", rating: 4.1 }
+                          ]}
+                          margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="category" />
+                          <YAxis domain={[0, 5]} />
+                          <Tooltip formatter={(value) => `${value}/5`} />
+                          <Bar dataKey="rating" fill="#ff6b00">
+                            {[
+                              { category: "Overall Experience", rating: 4.2 },
+                              { category: "Event Quality", rating: 4.5 },
+                              { category: "Food & Beverage", rating: 3.9 },
+                              { category: "Staff Service", rating: 4.3 },
+                              { category: "Value for Money", rating: 3.8 },
+                              { category: "Venue Facilities", rating: 4.1 }
+                            ].map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={entry.rating > 4.2 ? "#22c55e" : entry.rating > 3.8 ? "#f59e0b" : "#ef4444"} 
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card className="border-dashed border-gray-300 bg-gray-50">
+              <CardContent className="p-6 text-center">
+                <Lock className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                <h3 className="font-medium mb-1">Detailed Guest Analytics Unavailable</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Detailed guest analytics are available on Growth plan and above.
+                </p>
+                <Link to="/subscribe">
+                  <Button>Upgrade Plan</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
         <TabsContent value="vendors" className="space-y-4">
           {currentTierLevel >= 2 ? (
             <>
@@ -705,6 +973,10 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
           )}
         </TabsContent>
       </Tabs>
+      
+      <div className="mt-6">
+        <AnalyticsFeaturesList tier={subscriptionTier} planType={planType} />
+      </div>
 
       <div className="mt-8 flex justify-end">
         <Button 
@@ -719,7 +991,7 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
 
       {currentTierLevel >= 2 && (
         <div className="mt-8">
-          <DetailedAnalytics subscriptionTier={subscriptionTier} />
+          <DetailedAnalytics subscriptionTier={subscriptionTier} planType={planType} />
         </div>
       )}
     </div>

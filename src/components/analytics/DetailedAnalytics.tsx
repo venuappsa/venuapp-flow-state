@@ -1,30 +1,45 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import { generateDetailedAnalyticsData } from "@/data/analyticsData";
+import { Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { PlanType, getTierLevel } from "@/utils/pricingUtils";
 
 interface DetailedAnalyticsProps {
   subscriptionTier?: string;
+  planType?: PlanType;
 }
 
-export default function DetailedAnalytics({ subscriptionTier = "Free" }: DetailedAnalyticsProps) {
+export default function DetailedAnalytics({ subscriptionTier = "Free Plan", planType = "venue" }: DetailedAnalyticsProps) {
   const [selectedTab, setSelectedTab] = useState<string>("salesByTime");
   const data = generateDetailedAnalyticsData(subscriptionTier);
+  const currentTierLevel = getTierLevel(subscriptionTier);
   
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Detailed Analytics</h3>
+        {planType === "venue" ? (
+          <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+            Venue Plan: {subscriptionTier}
+          </div>
+        ) : (
+          <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+            Event Plan: {subscriptionTier}
+          </div>
+        )}
       </div>
       
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full">
+        <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full">
           <TabsTrigger value="salesByTime">Sales By Time</TabsTrigger>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
+          <TabsTrigger value="guests">Guests</TabsTrigger>
           <TabsTrigger value="feedback">Customer Feedback</TabsTrigger>
         </TabsList>
         
@@ -482,6 +497,317 @@ export default function DetailedAnalytics({ subscriptionTier = "Free" }: Detaile
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        {/* Guests Tab */}
+        <TabsContent value="guests" className="space-y-4 mt-4">
+          {currentTierLevel >= 2 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Guest Demographics</CardTitle>
+                    <CardDescription>Distribution by age and gender</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px]">
+                      <ChartContainer
+                        config={{
+                          male: {
+                            label: "Male",
+                            theme: {
+                              light: "#3b82f6",
+                              dark: "#3b82f6"
+                            },
+                          },
+                          female: {
+                            label: "Female",
+                            theme: {
+                              light: "#ec4899",
+                              dark: "#ec4899"
+                            },
+                          },
+                          other: {
+                            label: "Other",
+                            theme: {
+                              light: "#8b5cf6",
+                              dark: "#8b5cf6"
+                            },
+                          }
+                        }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              { age: "18-24", male: 15, female: 12, other: 1 },
+                              { age: "25-34", male: 20, female: 14, other: 1 },
+                              { age: "35-44", male: 12, female: 9, other: 1 },
+                              { age: "45-54", male: 5, female: 5, other: 0 },
+                              { age: "55+", male: 2, female: 3, other: 0 }
+                            ]}
+                            margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="age" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="male" fill="#3b82f6" />
+                            <Bar dataKey="female" fill="#ec4899" />
+                            <Bar dataKey="other" fill="#8b5cf6" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Guest Attendance</CardTitle>
+                    <CardDescription>Monthly attendance trends</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px]">
+                      <ChartContainer
+                        config={{
+                          attendance: {
+                            label: "Attendance",
+                            theme: {
+                              light: "#22c55e",
+                              dark: "#22c55e"
+                            },
+                          },
+                          capacity: {
+                            label: "Capacity",
+                            theme: {
+                              light: "#a0a0a0",
+                              dark: "#a0a0a0"
+                            },
+                          }
+                        }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={[
+                              { month: "Jan", attendance: 1200, capacity: 1500 },
+                              { month: "Feb", attendance: 1500, capacity: 1500 },
+                              { month: "Mar", attendance: 1800, capacity: 2000 },
+                              { month: "Apr", attendance: 1600, capacity: 2000 },
+                              { month: "May", attendance: 2100, capacity: 2500 },
+                              { month: "Jun", attendance: 2400, capacity: 2500 }
+                            ]}
+                            margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="attendance" stroke="#22c55e" strokeWidth={2} />
+                            <Line type="monotone" dataKey="capacity" stroke="#a0a0a0" strokeDasharray="5 5" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Guest Regional Distribution</CardTitle>
+                    <CardDescription>Geographic origin of guests</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px]">
+                      <ChartContainer
+                        config={{
+                          value: {
+                            label: "Percentage",
+                            theme: {
+                              light: "#ff6b00",
+                              dark: "#ff6b00"
+                            },
+                          }
+                        }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              { region: "Johannesburg", value: 35 },
+                              { region: "Pretoria", value: 22 },
+                              { region: "Cape Town", value: 15 },
+                              { region: "Durban", value: 12 },
+                              { region: "Port Elizabeth", value: 8 },
+                              { region: "Other", value: 8 }
+                            ]}
+                            layout="vertical"
+                            margin={{ top: 5, right: 20, left: 100, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                            <XAxis type="number" />
+                            <YAxis dataKey="region" type="category" width={80} />
+                            <Tooltip formatter={(value) => `${value}%`} />
+                            <Bar dataKey="value" fill="#ff6b00" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {currentTierLevel >= 3 ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Guest Retention</CardTitle>
+                      <CardDescription>First-time vs returning guests</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[300px]">
+                        <ChartContainer
+                          config={{
+                            firstTime: {
+                              label: "First-time",
+                              theme: {
+                                light: "#3b82f6",
+                                dark: "#3b82f6"
+                              },
+                            },
+                            returning: {
+                              label: "Returning",
+                              theme: {
+                                light: "#8b5cf6",
+                                dark: "#8b5cf6"
+                              },
+                            }
+                          }}
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                              data={[
+                                { month: "Jan", firstTime: 800, returning: 400 },
+                                { month: "Feb", firstTime: 950, returning: 550 },
+                                { month: "Mar", firstTime: 1100, returning: 700 },
+                                { month: "Apr", firstTime: 900, returning: 700 },
+                                { month: "May", firstTime: 1200, returning: 900 },
+                                { month: "Jun", firstTime: 1300, returning: 1100 }
+                              ]}
+                              margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                            >
+                              <defs>
+                                <linearGradient id="colorFirstTime" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                </linearGradient>
+                                <linearGradient id="colorReturning" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2}/>
+                                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                              <XAxis dataKey="month" />
+                              <YAxis />
+                              <Tooltip />
+                              <Legend />
+                              <Area type="monotone" dataKey="firstTime" stroke="#3b82f6" fillOpacity={1} fill="url(#colorFirstTime)" />
+                              <Area type="monotone" dataKey="returning" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorReturning)" />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="border-dashed border-gray-300 bg-gray-50">
+                    <CardContent className="p-6 text-center">
+                      <Lock className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                      <h3 className="font-medium mb-1">Guest Retention Analytics</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Upgrade to Pro plan to access detailed retention analytics.
+                      </p>
+                      <Link to="/subscribe">
+                        <Button>Upgrade Plan</Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Guest Attendance Patterns</CardTitle>
+                  <CardDescription>Peak arrival times and duration of stay</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ChartContainer
+                      config={{
+                        arrivals: {
+                          label: "Arrivals",
+                          theme: {
+                            light: "#ff6b00",
+                            dark: "#ff6b00"
+                          },
+                        },
+                        departures: {
+                          label: "Departures",
+                          theme: {
+                            light: "#8b5cf6",
+                            dark: "#8b5cf6"
+                          },
+                        }
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={[
+                            { time: "10:00", arrivals: 50, departures: 0 },
+                            { time: "11:00", arrivals: 120, departures: 10 },
+                            { time: "12:00", arrivals: 200, departures: 40 },
+                            { time: "13:00", arrivals: 180, departures: 70 },
+                            { time: "14:00", arrivals: 140, departures: 90 },
+                            { time: "15:00", arrivals: 90, departures: 120 },
+                            { time: "16:00", arrivals: 70, departures: 150 },
+                            { time: "17:00", arrivals: 110, departures: 130 },
+                            { time: "18:00", arrivals: 180, departures: 100 },
+                            { time: "19:00", arrivals: 220, departures: 90 },
+                            { time: "20:00", arrivals: 170, departures: 130 },
+                            { time: "21:00", arrivals: 90, departures: 190 },
+                            { time: "22:00", arrivals: 40, departures: 210 },
+                            { time: "23:00", arrivals: 10, departures: 300 },
+                          ]}
+                          margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="time" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="arrivals" stroke="#ff6b00" strokeWidth={2} />
+                          <Line type="monotone" dataKey="departures" stroke="#8b5cf6" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card className="border-dashed border-gray-300 bg-gray-50">
+              <CardContent className="p-6 text-center">
+                <Lock className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                <h3 className="font-medium mb-1">Detailed Guest Analytics Unavailable</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Upgrade to Growth plan or higher to access detailed guest analytics.
+                </p>
+                <Link to="/subscribe">
+                  <Button>Upgrade Plan</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
         
         {/* Customer Feedback Tab */}

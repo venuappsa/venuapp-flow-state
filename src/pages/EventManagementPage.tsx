@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,20 +32,34 @@ import FetchmanEstimation from "@/components/FetchmanEstimation";
 import { 
   calculateFetchmanEstimate,
   calculateFetchmanCost,
-  generateFetchmanStaffingPlan
+  generateFetchmanStaffingPlan,
+  calculateFetchmanAllocation,
+  FetchmanAllocationResult
 } from "@/utils/fetchmanCalculator";
+import EventQRCode from "@/components/EventQRCode";
+import FetchmanAllocationChart from "@/components/FetchmanAllocationChart";
+import EventVenueMap from "@/components/EventVenueMap";
 
 export default function EventManagementPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [fetchmanAllocation, setFetchmanAllocation] = useState<FetchmanAllocationResult | null>(null);
+  const [analyticsExpanded, setAnalyticsExpanded] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
       const foundEvent = dummyEvents.find((e) => e.id === eventId);
       if (foundEvent) {
         setEvent(foundEvent);
+        // Pre-calculate fetchman allocation
+        const allocation = calculateFetchmanAllocation(
+          foundEvent.capacity, 
+          foundEvent.floorArea || 1000, 
+          foundEvent.multiLevel || false
+        );
+        setFetchmanAllocation(allocation);
       }
       setLoading(false);
     }, 300); // Simulate API call
@@ -70,6 +85,10 @@ export default function EventManagementPage() {
         });
       }
     );
+  };
+
+  const handleFetchmanUpdate = (data: {fetchmenCount: number, cost: number, allocation: FetchmanAllocationResult}) => {
+    setFetchmanAllocation(data.allocation);
   };
 
   if (loading) {
@@ -108,7 +127,7 @@ export default function EventManagementPage() {
               </Link>
               <span className="text-gray-500">/</span>
               <Link
-                to="/host"
+                to="/host/events"
                 className="text-sm text-gray-500 hover:text-venu-orange"
               >
                 Events
@@ -229,8 +248,8 @@ export default function EventManagementPage() {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-1">
                 <CardHeader>
                   <CardTitle>Event Details</CardTitle>
                   <CardDescription>Basic information about your event</CardDescription>
@@ -272,15 +291,22 @@ export default function EventManagementPage() {
                       <h4 className="text-sm font-medium text-gray-500">Organizer</h4>
                       <p>{event.organizer || "Venuapp Host"}</p>
                     </div>
+                    
+                    <EventQRCode eventId={event.id} eventName={event.name} />
                   </div>
                 </CardContent>
               </Card>
               
-              <FetchmanEstimation 
-                capacity={event.capacity} 
-                vendors={event.vendors || 12} 
-                hours={event.durationHours || 5}
-              />
+              <div className="lg:col-span-2">
+                <FetchmanEstimation 
+                  capacity={event.capacity} 
+                  vendors={event.vendors || 12} 
+                  hours={event.durationHours || 5}
+                  venueName={event.venueName}
+                  floorArea={event.floorArea || 1000}
+                  onUpdate={handleFetchmanUpdate}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -319,11 +345,18 @@ export default function EventManagementPage() {
               </Card>
               
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <BarChart className="h-5 w-5 text-blue-500" />
                     Quick Analytics
                   </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
+                  >
+                    {analyticsExpanded ? "Show Less" : "Show More"}
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -357,6 +390,57 @@ export default function EventManagementPage() {
                         <div className="h-2 bg-amber-500 rounded-full w-2/5"></div>
                       </div>
                     </div>
+                    
+                    {analyticsExpanded && (
+                      <>
+                        <div>
+                          <div className="flex justify-between mb-1 text-sm">
+                            <span>Fetchman Allocation</span>
+                            <span className="font-medium">70%</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full">
+                            <div className="h-2 bg-purple-500 rounded-full w-[70%]"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1 text-sm">
+                            <span>Marketing Reach</span>
+                            <span className="font-medium">65%</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full">
+                            <div className="h-2 bg-pink-500 rounded-full w-[65%]"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1 text-sm">
+                            <span>Staff Assignment</span>
+                            <span className="font-medium">50%</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full">
+                            <div className="h-2 bg-teal-500 rounded-full w-2/4"></div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 mt-6">
+                          <div className="bg-blue-50 p-3 rounded-md">
+                            <h4 className="text-xs text-blue-700 font-medium">Most Popular Tickets</h4>
+                            <p className="text-sm font-bold">VIP Access Pass</p>
+                          </div>
+                          <div className="bg-green-50 p-3 rounded-md">
+                            <h4 className="text-xs text-green-700 font-medium">Top Vendor Category</h4>
+                            <p className="text-sm font-bold">Food & Beverages</p>
+                          </div>
+                          <div className="bg-amber-50 p-3 rounded-md">
+                            <h4 className="text-xs text-amber-700 font-medium">Peak Attendance Time</h4>
+                            <p className="text-sm font-bold">19:00 - 21:00</p>
+                          </div>
+                          <div className="bg-purple-50 p-3 rounded-md">
+                            <h4 className="text-xs text-purple-700 font-medium">Projected Revenue</h4>
+                            <p className="text-sm font-bold">R {(event.revenue * 1.2).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -402,17 +486,25 @@ export default function EventManagementPage() {
                 <CardDescription>Interactive map of your event venue</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-gray-50 p-12 rounded-lg text-center">
-                  <Map className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Interactive Venue Map</h3>
-                  <p className="text-gray-500 mb-4">
-                    The interactive map module allows you to assign vendor locations,
-                    plan emergency routes, and visualize your event layout.
-                  </p>
-                  <Button onClick={() => toast({ title: "Notify Me", description: "Interactive map will be available in the next update." })}>
-                    Notify Me
-                  </Button>
-                </div>
+                {fetchmanAllocation ? (
+                  <EventVenueMap 
+                    venueName={event.venueName} 
+                    vendorCount={event.vendors || 12}
+                    fetchmanAllocation={fetchmanAllocation}
+                  />
+                ) : (
+                  <div className="bg-gray-50 p-12 rounded-lg text-center">
+                    <Map className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Interactive Venue Map</h3>
+                    <p className="text-gray-500 mb-4">
+                      The interactive map module allows you to assign vendor locations,
+                      plan emergency routes, and visualize your event layout.
+                    </p>
+                    <Button onClick={() => toast({ title: "Notify Me", description: "Interactive map will be available in the next update." })}>
+                      Notify Me
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -422,30 +514,39 @@ export default function EventManagementPage() {
               capacity={event.capacity} 
               vendors={event.vendors || 12} 
               hours={event.durationHours || 5}
+              venueName={event.venueName}
+              floorArea={event.floorArea || 1000}
+              onUpdate={handleFetchmanUpdate}
             />
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Fetchman Scheduling</CardTitle>
-                <CardDescription>Schedule and assign fetchmen for this event</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium">Recommended Fetchmen: {calculateFetchmanEstimate(event.capacity, event.vendors || 12)}</h3>
-                  <Button onClick={() => toast({ title: "Request Sent", description: `Request for ${calculateFetchmanEstimate(event.capacity, event.vendors || 12)} fetchmen has been submitted.` })}>
-                    Request Fetchmen
-                  </Button>
-                </div>
-                
-                <div className="bg-gray-50 p-8 rounded-lg text-center">
-                  <Clock className="h-10 w-10 mx-auto text-gray-400 mb-3" />
-                  <h4 className="text-base font-medium mb-2">Scheduling Tool</h4>
-                  <p className="text-gray-500 mb-3">
-                    The detailed scheduling tool will be available in the next update.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {fetchmanAllocation && (
+                <FetchmanAllocationChart allocation={fetchmanAllocation} />
+              )}
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Fetchman Scheduling</CardTitle>
+                  <CardDescription>Schedule and assign fetchmen for this event</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium">Recommended Fetchmen: {calculateFetchmanEstimate(event.capacity, event.vendors || 12)}</h3>
+                    <Button onClick={() => toast({ title: "Request Sent", description: `Request for ${calculateFetchmanEstimate(event.capacity, event.vendors || 12)} fetchmen has been submitted.` })}>
+                      Request Fetchmen
+                    </Button>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-8 rounded-lg text-center">
+                    <Clock className="h-10 w-10 mx-auto text-gray-400 mb-3" />
+                    <h4 className="text-base font-medium mb-2">Scheduling Tool</h4>
+                    <p className="text-gray-500 mb-3">
+                      The detailed scheduling tool will be available in the next update.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="tickets">

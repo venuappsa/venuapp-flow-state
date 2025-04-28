@@ -60,3 +60,132 @@ export const generateFetchmanStaffingPlan = (fetchmenCount: number, eventDuratio
     isMultiShift: false,
   };
 };
+
+/**
+ * Calculate the optimal allocation of fetchmen based on venue size and layout
+ * 
+ * @param capacity - The event capacity (number of attendees)
+ * @param floorArea - Square meters of the venue floor space
+ * @param multiLevel - Whether the venue has multiple levels
+ * @returns Object with allocation breakdown and recommendations
+ */
+export const calculateFetchmanAllocation = (capacity: number, floorArea: number, multiLevel: boolean = false): FetchmanAllocationResult => {
+  // Base calculation from normal formula
+  const baseFetchmen = calculateFetchmanEstimate(capacity, Math.ceil(capacity / 50)); // Assume 1 vendor per 50 attendees if not provided
+  
+  // Calculate density factor (higher density requires more fetchmen)
+  const densityFactor = capacity / floorArea;
+  const densityAdjustment = densityFactor > 1.5 ? 1.2 : 1.0;
+  
+  // Multi-level venues need more fetchmen for coordination
+  const levelFactor = multiLevel ? 1.25 : 1.0;
+  
+  // Calculate area-specific allocations
+  const totalFetchmen = Math.ceil(baseFetchmen * densityAdjustment * levelFactor);
+  
+  // Allocate fetchmen to different areas
+  const entranceAllocation = Math.ceil(totalFetchmen * 0.2);
+  const vendorAreaAllocation = Math.ceil(totalFetchmen * 0.3);
+  const generalAreaAllocation = Math.ceil(totalFetchmen * 0.4);
+  const emergencyReserve = Math.max(1, Math.ceil(totalFetchmen * 0.1));
+  
+  return {
+    total: totalFetchmen,
+    allocation: {
+      entranceAndExit: entranceAllocation,
+      vendorAreas: vendorAreaAllocation,
+      generalAreas: generalAreaAllocation,
+      emergencyReserve: emergencyReserve,
+    },
+    densityFactor,
+    recommendations: generateFetchmanRecommendations(totalFetchmen, densityFactor, multiLevel),
+  };
+};
+
+/**
+ * Generate specific recommendations based on fetchman calculations
+ */
+const generateFetchmanRecommendations = (totalFetchmen: number, densityFactor: number, multiLevel: boolean): string[] => {
+  const recommendations: string[] = [];
+  
+  if (totalFetchmen > 20) {
+    recommendations.push("Consider assigning a Fetchman team leader for every 10 fetchmen.");
+  }
+  
+  if (densityFactor > 1.5) {
+    recommendations.push("High attendee density detected. Consider additional crowd control measures.");
+  }
+  
+  if (multiLevel) {
+    recommendations.push("For multi-level venues, ensure fetchmen have clear communication channels between levels.");
+  }
+  
+  if (totalFetchmen > 50) {
+    recommendations.push("For large-scale events, consider setting up dedicated fetchman rest areas for shift rotation.");
+  }
+  
+  return recommendations;
+};
+
+/**
+ * Generate a QR code for fetchman assignments
+ * 
+ * @param eventId - The ID of the event
+ * @returns A URL that can be used to generate a QR code
+ */
+export const generateFetchmanQRCode = (eventId: string): string => {
+  return `https://venuapp.co.za/fetchman/assignments/${eventId}`;
+};
+
+/**
+ * Calculate overtime costs for fetchman services
+ * 
+ * @param standardHours - Regular hours worked
+ * @param overtimeHours - Overtime hours worked
+ * @param fetchmenCount - Number of fetchmen
+ * @param standardRate - Standard hourly rate
+ * @returns The total cost including overtime
+ */
+export const calculateOvertimeCosts = (
+  standardHours: number, 
+  overtimeHours: number, 
+  fetchmenCount: number,
+  standardRate: number = 150
+): number => {
+  const overtimeRate = standardRate * 1.5; // 50% premium for overtime
+  
+  const standardCost = standardHours * fetchmenCount * standardRate;
+  const overtimeCost = overtimeHours * fetchmenCount * overtimeRate;
+  
+  return standardCost + overtimeCost;
+};
+
+// Types for the enhanced fetchman functionality
+
+export interface FetchmanAllocationResult {
+  total: number;
+  allocation: {
+    entranceAndExit: number;
+    vendorAreas: number;
+    generalAreas: number;
+    emergencyReserve: number;
+  };
+  densityFactor: number;
+  recommendations: string[];
+}
+
+export interface FetchmanShiftPlan {
+  shiftsNeeded: number;
+  fetchmenPerShift: number;
+  totalFetchmen: number;
+  shiftHours: number;
+  isMultiShift: boolean;
+}
+
+export interface FetchmanCostBreakdown {
+  baseCost: number;
+  overtimeCost: number;
+  equipmentCost: number;
+  transportationCost: number;
+  totalCost: number;
+}

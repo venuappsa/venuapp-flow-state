@@ -6,8 +6,8 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
-import { LogOut } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { Loader, LogOut } from "lucide-react";
 import { useState } from "react";
 
 interface SecurePanelButtonProps {
@@ -22,16 +22,17 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
   const [loading, setLoading] = useState(false);
 
   let panelRoute: string = "/customer";
-  if (user && userRoles && !rolesLoading && userRoles.length > 0) {
+  if (user && userRoles && !rolesLoading) {
     panelRoute = getRedirectPageForRoles(userRoles);
   }
 
-  // Determine button label and link based on auth state
   const isLoggedIn = !!user;
-  const buttonLabel = isLoggedIn ? "Go to Secure Panel" : "Login";
-  const buttonLink = isLoggedIn ? panelRoute : "/auth";
+  const buttonLabel = isLoggedIn 
+    ? rolesLoading 
+      ? "Loading..." 
+      : "Go to Secure Panel" 
+    : "Login";
 
-  // Get the user's friendly display name (fallback to email if no name)
   let displayName = "";
   if (isLoggedIn) {
     displayName =
@@ -43,7 +44,12 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
   }
 
   const handleButtonClick = () => {
-    navigate(buttonLink);
+    if (rolesLoading) return;
+    if (isLoggedIn && userRoles && userRoles.length > 0) {
+      navigate(panelRoute);
+    } else {
+      navigate("/auth");
+    }
   };
 
   const logOut = async () => {
@@ -77,11 +83,12 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
     <div className={className ?? ""}>
       <div className="flex items-center gap-2">
         <Button
-          className="text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
+          className="text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10 min-w-[100px] justify-center"
           variant="outline"
           onClick={handleButtonClick}
+          disabled={rolesLoading}
         >
-          {buttonLabel}
+          {rolesLoading ? <Loader className="h-4 w-4 animate-spin" /> : buttonLabel}
         </Button>
         {isLoggedIn && (
           <Button

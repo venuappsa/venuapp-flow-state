@@ -10,6 +10,7 @@ import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import { toast } from "@/components/ui/use-toast";
 import { generateMockAnalyticsData } from "@/data/analyticsData";
+import DetailedAnalytics from "./DetailedAnalytics";
 
 interface AnalyticsSnapshotProps {
   subscriptionTier?: string;
@@ -685,6 +686,13 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Add the DetailedAnalytics component */}
+      {currentTierLevel >= 2 && (
+        <div className="mt-8">
+          <DetailedAnalytics subscriptionTier={subscriptionTier} />
+        </div>
+      )}
     </div>
   );
 }

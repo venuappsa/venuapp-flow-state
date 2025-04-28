@@ -21,6 +21,7 @@ import EventsPage from "./pages/EventsPage";
 import VendorsPage from "./pages/VendorsPage";
 import FinancePage from "./pages/FinancePage";
 import VenuesPage from "./pages/VenuesPage";
+import GuestPage from "./pages/GuestPage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/host/events/:eventId" element={<EventManagementPage />} />
           <Route path="/host/vendors" element={<VendorsPage />} />
           <Route path="/host/finance" element={<FinancePage />} />
+          <Route path="/host/guests" element={<GuestPage />} />
           
           <Route path="/customer" element={<CustomerPage />} />
           <Route path="/merchant" element={<MerchantPage />} />

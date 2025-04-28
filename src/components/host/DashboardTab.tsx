@@ -42,6 +42,14 @@ export default function DashboardTab() {
   const handleStatsCardClick = (stat: any) => {
     if (stat.title === "Events") {
       navigate("/host/events");
+    } else if (stat.title === "Venues") {
+      navigate("/host/venues");
+    } else if (stat.title === "Vendors") {
+      navigate("/host/vendors");
+    } else if (stat.title === "Revenue") {
+      navigate("/host/finance");
+    } else if (stat.title === "Subscription") {
+      navigate("/subscribe");
     } else {
       toast({
         title: stat.title,
@@ -86,14 +94,14 @@ export default function DashboardTab() {
         ))}
       </div>
 
-      <div className="space-y-6 mb-12">
+      <div className="space-y-6 mb-20">
         <AnalyticsSnapshot 
           subscriptionTier={subscription_tier || "Free"} 
           subscriptionStatus={subscription_status}
         />
       </div>
 
-      <div className="space-y-4 pt-8">
+      <div className="space-y-4 pt-12 mt-8 border-t border-gray-100">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Upcoming Events</h2>
           <Button 

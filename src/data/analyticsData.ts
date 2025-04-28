@@ -1,4 +1,3 @@
-
 // Mock data generator for analytics based on subscription tier
 export function generateMockAnalyticsData(subscriptionTier: string = "Free") {
   const today = new Date();
@@ -282,5 +281,218 @@ export function generateMockAnalyticsData(subscriptionTier: string = "Free") {
     opportunities,
     recentTransactions,
     forecastGrowth
+  };
+}
+
+// New function for generating detailed analytics data
+export function generateDetailedAnalyticsData(subscriptionTier: string = "Free") {
+  // Hourly sales and traffic data
+  const generateHourlyData = () => {
+    const data = [];
+    for (let i = 8; i <= 23; i++) {
+      const hour = i < 10 ? `0${i}:00` : `${i}:00`;
+      
+      // Create a sales curve that peaks at lunch and dinner times
+      let salesFactor = 1;
+      if (i >= 12 && i <= 14) salesFactor = 2.2; // Lunch peak
+      if (i >= 18 && i <= 21) salesFactor = 2.5; // Dinner peak
+      
+      // Create a traffic curve that roughly follows sales but with some variation
+      let trafficFactor = salesFactor * (0.8 + Math.random() * 0.4);
+      
+      data.push({
+        hour,
+        sales: Math.floor((Math.random() * 1000 + 500) * salesFactor),
+        traffic: Math.floor((Math.random() * 10 + 5) * trafficFactor)
+      });
+    }
+    return data;
+  };
+  
+  // Weekday sales data
+  const generateWeekdayData = () => {
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const data = days.map(day => {
+      // Weekend sales are higher
+      const isWeekend = day === "Saturday" || day === "Sunday";
+      const revenueFactor = isWeekend ? 2.2 : 1;
+      
+      return {
+        day,
+        revenue: Math.floor((Math.random() * 15000 + 10000) * revenueFactor)
+      };
+    });
+    return data;
+  };
+  
+  // Monthly trends data for current and previous year
+  const generateMonthlyTrendsData = () => {
+    const currentMonth = new Date().getMonth();
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const data = [];
+    
+    for (let i = 0; i < months.length; i++) {
+      // Only include data up to current month
+      if (i <= currentMonth) {
+        // Generate higher values for summer months
+        const isSummer = i >= 10 || i <= 2; // Southern hemisphere summer (Nov-Mar)
+        const thisYearFactor = isSummer ? 1.5 : 1;
+        const lastYearFactor = isSummer ? 1.3 : 0.9;
+        
+        data.push({
+          month: months[i],
+          thisYear: Math.floor((Math.random() * 30000 + 40000) * thisYearFactor),
+          lastYear: Math.floor((Math.random() * 25000 + 35000) * lastYearFactor)
+        });
+      }
+    }
+    return data;
+  };
+  
+  // Top selling products
+  const generateTopProductsData = () => {
+    const products = [
+      "Premium Craft Beer",
+      "Gourmet Burger",
+      "Festival T-Shirt",
+      "Wine by Glass",
+      "Loaded Fries",
+      "Cocktail Special",
+      "BBQ Plate"
+    ];
+    
+    return products.map(name => ({
+      name,
+      revenue: Math.floor(Math.random() * 15000 + 5000)
+    })).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+  };
+  
+  // Product category distribution
+  const generateCategoryDistributionData = () => {
+    return [
+      { name: "Food", value: Math.floor(Math.random() * 30000 + 50000), color: "#22c55e" },
+      { name: "Beverages", value: Math.floor(Math.random() * 40000 + 60000), color: "#60a5fa" },
+      { name: "Merchandise", value: Math.floor(Math.random() * 15000 + 20000), color: "#8b5cf6" },
+      { name: "Tickets", value: Math.floor(Math.random() * 50000 + 70000), color: "#f59e0b" },
+      { name: "Other", value: Math.floor(Math.random() * 10000 + 5000), color: "#64748b" }
+    ];
+  };
+  
+  // Product trends over time
+  const generateProductTrendsData = () => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    return months.map(month => ({
+      month,
+      food: Math.floor(Math.random() * 20000 + 20000),
+      drinks: Math.floor(Math.random() * 30000 + 30000),
+      merchandise: Math.floor(Math.random() * 10000 + 10000)
+    }));
+  };
+  
+  // Vendor commission structure
+  const generateVendorCommissionData = () => {
+    const vendorTypes = ["Food", "Beverages", "Merchandise", "Services", "Entertainment"];
+    return vendorTypes.map(name => {
+      const total = Math.floor(Math.random() * 30000 + 20000);
+      const hostPercentage = name === "Food" ? 0.25 : name === "Beverages" ? 0.30 : name === "Merchandise" ? 0.20 : 0.15;
+      const hostRevenue = Math.floor(total * hostPercentage);
+      
+      return {
+        name,
+        hostRevenue,
+        vendorRevenue: total - hostRevenue
+      };
+    });
+  };
+  
+  // Vendor performance comparison
+  const generateVendorPerformanceComparisonData = () => {
+    const vendors = ["Craft Beer Bar", "Burger Stand", "T-Shirt Shop", "Coffee Cart", "Cocktail Bar", "Pizza Place"];
+    return vendors.map(name => ({
+      name,
+      revenue: Math.floor(Math.random() * 20000 + 10000),
+      satisfaction: parseFloat((Math.random() * 2 + 3).toFixed(1)) // 3.0 - 5.0 rating
+    }));
+  };
+  
+  // Vendor activity throughout the day
+  const generateVendorActivityData = () => {
+    const data = [];
+    for (let i = 10; i <= 23; i++) {
+      const hour = i < 10 ? `0${i}:00` : `${i}:00`;
+      
+      // Different peak times for different vendor types
+      let foodFactor = 1;
+      let drinksFactor = 1;
+      let merchandiseFactor = 1;
+      
+      if (i >= 12 && i <= 14) foodFactor = 2.2; // Lunch time food peak
+      if (i >= 18 && i <= 21) foodFactor = 2.5; // Dinner time food peak
+      
+      if (i >= 17 && i <= 23) drinksFactor = 2.2; // Evening drinks peak
+      
+      if (i >= 14 && i <= 18) merchandiseFactor = 1.8; // Afternoon shopping peak
+      
+      data.push({
+        hour,
+        food: Math.floor((Math.random() * 50 + 30) * foodFactor),
+        drinks: Math.floor((Math.random() * 60 + 20) * drinksFactor),
+        merchandise: Math.floor((Math.random() * 30 + 10) * merchandiseFactor)
+      });
+    }
+    return data;
+  };
+  
+  // Customer satisfaction scores
+  const generateSatisfactionScoresData = () => {
+    const categories = ["Overall Experience", "Venue Facilities", "Food Quality", "Beverage Selection", "Staff Service", "Value for Money"];
+    return categories.map(category => ({
+      category,
+      rating: parseFloat((Math.random() * 1.5 + 3.5).toFixed(1)) // 3.5 - 5.0 rating
+    }));
+  };
+  
+  // Feedback trends over time
+  const generateFeedbackTrendsData = () => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    return months.map(month => ({
+      month,
+      overall: parseFloat((Math.random() * 1 + 3.8).toFixed(1)),
+      venue: parseFloat((Math.random() * 1 + 3.7).toFixed(1)),
+      vendor: parseFloat((Math.random() * 1 + 3.6).toFixed(1))
+    }));
+  };
+  
+  // Feedback analysis (themes from comments)
+  const generateFeedbackAnalysisData = () => {
+    const themes = [
+      "Food Quality", 
+      "Waiting Time", 
+      "Venue Layout", 
+      "Staff Friendliness", 
+      "Value for Money", 
+      "Product Selection"
+    ];
+    
+    return themes.map(theme => ({
+      theme,
+      positive: Math.floor(Math.random() * 50 + 30),
+      negative: Math.floor(Math.random() * 30 + 5)
+    })).sort((a, b) => (b.positive + b.negative) - (a.positive + a.negative));
+  };
+  
+  return {
+    hourlyData: generateHourlyData(),
+    weekdayData: generateWeekdayData(),
+    monthlyTrendsData: generateMonthlyTrendsData(),
+    topProductsData: generateTopProductsData(),
+    categoryDistributionData: generateCategoryDistributionData(),
+    productTrendsData: generateProductTrendsData(),
+    vendorCommissionData: generateVendorCommissionData(),
+    vendorPerformanceComparisonData: generateVendorPerformanceComparisonData(),
+    vendorActivityData: generateVendorActivityData(),
+    satisfactionScoresData: generateSatisfactionScoresData(),
+    feedbackTrendsData: generateFeedbackTrendsData(),
+    feedbackAnalysisData: generateFeedbackAnalysisData()
   };
 }

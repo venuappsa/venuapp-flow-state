@@ -39,6 +39,7 @@ export default function HostHeader() {
     { label: "Venues", href: "/host/venues" },
     { label: "Events", href: "/host/events" },
     { label: "Vendors", href: "/host/vendors" },
+    { label: "Guests", href: "/host/guests" },
     { label: "Finance", href: "/host/finance" },
   ];
 

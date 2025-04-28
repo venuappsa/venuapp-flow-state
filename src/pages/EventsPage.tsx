@@ -109,7 +109,7 @@ export default function EventsPage() {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="upcoming">Upcoming</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="past">Past</SelectItem>
@@ -120,7 +120,7 @@ export default function EventsPage() {
                   <SelectValue placeholder="Filter by venue" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Venues</SelectItem>
+                  <SelectItem value="all">All Venues</SelectItem>
                   {venues.map(venue => (
                     <SelectItem key={venue} value={venue}>{venue}</SelectItem>
                   ))}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Mock vendor data
 const mockVendors = [
   {
     id: "v1",
@@ -38,7 +36,7 @@ const mockVendors = [
     subcategory: "Burgers",
     rating: 4.8,
     location: "Cape Town",
-    distance: 2.1, // distance in km
+    distance: 2.1,
     coordinates: {lat: -33.9249, lng: 18.4241},
     description: "Specialty gourmet burgers with unique flavor combinations",
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80",
@@ -127,7 +125,7 @@ export default function VendorDiscovery() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
-  const [radiusFilter, setRadiusFilter] = useState(10); // Default 10km
+  const [radiusFilter, setRadiusFilter] = useState(10);
   const [filteredVendors, setFilteredVendors] = useState(mockVendors);
   const [userPosition, setUserPosition] = useState<{lat: number, lng: number} | null>(null);
   const [selectedVendor, setSelectedVendor] = useState<any>(null);
@@ -137,7 +135,6 @@ export default function VendorDiscovery() {
   const [selectedEvent, setSelectedEvent] = useState<string>("");
   const [selectedVenue, setSelectedVenue] = useState<string>("");
 
-  // Mock data for venue and event selection
   const mockVenues = [
     { id: "venue1", name: "Grand Arena" },
     { id: "venue2", name: "Beach Front" },
@@ -150,7 +147,6 @@ export default function VendorDiscovery() {
     { id: "event3", name: "Music Concert", venueId: "venue3", date: "2025-06-10" }
   ];
 
-  // Get user's current location when component mounts
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -175,7 +171,6 @@ export default function VendorDiscovery() {
   const handleSearch = () => {
     let results = mockVendors;
     
-    // Apply text search
     if (searchQuery) {
       results = results.filter(
         vendor =>
@@ -185,21 +180,18 @@ export default function VendorDiscovery() {
       );
     }
     
-    // Apply category filter
     if (categoryFilter && categoryFilter !== "all") {
       results = results.filter(
         vendor => vendor.category === categoryFilter
       );
     }
     
-    // Apply location filter
     if (locationFilter && locationFilter !== "all") {
       results = results.filter(
         vendor => vendor.location === locationFilter
       );
     }
     
-    // Apply radius filter if user position is available
     if (userPosition && radiusFilter > 0) {
       results = results.filter(
         vendor => vendor.distance <= radiusFilter
@@ -247,10 +239,8 @@ export default function VendorDiscovery() {
   const handleGenerateLink = (vendorId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Generate a shareable link
     const shareableLink = `https://venuapp.co.za/invite/${vendorId}`;
     
-    // Copy to clipboard
     navigator.clipboard.writeText(shareableLink).then(
       () => {
         toast({
@@ -303,7 +293,6 @@ export default function VendorDiscovery() {
           </Select>
         </div>
         
-        {/* New location radius filter */}
         <div className="mt-4 flex flex-col md:flex-row gap-4 items-center">
           <div className="flex items-center gap-2">
             <MapPin size={18} className="text-gray-500" />
@@ -413,7 +402,6 @@ export default function VendorDiscovery() {
         )}
       </div>
 
-      {/* Vendor details dialog */}
       <Dialog open={vendorDetailsOpen} onOpenChange={setVendorDetailsOpen}>
         {selectedVendor && (
           <DialogContent className="sm:max-w-[600px]">
@@ -455,7 +443,7 @@ export default function VendorDiscovery() {
                   </div>
                   
                   <div className="space-y-2">
-                    <h3 className="font-medium text-sm">Contact Information</h3>
+                    <h3 className="font-medium text-sm mb-1">Contact Information</h3>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="font-medium">Contact:</span>
                       <span>{selectedVendor.contactName}</span>
@@ -530,7 +518,6 @@ export default function VendorDiscovery() {
         )}
       </Dialog>
 
-      {/* Invite dialog */}
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         {inviteVendor && (
           <DialogContent>
@@ -549,7 +536,7 @@ export default function VendorDiscovery() {
                     <SelectValue placeholder="Select an event" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {mockEvents.map(event => (
                       <SelectItem key={event.id} value={event.id}>
                         {event.name} ({new Date(event.date).toLocaleDateString()})
@@ -566,7 +553,7 @@ export default function VendorDiscovery() {
                     <SelectValue placeholder="Select a venue" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {mockVenues.map(venue => (
                       <SelectItem key={venue.id} value={venue.id}>{venue.name}</SelectItem>
                     ))}

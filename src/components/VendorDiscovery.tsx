@@ -148,7 +148,7 @@ export default function VendorDiscovery() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="Food">Food</SelectItem>
               <SelectItem value="Drinks">Drinks</SelectItem>
               <SelectItem value="Merchandise">Merchandise</SelectItem>
@@ -159,7 +159,7 @@ export default function VendorDiscovery() {
               <SelectValue placeholder="Location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
+              <SelectItem value="all">All Locations</SelectItem>
               <SelectItem value="Cape Town">Cape Town</SelectItem>
               <SelectItem value="Johannesburg">Johannesburg</SelectItem>
               <SelectItem value="Durban">Durban</SelectItem>

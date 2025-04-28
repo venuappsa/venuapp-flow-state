@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useRoleRedirect, getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
@@ -14,6 +14,7 @@ import OtpStep from "./OtpStep";
 import useConnectionStatus from "@/hooks/useConnectionStatus";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -33,7 +34,9 @@ export default function AuthPage() {
   const [pendingRedirect, setPendingRedirect] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   
+  const { user, initialized } = useUser();
   const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(userId);
   
   const isAuthLoading = useAuthLoadingState();
@@ -48,25 +51,62 @@ export default function AuthPage() {
   });
 
   useEffect(() => {
-    console.log("AuthPage: Checking initial session...");
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        console.log("AuthPage: Found existing session, initiating redirect...");
-        setUserId(session.user.id);
-        setPendingRedirect(true);
-      }
-    });
-  }, []);
+    let isMounted = true;
+    let sessionCheckTimer: NodeJS.Timeout;
+    
+    if (location.state?.skipSessionCheck) {
+      console.log("AuthPage: Skipping session check due to explicit navigation");
+      return;
+    }
+    
+    if (!initialized) {
+      console.log("AuthPage: Waiting for useUser to initialize...");
+      return;
+    }
+    
+    if (user) {
+      console.log("AuthPage: User exists from useUser hook, initiating redirect");
+      setUserId(user.id);
+      setPendingRedirect(true);
+      return;
+    }
+    
+    sessionCheckTimer = setTimeout(() => {
+      console.log("AuthPage: Double-checking session status...");
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!isMounted) return;
+        
+        if (session) {
+          console.log("AuthPage: Found existing session, initiating redirect...");
+          setUserId(session.user.id);
+          setPendingRedirect(true);
+        } else {
+          console.log("AuthPage: No session found, staying on auth page");
+        }
+      });
+    }, 500);
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(sessionCheckTimer);
+    };
+  }, [user, initialized, location.state]);
 
   useEffect(() => {
-    if (userId && userRoles && !rolesLoading && !pendingRedirect) {
-      console.log("AuthPage: User and roles ready, redirecting immediately");
+    if (userId && userRoles && !rolesLoading && !pendingRedirect && location.pathname === "/auth") {
+      console.log("AuthPage: User and roles ready, manual redirect check");
       const roleArray = Array.isArray(userRoles) ? userRoles : [];
-      const redirectPath = getRedirectPageForRoles(roleArray);
-      console.log("AuthPage: Direct redirect to:", redirectPath);
-      navigate(redirectPath, { replace: true });
+      
+      if (roleArray.length > 0) {
+        const redirectPath = getRedirectPageForRoles(roleArray);
+        console.log("AuthPage: Manual redirect check result:", redirectPath);
+        
+        if (redirectPath !== location.pathname) {
+          navigate(redirectPath, { replace: true });
+        }
+      }
     }
-  }, [userId, userRoles, rolesLoading, pendingRedirect, navigate]);
+  }, [userId, userRoles, rolesLoading, pendingRedirect, navigate, location.pathname]);
 
   const handleQuickLogin = () => {
     setEmail("test@example.com");
@@ -133,9 +173,11 @@ export default function AuthPage() {
       }
       try {
         const { data, error } = await supabase.auth.signUp({ email, password });
-        console.log("[AuthPage] Signup attempt", { email, password, result: data, error });
+        console.log("[AuthPage] Signup attempt", { email, result: data?.user?.id, error });
+        
         if (error) throw error;
         if (!data.user || !data.user.id) throw new Error("No user ID returned from signup");
+        
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setSentOtp(otp);
         setSignupUserId(data.user.id);
@@ -145,15 +187,15 @@ export default function AuthPage() {
       } catch (e: any) {
         console.error("[AuthPage] Signup ERROR", e);
         toast({ title: "Error", description: e.message, variant: "destructive" });
-        setLoading(false);
       }
       setLoading(false);
       return;
     }
+    
     try {
       console.log("[AuthPage] Attempting login with:", { email });
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      console.log("[AuthPage] Login attempt result:", { data, error });
+      console.log("[AuthPage] Login attempt result:", { userId: data?.user?.id, error });
       
       if (error) {
         console.error("[AuthPage] Login ERROR", error);
@@ -191,7 +233,6 @@ export default function AuthPage() {
       };
       
       checkAndRedirect();
-      
     } catch (e: any) {
       console.error("[AuthPage] Login Exception", e);
       toast({ title: "Error", description: e.message, variant: "destructive" });

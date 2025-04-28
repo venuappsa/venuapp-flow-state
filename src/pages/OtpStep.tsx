@@ -26,7 +26,7 @@ export default function OtpStep({ loading, otpInput, setOtpInput, onOtpSubmit }:
           autoComplete="one-time-code"
           render={({ slots }) => (
             <InputOTPGroup className="gap-2 flex justify-center">
-              {slots.map((slot, index) => (
+              {slots && Array.isArray(slots) && slots.map((slot, index) => (
                 <InputOTPSlot
                   key={index}
                   index={index}

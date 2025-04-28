@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
+import { useNavigate } from "react-router-dom";
 
 interface SecurePanelButtonProps {
   className?: string;
@@ -13,6 +14,7 @@ interface SecurePanelButtonProps {
 export default function SecurePanelButton({ className, showWelcome }: SecurePanelButtonProps) {
   const { user } = useUser();
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
+  const navigate = useNavigate();
 
   let panelRoute: string = "/customer";
   if (user && userRoles && !rolesLoading && userRoles.length > 0) {
@@ -35,14 +37,18 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
       "User";
   }
 
+  const handleButtonClick = () => {
+    navigate(buttonLink);
+  };
+
   return (
     <div className={className ?? ""}>
       <Button
-        asChild
         className="ml-2 text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10"
         variant="outline"
+        onClick={handleButtonClick}
       >
-        <Link to={buttonLink}>{buttonLabel}</Link>
+        {buttonLabel}
       </Button>
       {isLoggedIn && showWelcome && (
         <div className="text-[11px] sm:text-xs mt-1 text-gray-500 text-center font-medium">
@@ -52,4 +58,3 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
     </div>
   );
 }
-

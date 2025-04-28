@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,8 +10,8 @@ interface AuthFormProps {
   onTypeChange: (type: "login" | "signup") => void;
   otpStep: boolean;
   setOtpStep: (val: boolean) => void;
-  setPendingRedirect: (val: boolean) => void;
   setUserId: (val: string | null) => void;
+  setPendingRedirect: (val: boolean) => void;
   setSentOtp: (val: string) => void;
   setSignupUserId: (val: string | null) => void;
   setLoading: (val: boolean) => void;
@@ -76,7 +75,8 @@ export default function AuthForm({
       <h2 id="auth-form-title" className="text-xl font-bold text-center">
         {type === "login" ? "Login" : "Create an account"}
       </h2>
-      <div style={{ display: "none" }}>
+      
+      <div style={{ display: "none" }} aria-hidden="true">
         <label htmlFor="extra">Leave blank</label>
         <input
           id="extra"
@@ -88,6 +88,7 @@ export default function AuthForm({
           onChange={e => setHoneypot(e.target.value)}
         />
       </div>
+
       {type === "signup" && (
         <>
           <Input
@@ -179,6 +180,7 @@ export default function AuthForm({
       <Button disabled={loading} type="submit">
         {loading ? "..." : (type === "login" ? "Login" : "Sign Up")}
       </Button>
+      
       {type === "login" && (
         <>
           <Button

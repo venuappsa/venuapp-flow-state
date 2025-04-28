@@ -33,9 +33,10 @@ import { PlanType, getTierLevel, isPremiumFeature, getPricingPlans } from "@/uti
 interface AnalyticsSnapshotProps {
   subscriptionTier?: string;
   subscriptionStatus?: string;
+  className?: string;
 }
 
-export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subscriptionStatus = "active" }: AnalyticsSnapshotProps) {
+export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subscriptionStatus = "active", className = "" }: AnalyticsSnapshotProps) {
   const [selectedTab, setSelectedTab] = useState<string>("revenue");
   const [planType, setPlanType] = useState<PlanType>("venue");
   const navigate = useNavigate();
@@ -51,7 +52,6 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
     
     setSelectedTab(tab);
     
-    // Navigate to appropriate page based on tab
     switch(tab) {
       case "revenue":
         navigate("/host/finance");
@@ -67,7 +67,6 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
         navigate("/host/events");
         break;
       default:
-        // Stay on current page if no match
         break;
     }
   };
@@ -126,7 +125,7 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${className}`}>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold">Analytics {currentTierLevel < 1 && "(Limited)"}</h2>

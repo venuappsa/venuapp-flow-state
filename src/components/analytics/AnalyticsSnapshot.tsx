@@ -1,13 +1,12 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Info, TrendingUp, Lock, ArrowRight } from "lucide-react";
+import { Info, TrendingUp, Lock, ArrowRight, BarChart } from "lucide-react";
 import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import { toast } from "@/components/ui/use-toast";
 import { generateMockAnalyticsData } from "@/data/analyticsData";
 import DetailedAnalytics from "./DetailedAnalytics";
@@ -19,6 +18,7 @@ interface AnalyticsSnapshotProps {
 
 export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscriptionStatus = "active" }: AnalyticsSnapshotProps) {
   const [selectedTab, setSelectedTab] = useState<string>("revenue");
+  const navigate = useNavigate();
   const data = generateMockAnalyticsData(subscriptionTier);
   
   // Map subscription tier to numeric level for feature gating
@@ -43,6 +43,11 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
         </Link>
       ),
     });
+  };
+
+  // Function to navigate to the Guest Analytics page
+  const navigateToGuestAnalytics = () => {
+    navigate('/host/guests');
   };
 
   return (
@@ -687,7 +692,19 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free", subscript
         </TabsContent>
       </Tabs>
 
-      {/* Add the DetailedAnalytics component */}
+      {/* Add View Detailed Analytics Button at the bottom */}
+      <div className="mt-8 flex justify-end">
+        <Button 
+          variant="outline" 
+          className="gap-2 text-venu-orange border-venu-orange hover:bg-venu-orange/10"
+          onClick={navigateToGuestAnalytics}
+        >
+          <BarChart className="h-4 w-4" />
+          View Detailed Guest Analytics
+        </Button>
+      </div>
+
+      {/* Add DetailedAnalytics component */}
       {currentTierLevel >= 2 && (
         <div className="mt-8">
           <DetailedAnalytics subscriptionTier={subscriptionTier} />

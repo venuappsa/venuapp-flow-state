@@ -18,9 +18,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SecurePanelButtonProps {
   showWelcome?: boolean;
+  className?: string; // Added className prop
 }
 
-export default function SecurePanelButton({ showWelcome = false }: SecurePanelButtonProps) {
+export default function SecurePanelButton({ showWelcome = false, className }: SecurePanelButtonProps) {
   const { user, forceClearUser } = useUser();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -55,7 +56,7 @@ export default function SecurePanelButton({ showWelcome = false }: SecurePanelBu
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+        <Button variant="ghost" className={`relative h-9 w-9 rounded-full ${className || ''}`}>
           <Avatar className="h-9 w-9">
             <AvatarFallback className="bg-venu-orange text-white">
               {initials}

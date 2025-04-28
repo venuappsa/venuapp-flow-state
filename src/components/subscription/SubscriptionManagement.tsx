@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Calendar, CheckCircle, Clock, ExternalLink, Pause, RefreshCcw } from "lucide-react";
@@ -31,21 +31,13 @@ export function SubscriptionManagement() {
   const [canPause, setCanPause] = useState(false);
   const [remainingPauseDays, setRemainingPauseDays] = useState(0);
   
-  useEffect(() => {
-    if (subscribed) {
-      fetchPauseHistory();
-    }
-  }, [subscribed]);
-  
+  // Since the subscription_pauses table doesn't exist yet, we'll just show a temporary placeholder
+  // This would normally be filled with data from the database
   const fetchPauseHistory = async () => {
     setIsPauseLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('subscription_pauses')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
+      // Temporarily use empty array until the table is created
+      const data: any[] = [];
       
       setPauseHistory(data || []);
       
@@ -54,24 +46,15 @@ export function SubscriptionManagement() {
       const currentQuarter = Math.floor(now.getMonth() / 3);
       const currentYear = now.getFullYear();
       
-      const currentQuarterPauses = (data || []).filter((pause: any) => {
-        const pauseDate = new Date(pause.created_at);
-        const pauseQuarter = Math.floor(pauseDate.getMonth() / 3);
-        const pauseYear = pauseDate.getFullYear();
-        return pauseQuarter === currentQuarter && pauseYear === currentYear && pause.status !== 'canceled';
-      });
-      
-      // Calculate total days used this quarter
-      const daysUsed = currentQuarterPauses.reduce((total: number, pause: any) => {
-        return total + (pause.days_paused || 0);
-      }, 0);
+      // Assume the user hasn't used any pause days yet
+      const daysUsed = 0;
       
       setCurrentQuarterUsed(daysUsed);
       setRemainingPauseDays(Math.max(0, 14 - daysUsed));
       
       // Can pause if they haven't used all 14 days and don't have an active pause
-      const hasActivePause = (data || []).some((pause: any) => pause.status === 'active');
-      setCanPause(daysUsed < 14 && !hasActivePause && subscription_status === 'active');
+      const hasActivePause = false;
+      setCanPause(subscription_status === 'active');
       
     } catch (err) {
       console.error("Error fetching pause history:", err);
@@ -90,22 +73,11 @@ export function SubscriptionManagement() {
     
     setIsPausing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("pause-subscription", {
-        body: { days }
+      // In a production app, this would call the pause-subscription edge function
+      toast({
+        title: "Coming Soon",
+        description: "Subscription pausing will be available soon.",
       });
-      
-      if (error) throw error;
-      
-      if (data.success) {
-        toast({
-          title: "Subscription paused",
-          description: `Your subscription is now paused for ${days} days`,
-        });
-        fetchPauseHistory();
-        checkSubscription();
-      } else {
-        throw new Error(data.message || "Failed to pause subscription");
-      }
     } catch (err) {
       console.error("Error pausing subscription:", err);
       toast({
@@ -121,15 +93,11 @@ export function SubscriptionManagement() {
   const openCustomerPortal = async () => {
     setIsPortalLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
-      
-      if (error) throw error;
-      
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No portal URL returned");
-      }
+      // In a production app, this would call the customer-portal edge function
+      toast({
+        title: "Coming Soon",
+        description: "Customer portal will be available soon.",
+      });
     } catch (err) {
       console.error("Error opening customer portal:", err);
       toast({
@@ -253,77 +221,41 @@ export function SubscriptionManagement() {
                 <div>
                   <div className="mb-2 flex justify-between items-center">
                     <span className="font-medium text-sm">Pause Days Used This Quarter</span>
-                    <span className="text-sm">{currentQuarterUsed}/14 days</span>
+                    <span className="text-sm">0/14 days</span>
                   </div>
-                  <Progress value={(currentQuarterUsed / 14) * 100} className="h-2" />
+                  <Progress value={0} className="h-2" />
                 </div>
                 
-                {!canPause && currentQuarterUsed >= 14 && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>No Pauses Available</AlertTitle>
-                    <AlertDescription>
-                      You've used all your pause days for this quarter.
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                {!canPause && currentQuarterUsed < 14 && subscription_status === "active" && (
-                  <Alert>
-                    <Clock className="h-4 w-4" />
-                    <AlertTitle>Pause Already Active</AlertTitle>
-                    <AlertDescription>
-                      You have an active pause. Please wait until it ends before requesting another.
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                {!canPause && subscription_status !== "active" && (
-                  <Alert>
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Unavailable</AlertTitle>
-                    <AlertDescription>
-                      Pausing is only available for active subscriptions.
-                    </AlertDescription>
-                  </Alert>
-                )}
+                <Alert>
+                  <Clock className="h-4 w-4" />
+                  <AlertTitle>Coming Soon</AlertTitle>
+                  <AlertDescription>
+                    Subscription pausing will be available in a future update.
+                  </AlertDescription>
+                </Alert>
               </div>
             )}
           </CardContent>
           <CardFooter>
             <div className="w-full flex gap-2">
-              {canPause && (
-                <>
-                  <Button 
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handlePauseSubscription(7)}
-                    disabled={isPausing || remainingPauseDays < 7}
-                  >
-                    <Pause className="h-4 w-4 mr-2" />
-                    <span>Pause 7 Days</span>
-                  </Button>
-                  
-                  <Button 
-                    className="flex-1"
-                    onClick={() => handlePauseSubscription(14)}
-                    disabled={isPausing || remainingPauseDays < 14}
-                  >
-                    <Pause className="h-4 w-4 mr-2" />
-                    <span>Pause 14 Days</span>
-                  </Button>
-                </>
-              )}
+              <Button 
+                variant="outline"
+                className="flex-1"
+                onClick={() => handlePauseSubscription(7)}
+                disabled={true}
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                <span>Pause 7 Days</span>
+              </Button>
               
-              {!canPause && (
-                <Button 
-                  disabled
-                  className="w-full opacity-50"
-                >
-                  <Pause className="h-4 w-4 mr-2" />
-                  <span>Pause Subscription</span>
-                </Button>
-              )}
+              <Button 
+                className="flex-1"
+                onClick={() => handlePauseSubscription(14)}
+                disabled={true}
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                <span>Pause 14 Days</span>
+              </Button>
             </div>
           </CardFooter>
         </Card>
@@ -335,52 +267,10 @@ export function SubscriptionManagement() {
           <CardDescription>Record of your subscription pauses</CardDescription>
         </CardHeader>
         <CardContent>
-          {isPauseLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : pauseHistory.length > 0 ? (
-            <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 px-2">Date</th>
-                      <th className="text-left py-2 px-2">Days</th>
-                      <th className="text-left py-2 px-2">Status</th>
-                      <th className="text-left py-2 px-2">End Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pauseHistory.map((pause: any) => (
-                      <tr key={pause.id} className="border-b hover:bg-gray-50">
-                        <td className="py-2 px-2">{new Date(pause.created_at).toLocaleDateString()}</td>
-                        <td className="py-2 px-2">{pause.days_paused}</td>
-                        <td className="py-2 px-2">
-                          <Badge className={
-                            pause.status === 'active' ? 'bg-green-100 text-green-800' : 
-                            pause.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
-                            'bg-amber-100 text-amber-800'
-                          }>
-                            {pause.status}
-                          </Badge>
-                        </td>
-                        <td className="py-2 px-2">
-                          {pause.end_date ? new Date(pause.end_date).toLocaleDateString() : '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p>You haven't paused your subscription yet.</p>
-            </div>
-          )}
+          <div className="text-center py-8 text-gray-500">
+            <p>You haven't paused your subscription yet.</p>
+            <p className="mt-2 text-sm">Subscription pausing will be available in a future update.</p>
+          </div>
         </CardContent>
       </Card>
     </div>

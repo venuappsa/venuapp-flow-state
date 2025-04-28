@@ -17,7 +17,7 @@ interface SecurePanelButtonProps {
 
 export default function SecurePanelButton({ className, showWelcome }: SecurePanelButtonProps) {
   const { user, forceClearUser } = useUser();
-  const { data: userRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
+  const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [panelRoute, setPanelRoute] = useState("/customer");
@@ -25,9 +25,11 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
   // Update panel route whenever roles change
   useEffect(() => {
     if (user && userRoles && !rolesLoading) {
-      const route = getRedirectPageForRoles(userRoles);
+      // Make sure userRoles is an array
+      const roleArray = Array.isArray(userRoles) ? userRoles : [];
+      const route = getRedirectPageForRoles(roleArray);
       setPanelRoute(route);
-      console.log("SecurePanelButton: Panel route updated to:", route, "for roles:", userRoles);
+      console.log("SecurePanelButton: Panel route updated to:", route, "for roles:", roleArray);
     }
   }, [user, userRoles, rolesLoading]);
 
@@ -63,7 +65,9 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
           return;
         }
         
-        if (userRoles && userRoles.length > 0) {
+        // Ensure userRoles is an array
+        const roleArray = Array.isArray(userRoles) ? userRoles : [];
+        if (roleArray.length > 0) {
           console.log("SecurePanelButton: Navigating to panel route:", panelRoute);
           navigate(panelRoute);
         } else {

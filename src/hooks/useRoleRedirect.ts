@@ -42,7 +42,7 @@ export function useRoleRedirect({
 }: {
   pendingRedirect: boolean;
   userId: string | null;
-  userRoles: string[] | undefined;
+  userRoles: string[];
   rolesLoading: boolean;
   setPendingRedirect: (v: boolean) => void;
 }) {
@@ -50,7 +50,7 @@ export function useRoleRedirect({
 
   useEffect(() => {
     if (pendingRedirect && userId && userRoles && !rolesLoading) {
-      const rolesArray = userRoles && Array.isArray(userRoles) ? userRoles : [];
+      const rolesArray = Array.isArray(userRoles) ? userRoles : [];
       console.log("Detected roles after login:", rolesArray);
       const redirectTo = getRedirectPageForRoles(rolesArray);
       console.log("Redirecting to:", redirectTo);

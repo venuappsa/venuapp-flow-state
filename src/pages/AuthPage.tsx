@@ -33,14 +33,16 @@ export default function AuthPage() {
   const [pendingRedirect, setPendingRedirect] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { data: userRoles, isLoading: rolesLoading } = useUserRoles(userId);
+  
+  const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(userId);
+  
   const isAuthLoading = useAuthLoadingState();
   const { isConnected, isChecking, checkConnection } = useConnectionStatus();
 
   useRoleRedirect({
     pendingRedirect,
     userId,
-    userRoles,
+    userRoles: Array.isArray(userRoles) ? userRoles : [],
     rolesLoading,
     setPendingRedirect,
   });
@@ -59,7 +61,8 @@ export default function AuthPage() {
   useEffect(() => {
     if (userId && userRoles && !rolesLoading && !pendingRedirect) {
       console.log("AuthPage: User and roles ready, redirecting immediately");
-      const redirectPath = getRedirectPageForRoles(userRoles);
+      const roleArray = Array.isArray(userRoles) ? userRoles : [];
+      const redirectPath = getRedirectPageForRoles(roleArray);
       console.log("AuthPage: Direct redirect to:", redirectPath);
       navigate(redirectPath, { replace: true });
     }

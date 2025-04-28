@@ -21,7 +21,7 @@ export default function AuthTransitionWrapper({
   redirectTo = "/auth"
 }: AuthTransitionWrapperProps) {
   const { user } = useUser();
-  const { data: roles, isLoading: rolesLoading } = useUserRoles(user?.id);
+  const { data: roles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [message, setMessage] = useState("Loading...");
@@ -43,15 +43,18 @@ export default function AuthTransitionWrapper({
       }
 
       // Wait for roles to load if we need to check them
-      if (user && !rolesLoading && roles) {
+      if (user && !rolesLoading) {
         console.log("AuthTransitionWrapper: Checking roles:", { allowedRoles, userRoles: roles });
         
         if (allowedRoles.length > 0) {
-          const hasAllowedRole = roles.some(role => allowedRoles.includes(role));
+          // Ensure roles is treated as string[]
+          const userRoles = Array.isArray(roles) ? roles : [];
+          const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
+          
           if (!hasAllowedRole) {
             console.log("AuthTransitionWrapper: User lacks required role, redirecting...");
             setMessage("Redirecting to appropriate page...");
-            const redirectPath = getRedirectPageForRoles(roles);
+            const redirectPath = getRedirectPageForRoles(userRoles);
             navigate(redirectPath, { replace: true });
             return;
           }

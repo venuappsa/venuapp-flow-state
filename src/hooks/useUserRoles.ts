@@ -7,7 +7,7 @@ export function useUserRoles(userId?: string | null) {
     queryKey: ["user-roles", userId],
     queryFn: async () => {
       console.log("useUserRoles: Fetching roles for userId:", userId);
-      if (!userId) return [];
+      if (!userId) return [] as string[];
       
       try {
         // The explicit 'as any' cast fixes the type error until types are updated with the real schema
@@ -23,7 +23,7 @@ export function useUserRoles(userId?: string | null) {
         
         const roles = data?.map((r: { role: string }) => r.role) || [];
         console.log("useUserRoles: Fetched roles:", roles);
-        return roles;
+        return roles as string[];
       } catch (err) {
         console.error("useUserRoles: Exception in fetch:", err);
         throw err;
@@ -31,7 +31,7 @@ export function useUserRoles(userId?: string | null) {
     },
     enabled: !!userId,
     staleTime: 60000, // Cache for 1 minute
-    cacheTime: 300000, // Keep in cache for 5 minutes
+    gcTime: 300000, // Keep in cache for 5 minutes (updated from cacheTime which is deprecated)
     retry: 2, // Retry failed requests up to 2 times
   });
 }

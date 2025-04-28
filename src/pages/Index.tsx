@@ -18,16 +18,21 @@ import Footer from "@/components/Footer";
 
 const Index = () => {
   const { user } = useUser();
-  const { data: roles, isLoading: rolesLoading } = useUserRoles(user?.id);
+  const { data: roles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && roles && roles.length > 0 && !rolesLoading) {
-      console.log("Index: Detected user with roles:", roles);
-      const redirectPath = getRedirectPageForRoles(roles);
-      console.log("Index: Redirecting to:", redirectPath);
-      if (window.location.pathname === "/") {
-        navigate(redirectPath, { replace: true });
+    if (user && !rolesLoading) {
+      // Ensure roles is an array
+      const userRoles = Array.isArray(roles) ? roles : [];
+      
+      if (userRoles.length > 0) {
+        console.log("Index: Detected user with roles:", userRoles);
+        const redirectPath = getRedirectPageForRoles(userRoles);
+        console.log("Index: Redirecting to:", redirectPath);
+        if (window.location.pathname === "/") {
+          navigate(redirectPath, { replace: true });
+        }
       }
     }
   }, [user, roles, rolesLoading, navigate]);

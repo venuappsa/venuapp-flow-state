@@ -30,6 +30,44 @@ export async function createProfileAndRole({
       role: role as Enums<"app_role">,
     } as TablesInsert<"user_roles">);
   if (roleError) throw roleError;
+
+  // If the role is 'host', create a host profile
+  if (role === 'host') {
+    try {
+      const { error: hostProfileError } = await supabase
+        .from("host_profiles")
+        .insert({
+          user_id: userId,
+          contact_name: `${name} ${surname}`.trim(),
+          contact_email: email,
+          contact_phone: phone,
+          subscription_status: "none",
+        });
+      
+      if (hostProfileError) console.error("Failed to create host profile:", hostProfileError);
+    } catch (err) {
+      console.error("Exception creating host profile:", err);
+    }
+  }
+
+  // If the role is 'merchant', create a vendor profile
+  if (role === 'merchant') {
+    try {
+      const { error: vendorProfileError } = await supabase
+        .from("vendor_profiles")
+        .insert({
+          user_id: userId,
+          contact_name: `${name} ${surname}`.trim(),
+          contact_email: email,
+          contact_phone: phone,
+          subscription_status: "none",
+        });
+      
+      if (vendorProfileError) console.error("Failed to create vendor profile:", vendorProfileError);
+    } catch (err) {
+      console.error("Exception creating vendor profile:", err);
+    }
+  }
 }
 
 export async function sendOtp({

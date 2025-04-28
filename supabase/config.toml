@@ -1,1 +1,24 @@
+
 project_id = "xugrsxymeyrfyqdeirjc"
+
+[api]
+enabled = true
+
+[db]
+enabled = true
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+
+[functions]
+enabled = true
+[functions.create-checkout]
+verify_jwt = true
+[functions.check-subscription]
+verify_jwt = true

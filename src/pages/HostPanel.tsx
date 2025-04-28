@@ -2,10 +2,15 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBreakpoint } from "@/hooks/useResponsive";
 import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import HostHeader from "@/components/HostHeader";
+import NoticeBoard from "@/components/NoticeBoard";
+import VendorDiscovery from "@/components/VendorDiscovery";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Building, 
   CalendarPlus,
@@ -15,7 +20,8 @@ import {
   Wallet, 
   BadgePercent,
   ChevronRight,
-  Settings
+  Settings,
+  Store
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,8 +31,10 @@ import { dashboardStats, dummyEvents, dummyVenues } from "@/data/hostDummyData";
 export default function HostPanel() {
   const { user } = useUser();
   const { data: roles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
+  const { subscribed, subscription_tier, isLoading: subLoading } = useSubscription();
   const [activeTab, setActiveTab] = useState('dashboard');
   const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
 
   useEffect(() => {
     // Ensure content is loaded before removing any loading states
@@ -46,6 +54,11 @@ export default function HostPanel() {
 
   const renderDashboard = () => (
     <div className="space-y-8">
+      {/* Notice Board */}
+      <div className="mb-8">
+        <NoticeBoard />
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {dashboardStats.map((stat, index) => (
@@ -181,6 +194,64 @@ export default function HostPanel() {
     </div>
   );
 
+  const renderVendors = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Vendor Management</h2>
+        {!subscribed && (
+          <Link to="/subscribe">
+            <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
+              Upgrade to invite more vendors
+            </Button>
+          </Link>
+        )}
+      </div>
+      
+      <Tabs defaultValue="discover">
+        <TabsList className="mb-6">
+          <TabsTrigger value="discover" className="flex gap-1">
+            <Store className="h-4 w-4" />
+            <span>Discover Vendors</span>
+          </TabsTrigger>
+          <TabsTrigger value="my-vendors" className="flex gap-1">
+            <Store className="h-4 w-4" />
+            <span>My Vendors</span>
+          </TabsTrigger>
+          <TabsTrigger value="applications" className="flex gap-1">
+            <Store className="h-4 w-4" />
+            <span>Applications</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="discover">
+          <VendorDiscovery />
+        </TabsContent>
+        
+        <TabsContent value="my-vendors">
+          <div className="p-12 bg-gray-50 text-center rounded-lg">
+            <Store className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-medium text-gray-700 mb-2">No Vendors Yet</h3>
+            <p className="text-gray-500 max-w-md mx-auto mb-6">
+              You haven't added any vendors to your venues yet. Discover and invite vendors to start collaboration.
+            </p>
+            <Button>Discover Vendors</Button>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="applications">
+          <div className="p-12 bg-gray-50 text-center rounded-lg">
+            <Store className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-medium text-gray-700 mb-2">No Applications</h3>
+            <p className="text-gray-500 max-w-md mx-auto mb-6">
+              You don't have any pending vendor applications. Share your venue link to receive applications.
+            </p>
+            <Button>Generate Venue Link</Button>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+
   return (
     <AuthTransitionWrapper 
       requireAuth={true} 
@@ -201,11 +272,51 @@ export default function HostPanel() {
             </div>
           ) : (
             <div className="max-w-7xl mx-auto py-8">
-              {/* Mobile Dashboard Title */}
-              <h1 className="text-2xl font-bold mb-6">Host Dashboard</h1>
+              {/* Top section with tabs */}
+              <div className="mb-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold">Host Dashboard</h1>
+                    {!subscribed && breakpoint !== "xs" && (
+                      <Link to="/subscribe">
+                        <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
+                          Upgrade to Premium
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                  <TabsList className="bg-gray-100">
+                    <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                    <TabsTrigger value="vendors">Vendors</TabsTrigger>
+                    <TabsTrigger value="events">Events</TabsTrigger>
+                    <TabsTrigger value="finance">Finance</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
               
-              {/* Dashboard Content */}
-              {renderDashboard()}
+              {/* Tab Content */}
+              {activeTab === 'dashboard' && renderDashboard()}
+              {activeTab === 'vendors' && renderVendors()}
+              {activeTab === 'events' && (
+                <div className="bg-white p-6 rounded-lg shadow text-center">
+                  <CalendarPlus className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <h2 className="text-xl font-medium text-gray-700 mb-2">Event Management</h2>
+                  <p className="text-gray-500 max-w-md mx-auto mb-6">
+                    Create and manage events at your venues. Set up ticketing, scheduling, and vendor assignments.
+                  </p>
+                  <Button>Create New Event</Button>
+                </div>
+              )}
+              {activeTab === 'finance' && (
+                <div className="bg-white p-6 rounded-lg shadow text-center">
+                  <Wallet className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <h2 className="text-xl font-medium text-gray-700 mb-2">Financial Dashboard</h2>
+                  <p className="text-gray-500 max-w-md mx-auto mb-6">
+                    Track revenue, expenses, and vendor commissions. Manage your wallet and make withdrawals.
+                  </p>
+                  <Button>View Wallet</Button>
+                </div>
+              )}
             </div>
           )}
         </main>

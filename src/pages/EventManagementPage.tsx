@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +28,11 @@ import { Badge } from "@/components/ui/badge";
 import { dummyEvents } from "@/data/hostDummyData";
 import { toast } from "@/components/ui/use-toast";
 import FetchmanEstimation from "@/components/FetchmanEstimation";
+import { 
+  calculateFetchmanEstimate,
+  calculateFetchmanCost,
+  generateFetchmanStaffingPlan
+} from "@/utils/fetchmanCalculator";
 
 export default function EventManagementPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -37,7 +41,6 @@ export default function EventManagementPage() {
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    // Fetch event data
     setTimeout(() => {
       const foundEvent = dummyEvents.find((e) => e.id === eventId);
       if (foundEvent) {
@@ -384,7 +387,7 @@ export default function EventManagementPage() {
                     This module is coming in the next update. It will allow you to manage vendor 
                     applications, assign locations, and communicate with vendors.
                   </p>
-                  <Button onClick={() => toast({ title: "Coming Soon", description: "Vendor management will be available in the next update." })}>
+                  <Button onClick={() => toast({ title: "Notify Me", description: "Vendor management will be available in the next update." })}>
                     Notify Me
                   </Button>
                 </div>
@@ -406,7 +409,7 @@ export default function EventManagementPage() {
                     The interactive map module allows you to assign vendor locations,
                     plan emergency routes, and visualize your event layout.
                   </p>
-                  <Button onClick={() => toast({ title: "Coming Soon", description: "Interactive map will be available in the next update." })}>
+                  <Button onClick={() => toast({ title: "Notify Me", description: "Interactive map will be available in the next update." })}>
                     Notify Me
                   </Button>
                 </div>
@@ -459,7 +462,7 @@ export default function EventManagementPage() {
                     This section will be available in the next update. It will allow you to create ticket types, 
                     set pricing, and track sales.
                   </p>
-                  <Button onClick={() => toast({ title: "Coming Soon", description: "Ticket management will be available in the next update." })}>
+                  <Button onClick={() => toast({ title: "Notify Me", description: "Ticket management will be available in the next update." })}>
                     Notify Me
                   </Button>
                 </div>
@@ -483,7 +486,7 @@ export default function EventManagementPage() {
                     <p className="text-gray-500 mt-2 mb-6 max-w-md mx-auto">
                       This section will be available in the next update.
                     </p>
-                    <Button onClick={() => toast({ title: "Coming Soon", description: `${tab.charAt(0).toUpperCase() + tab.slice(1)} management will be available in the next update.` })}>
+                    <Button onClick={() => toast({ title: "Notify Me", description: `${tab.charAt(0).toUpperCase() + tab.slice(1)} management will be available in the next update.` })}>
                       Notify Me
                     </Button>
                   </div>

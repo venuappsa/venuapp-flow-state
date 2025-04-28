@@ -106,18 +106,22 @@ const SubscribePage = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6" aria-labelledby="subscribe-form-title">
+                      <h3 id="subscribe-form-title" className="sr-only">Subscribe for early access</h3>
                       <div className="space-y-2">
                         <label htmlFor="name" className="text-sm font-medium">
                           Full Name
                         </label>
                         <Input
                           id="name"
+                          name="name"
                           type="text"
                           placeholder="Your name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
+                          autoComplete="name"
                           required
+                          aria-label="Your full name"
                         />
                       </div>
                       
@@ -127,11 +131,14 @@ const SubscribePage = () => {
                         </label>
                         <Input
                           id="email"
+                          name="email"
                           type="email"
                           placeholder="you@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          autoComplete="email"
                           required
+                          aria-label="Your email address"
                         />
                       </div>
                       
@@ -139,8 +146,8 @@ const SubscribePage = () => {
                         <label htmlFor="role" className="text-sm font-medium">
                           I am interested as a
                         </label>
-                        <Select value={role} onValueChange={setRole}>
-                          <SelectTrigger id="role">
+                        <Select value={role} onValueChange={setRole} name="role">
+                          <SelectTrigger id="role" aria-label="Select your role">
                             <SelectValue placeholder="Select your role" />
                           </SelectTrigger>
                           <SelectContent>
@@ -202,6 +209,7 @@ const SubscribePage = () => {
                 src="/lovable-uploads/2b0ca0a1-3b98-44e8-8563-cf25f85e169f.png" 
                 alt="VenuApp mobile app preview"
                 className="rounded-lg shadow-xl max-w-full md:max-w-3xl mx-auto"
+                loading="lazy"
               />
             </div>
           </div>

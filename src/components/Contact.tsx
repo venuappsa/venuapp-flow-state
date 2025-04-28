@@ -101,26 +101,33 @@ const Contact = () => {
               <CardDescription>Fill out the form and our team will get back to you within 24 hours.</CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4" onSubmit={handleSubmit}>
+              <form className="space-y-4" onSubmit={handleSubmit} aria-labelledby="contact-form-title">
+                <h3 id="contact-form-title" className="sr-only">Contact form</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="firstName" className="text-sm font-medium">First Name</label>
                     <Input 
                       id="firstName" 
+                      name="firstName"
                       placeholder="Enter your first name" 
                       value={formData.firstName}
                       onChange={handleChange}
+                      autoComplete="given-name"
                       required
+                      aria-label="First name"
                     />
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="lastName" className="text-sm font-medium">Last Name</label>
                     <Input 
                       id="lastName" 
+                      name="lastName"
                       placeholder="Enter your last name" 
                       value={formData.lastName}
                       onChange={handleChange}
+                      autoComplete="family-name"
                       required
+                      aria-label="Last name"
                     />
                   </div>
                 </div>
@@ -129,11 +136,14 @@ const Contact = () => {
                   <label htmlFor="email" className="text-sm font-medium">Email</label>
                   <Input 
                     id="email" 
+                    name="email"
                     type="email" 
                     placeholder="Enter your email" 
                     value={formData.email}
                     onChange={handleChange}
+                    autoComplete="email"
                     required
+                    aria-label="Email address"
                   />
                 </div>
                 
@@ -141,11 +151,14 @@ const Contact = () => {
                   <label htmlFor="phone" className="text-sm font-medium">Phone Number</label>
                   <Input 
                     id="phone" 
+                    name="phone"
                     type="tel" 
                     placeholder="Enter your phone number" 
                     value={formData.phone}
                     onChange={handleChange}
+                    autoComplete="tel"
                     required
+                    aria-label="Phone number"
                   />
                 </div>
                 
@@ -153,10 +166,13 @@ const Contact = () => {
                   <label htmlFor="role" className="text-sm font-medium">I am a...</label>
                   <select 
                     id="role" 
+                    name="role"
                     className="w-full rounded-md border border-input bg-transparent px-3 py-2"
                     value={formData.role}
                     onChange={handleChange}
+                    autoComplete="off"
                     required
+                    aria-label="Your role"
                   >
                     <option value="">Please select</option>
                     <option value="user">Customer</option>
@@ -171,11 +187,14 @@ const Contact = () => {
                   <label htmlFor="message" className="text-sm font-medium">Message</label>
                   <Textarea 
                     id="message" 
+                    name="message"
                     placeholder="Enter your message" 
                     rows={4} 
                     value={formData.message}
                     onChange={handleChange}
+                    autoComplete="off"
                     required
+                    aria-label="Your message"
                   />
                 </div>
                 

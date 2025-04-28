@@ -71,8 +71,9 @@ export default function AuthForm({
     <form
       className="flex flex-col gap-4 bg-white p-6 rounded shadow max-w-sm w-full"
       onSubmit={onSubmit}
+      aria-labelledby="auth-form-title"
     >
-      <h2 className="text-xl font-bold text-center">
+      <h2 id="auth-form-title" className="text-xl font-bold text-center">
         {type === "login" ? "Login" : "Create an account"}
       </h2>
       <div style={{ display: "none" }}>
@@ -92,30 +93,43 @@ export default function AuthForm({
           <Input
             required
             placeholder="Name"
+            name="given-name"
+            id="given-name"
             value={name}
             autoComplete="given-name"
             onChange={e => setName(e.target.value)}
+            aria-label="First name"
           />
           <Input
             required
             placeholder="Surname"
+            name="family-name"
+            id="family-name"
             value={surname}
             autoComplete="family-name"
             onChange={e => setSurname(e.target.value)}
+            aria-label="Last name"
           />
           <Input
             required
             placeholder="Phone"
+            name="tel"
+            id="tel"
             value={phone}
             autoComplete="tel"
             type="tel"
             onChange={e => setPhone(e.target.value)}
+            aria-label="Phone number"
           />
           <select
             required
             value={role}
+            name="role"
+            id="role"
+            autoComplete="off"
             onChange={e => setRole(e.target.value as Enums<"app_role"> | "")}
             className="bg-gray-100 border rounded px-3 py-2 text-base"
+            aria-label="Select your role"
           >
             <option value="">Select your role</option>
             {ROLE_OPTIONS.map(opt => (
@@ -130,27 +144,36 @@ export default function AuthForm({
         required
         autoFocus
         placeholder="Email"
+        name="email"
+        id="email"
         type="email"
         value={email}
         autoComplete="email"
         onChange={e => setEmail(e.target.value)}
+        aria-label="Email address"
       />
       <Input
         required
         placeholder="Password"
+        name={type === "login" ? "current-password" : "new-password"}
+        id={type === "login" ? "current-password" : "new-password"}
         type="password"
         value={password}
         autoComplete={type === "login" ? "current-password" : "new-password"}
         onChange={e => setPassword(e.target.value)}
+        aria-label="Password"
       />
       {type === "signup" && (
         <Input
           required
           placeholder="Confirm password"
+          name="confirm-password"
+          id="confirm-password"
           type="password"
           value={confirmPassword}
           autoComplete="new-password"
           onChange={e => setConfirmPassword(e.target.value)}
+          aria-label="Confirm password"
         />
       )}
       <Button disabled={loading} type="submit">

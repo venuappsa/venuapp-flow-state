@@ -90,7 +90,8 @@ export default function VenueCreate() {
           
           <Card className="p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" aria-labelledby="venue-form-title">
+                <h2 id="venue-form-title" className="sr-only">Create venue form</h2>
                 <FormField
                   control={form.control}
                   name="name"
@@ -98,7 +99,11 @@ export default function VenueCreate() {
                     <FormItem>
                       <FormLabel>Venue Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. The Horizon Conference Center" {...field} />
+                        <Input 
+                          placeholder="e.g. The Horizon Conference Center" 
+                          {...field} 
+                          autoComplete="organization"
+                        />
                       </FormControl>
                       <FormDescription>
                         The official name of your venue that will be visible to vendors and customers.
@@ -119,6 +124,7 @@ export default function VenueCreate() {
                           placeholder="Describe your venue and what makes it special..." 
                           className="min-h-[120px]" 
                           {...field} 
+                          autoComplete="off"
                         />
                       </FormControl>
                       <FormMessage />
@@ -134,7 +140,11 @@ export default function VenueCreate() {
                       <FormItem>
                         <FormLabel>Street Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Event Street" {...field} />
+                          <Input 
+                            placeholder="123 Event Street" 
+                            {...field} 
+                            autoComplete="street-address"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -148,7 +158,11 @@ export default function VenueCreate() {
                       <FormItem>
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                          <Input placeholder="Johannesburg" {...field} />
+                          <Input 
+                            placeholder="Johannesburg" 
+                            {...field} 
+                            autoComplete="address-level2"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -164,7 +178,11 @@ export default function VenueCreate() {
                       <FormItem>
                         <FormLabel>Province</FormLabel>
                         <FormControl>
-                          <Input placeholder="Gauteng" {...field} />
+                          <Input 
+                            placeholder="Gauteng" 
+                            {...field} 
+                            autoComplete="address-level1"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -178,7 +196,11 @@ export default function VenueCreate() {
                       <FormItem>
                         <FormLabel>Postal Code</FormLabel>
                         <FormControl>
-                          <Input placeholder="2000" {...field} />
+                          <Input 
+                            placeholder="2000" 
+                            {...field} 
+                            autoComplete="postal-code"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -198,6 +220,7 @@ export default function VenueCreate() {
                           placeholder="100" 
                           {...field}
                           onChange={(e) => field.onChange(Number(e.target.value))}
+                          autoComplete="off"
                         />
                       </FormControl>
                       <FormDescription>

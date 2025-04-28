@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import LogoutButton from "@/components/LogoutButton";
+import SecurePanelButton from "@/components/SecurePanelButton";
 import AdminDashboard from "@/components/AdminDashboard";
 import AdminHostVendorManager from "@/components/AdminHostVendorManager";
 
@@ -108,7 +108,7 @@ export default function AdminPanel() {
                 Admin
               </span>
               <div className="flex-1" />
-              <LogoutButton />
+              <SecurePanelButton />
             </div>
             {selected === "dashboard" && (
               <div className="rounded-2xl bg-white shadow-xl p-0 mb-4 flex flex-col items-stretch gap-0 md:flex-row md:gap-10">

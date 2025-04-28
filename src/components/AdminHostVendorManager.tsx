@@ -42,6 +42,9 @@ type SuspensionDialogData = {
 
 type DetailViewData = AugmentedRecord | null;
 
+// Define subscription status type for better type safety
+type SubscriptionStatusType = "active" | "expired" | "trial" | "none";
+
 async function fetchProfiles() {
   const hostPromise = supabase
     .from("host_profiles")
@@ -86,7 +89,8 @@ export default function AdminHostVendorManager() {
   const [searchQuery, setSearchQuery] = useState("");
   // Fix: Explicitly type this as "all" | "pending" | "verified" | "declined" to match verification_status type
   const [verificationFilter, setVerificationFilter] = useState<"all" | "pending" | "verified" | "declined">("all");
-  const [subscriptionFilter, setSubscriptionFilter] = useState<string | "all">("all");
+  // Fix: Explicitly type this as "all" | SubscriptionStatusType to match subscription_status type
+  const [subscriptionFilter, setSubscriptionFilter] = useState<"all" | SubscriptionStatusType>("all");
   const [suspensionFilter, setSuspensionFilter] = useState<boolean | "all">("all");
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -301,7 +305,11 @@ export default function AdminHostVendorManager() {
           <select
             className="px-3 py-2 rounded border text-sm bg-white"
             value={verificationFilter}
-            onChange={(e) => setVerificationFilter(e.target.value)}
+            onChange={(e) => {
+              // Fix: Use type assertion to ensure the value is one of the allowed types
+              const value = e.target.value as "all" | "pending" | "verified" | "declined";
+              setVerificationFilter(value);
+            }}
           >
             <option value="all">All Verifications</option>
             <option value="pending">Pending</option>
@@ -312,7 +320,11 @@ export default function AdminHostVendorManager() {
           <select
             className="px-3 py-2 rounded border text-sm bg-white"
             value={subscriptionFilter}
-            onChange={(e) => setSubscriptionFilter(e.target.value)}
+            onChange={(e) => {
+              // Fix: Use type assertion to ensure the value is one of the allowed types
+              const value = e.target.value as "all" | SubscriptionStatusType;
+              setSubscriptionFilter(value);
+            }}
           >
             <option value="all">All Subscriptions</option>
             <option value="active">Active</option>

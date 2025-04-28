@@ -1,207 +1,235 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Map, Store, Users, AlertTriangle } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { useRef, useEffect } from "react";
 import { FetchmanAllocationResult } from "@/utils/fetchmanCalculator";
 
 interface EventVenueMapProps {
   venueName: string;
-  floorPlan?: string;
   vendorCount: number;
-  fetchmanAllocation?: FetchmanAllocationResult;
+  fetchmanAllocation: FetchmanAllocationResult;
+  activeLayer?: 'all' | 'vendors' | 'staff' | 'exits';
 }
 
-export default function EventVenueMap({ venueName, floorPlan, vendorCount, fetchmanAllocation }: EventVenueMapProps) {
-  const [activeView, setActiveView] = useState("overview");
-  const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  
-  // Mock data for venue map - in a real app, this would come from a database
-  const vendorPositions = Array(vendorCount).fill(0).map((_, i) => ({
-    id: `vendor-${i+1}`,
-    name: `Vendor ${i+1}`,
-    x: 100 + (i % 5) * 80,
-    y: 100 + Math.floor(i / 5) * 80,
-    type: i % 3 === 0 ? 'Food' : i % 3 === 1 ? 'Merchandise' : 'Services'
-  }));
-  
-  const fetchmanPositions = fetchmanAllocation ? [
-    ...Array(fetchmanAllocation.allocation.entranceAndExit).fill(0).map((_, i) => ({
-      id: `fetchman-entrance-${i+1}`,
-      name: `Entrance Fetchman ${i+1}`,
-      x: 50 + i * 30,
-      y: 50,
-      area: 'Entrance'
-    })),
-    ...Array(fetchmanAllocation.allocation.vendorAreas).fill(0).map((_, i) => ({
-      id: `fetchman-vendor-${i+1}`,
-      name: `Vendor Area Fetchman ${i+1}`,
-      x: 100 + i * 40,
-      y: 200,
-      area: 'Vendor Areas'
-    })),
-    ...Array(fetchmanAllocation.allocation.generalAreas).fill(0).map((_, i) => ({
-      id: `fetchman-general-${i+1}`,
-      name: `General Area Fetchman ${i+1}`,
-      x: 150 + i * 35,
-      y: 300,
-      area: 'General Areas'
-    })),
-    ...Array(fetchmanAllocation.allocation.emergencyReserve).fill(0).map((_, i) => ({
-      id: `fetchman-emergency-${i+1}`,
-      name: `Emergency Reserve ${i+1}`,
-      x: 200 + i * 40,
-      y: 100,
-      area: 'Emergency Reserve'
-    }))
-  ] : [];
-  
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    setDraggedItem(id);
-    e.dataTransfer.setData("text/plain", id);
-  };
-  
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (draggedItem) {
-      // In a real app, we'd update coordinates in the database
-      toast({
-        title: "Position Updated",
-        description: `${draggedItem} position has been updated on the map.`,
-      });
-      setDraggedItem(null);
+export default function EventVenueMap({ 
+  venueName, 
+  vendorCount, 
+  fetchmanAllocation,
+  activeLayer = 'all'
+}: EventVenueMapProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size to match display size
+    const parent = canvas.parentElement;
+    if (parent) {
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
     }
-  };
-  
-  const renderPlaceholder = () => (
-    <div className="flex flex-col items-center justify-center p-12 bg-gray-100 rounded-lg h-96">
-      <Map className="h-16 w-16 text-gray-400 mb-4" />
-      <h3 className="text-xl font-medium text-gray-700 mb-2">Interactive Venue Map</h3>
-      <p className="text-gray-500 text-center mb-6 max-w-md">
-        Upload a floor plan to place vendors and fetchmen on the map. 
-        Drag and drop to position items and plan your event layout.
-      </p>
-      <Button onClick={() => toast({ title: "Upload Prompt", description: "Floor plan upload functionality coming soon." })}>
-        Upload Floor Plan
-      </Button>
-    </div>
-  );
-  
-  const renderMap = () => (
-    <div 
-      className="relative bg-gray-100 border border-gray-200 rounded-lg h-96 overflow-hidden"
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
-      {floorPlan ? (
-        <img src={floorPlan} alt={`${venueName} floor plan`} className="w-full h-full object-contain" />
-      ) : (
-        <div className="absolute inset-0 grid grid-cols-12 grid-rows-12">
-          {Array(144).fill(0).map((_, i) => (
-            <div key={i} className="border border-gray-200 border-dashed"></div>
-          ))}
-        </div>
-      )}
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw venue outline
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(20, 20, canvas.width - 40, canvas.height - 40, 10);
+    ctx.stroke();
+
+    // Draw floor grid
+    ctx.strokeStyle = '#e5e5e5';
+    ctx.lineWidth = 1;
+    const gridSize = 40;
+    for (let x = 20; x < canvas.width - 20; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 20);
+      ctx.lineTo(x, canvas.height - 20);
+      ctx.stroke();
+    }
+    
+    for (let y = 20; y < canvas.height - 20; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(20, y);
+      ctx.lineTo(canvas.width - 20, y);
+      ctx.stroke();
+    }
+
+    // Draw venue name
+    ctx.fillStyle = '#333';
+    ctx.font = '16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(venueName, canvas.width / 2, 50);
+
+    // Draw vendor locations if vendor layer is active
+    if (activeLayer === 'all' || activeLayer === 'vendors') {
+      ctx.fillStyle = '#10b981'; // Green
+      const vendorSpacing = (canvas.width - 80) / Math.min(12, vendorCount);
+      for (let i = 0; i < Math.min(12, vendorCount); i++) {
+        const x = 40 + i * vendorSpacing;
+        const y = canvas.height - 80;
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Vendor label
+        ctx.fillStyle = '#333';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`V${i+1}`, x, y + 20);
+        ctx.fillStyle = '#10b981'; // Reset for next vendor
+      }
+    }
+
+    // Draw entrance and exits if exits layer is active
+    if (activeLayer === 'all' || activeLayer === 'exits') {
+      // Main entrance
+      ctx.fillStyle = '#3b82f6'; // Blue
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, 30, 8, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = '#333';
+      ctx.fillText("Entrance", canvas.width / 2, 60);
       
-      {/* Render vendors */}
-      {activeView === "vendors" && vendorPositions.map((vendor) => (
-        <div
-          key={vendor.id}
-          className="absolute flex flex-col items-center cursor-move"
-          style={{ left: vendor.x, top: vendor.y }}
-          draggable
-          onDragStart={(e) => handleDragStart(e, vendor.id)}
-        >
-          <div className={`
-            w-10 h-10 rounded-full flex items-center justify-center
-            ${vendor.type === 'Food' ? 'bg-orange-100 text-orange-600' : 
-              vendor.type === 'Merchandise' ? 'bg-blue-100 text-blue-600' : 
-              'bg-purple-100 text-purple-600'}
-          `}>
-            <Store className="h-5 w-5" />
-          </div>
-          <span className="text-xs mt-1 font-medium">{vendor.name}</span>
-          <span className="text-xs text-gray-500">{vendor.type}</span>
-        </div>
-      ))}
+      // Emergency exits
+      ctx.fillStyle = '#ef4444'; // Red
       
-      {/* Render fetchmen */}
-      {activeView === "fetchmen" && fetchmanPositions.map((fetchman) => (
-        <div
-          key={fetchman.id}
-          className="absolute flex flex-col items-center cursor-move"
-          style={{ left: fetchman.x, top: fetchman.y }}
-          draggable
-          onDragStart={(e) => handleDragStart(e, fetchman.id)}
-        >
-          <div className={`
-            w-10 h-10 rounded-full flex items-center justify-center
-            ${fetchman.area === 'Entrance' ? 'bg-green-100 text-green-600' : 
-              fetchman.area === 'Vendor Areas' ? 'bg-blue-100 text-blue-600' : 
-              fetchman.area === 'General Areas' ? 'bg-amber-100 text-amber-600' :
-              'bg-red-100 text-red-600'}
-          `}>
-            <Users className="h-5 w-5" />
-          </div>
-          <span className="text-xs mt-1 font-medium">{fetchman.name}</span>
-        </div>
-      ))}
+      // Left exit
+      ctx.beginPath();
+      ctx.arc(30, canvas.height / 2, 8, 0, 2 * Math.PI);
+      ctx.fill();
       
-      {/* Emergency exits */}
-      {activeView === "emergency" && (
-        <>
-          <div className="absolute top-10 right-10">
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-            </div>
-            <span className="text-xs font-medium block text-center mt-1">Exit 1</span>
-          </div>
-          <div className="absolute bottom-10 left-10">
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-            </div>
-            <span className="text-xs font-medium block text-center mt-1">Exit 2</span>
-          </div>
-        </>
-      )}
-    </div>
-  );
+      // Right exit
+      ctx.beginPath();
+      ctx.arc(canvas.width - 30, canvas.height / 2, 8, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Back exit
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height - 30, 8, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Exit labels
+      ctx.fillStyle = '#333';
+      ctx.font = '10px sans-serif';
+      ctx.fillText("Exit", 30, canvas.height / 2 - 15);
+      ctx.fillText("Exit", canvas.width - 30, canvas.height / 2 - 15);
+      ctx.fillText("Exit", canvas.width / 2, canvas.height - 45);
+    }
+
+    // Draw fetchmen and staff positions if staff layer is active
+    if (activeLayer === 'all' || activeLayer === 'staff') {
+      // Draw fetchmen
+      ctx.fillStyle = '#f59e0b'; // Amber
+      const totalFetchmen = 
+        fetchmanAllocation.entranceFetchmen + 
+        fetchmanAllocation.internalFetchmen + 
+        fetchmanAllocation.vendorFetchmen;
+      
+      // Position fetchmen around the venue
+      const fetchmenPerSide = Math.ceil(totalFetchmen / 4);
+      let fetchmenDrawn = 0;
+      
+      // Top side fetchmen
+      for (let i = 0; i < Math.min(fetchmenPerSide, totalFetchmen - fetchmenDrawn); i++) {
+        const x = canvas.width / 4 + i * (canvas.width / 2) / fetchmenPerSide;
+        const y = 80;
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        fetchmenDrawn++;
+      }
+      
+      // Right side fetchmen
+      for (let i = 0; i < Math.min(fetchmenPerSide, totalFetchmen - fetchmenDrawn); i++) {
+        const x = canvas.width - 80;
+        const y = canvas.height / 4 + i * (canvas.height / 2) / fetchmenPerSide;
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        fetchmenDrawn++;
+      }
+      
+      // Bottom side fetchmen
+      for (let i = 0; i < Math.min(fetchmenPerSide, totalFetchmen - fetchmenDrawn); i++) {
+        const x = canvas.width / 4 + i * (canvas.width / 2) / fetchmenPerSide;
+        const y = canvas.height - 80;
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        fetchmenDrawn++;
+      }
+      
+      // Left side fetchmen
+      for (let i = 0; i < Math.min(fetchmenPerSide, totalFetchmen - fetchmenDrawn); i++) {
+        const x = 80;
+        const y = canvas.height / 4 + i * (canvas.height / 2) / fetchmenPerSide;
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        fetchmenDrawn++;
+      }
+      
+      // Draw security staff
+      ctx.fillStyle = '#8b5cf6'; // Purple
+      for (let i = 0; i < fetchmanAllocation.securityStaff; i++) {
+        const angle = (i / fetchmanAllocation.securityStaff) * 2 * Math.PI;
+        const radius = Math.min(canvas.width, canvas.height) * 0.35;
+        const x = canvas.width / 2 + radius * Math.cos(angle);
+        const y = canvas.height / 2 + radius * Math.sin(angle);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+
+    // Draw other venue features
+    if (activeLayer === 'all') {
+      // Main stage or central area
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.2)'; // Light blue
+      ctx.beginPath();
+      ctx.ellipse(canvas.width / 2, canvas.height / 2, canvas.width / 4, canvas.height / 6, 0, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = '#333';
+      ctx.fillText("Main Area", canvas.width / 2, canvas.height / 2);
+      
+      // Restrooms
+      ctx.fillStyle = 'rgba(236, 72, 153, 0.2)'; // Light pink
+      ctx.beginPath();
+      ctx.rect(50, 50, 60, 30);
+      ctx.fill();
+      ctx.fillStyle = '#333';
+      ctx.font = '10px sans-serif';
+      ctx.fillText("Restrooms", 80, 70);
+      
+      // First aid
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.2)'; // Light green
+      ctx.beginPath();
+      ctx.rect(canvas.width - 110, 50, 60, 30);
+      ctx.fill();
+      ctx.fillStyle = '#333';
+      ctx.font = '10px sans-serif';
+      ctx.fillText("First Aid", canvas.width - 80, 70);
+    }
+
+    // Legend at bottom
+    ctx.fillStyle = '#333';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${vendorCount} Vendors | ${totalFetchmen} Fetchmen | ${fetchmanAllocation.securityStaff} Security`, 30, canvas.height - 10);
+
+  }, [venueName, vendorCount, fetchmanAllocation, activeLayer]);
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Map className="h-5 w-5 text-venu-orange" />
-          {venueName} - Venue Map
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Tabs value={activeView} onValueChange={setActiveView}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="vendors">Vendors ({vendorCount})</TabsTrigger>
-            <TabsTrigger value="fetchmen">Fetchmen ({fetchmanPositions.length})</TabsTrigger>
-            <TabsTrigger value="emergency">Emergency</TabsTrigger>
-          </TabsList>
-          
-          {floorPlan || activeView !== "overview" ? renderMap() : renderPlaceholder()}
-          
-          <div className="flex justify-between mt-4">
-            <Button variant="outline" onClick={() => toast({ title: "Print Map", description: "Printing functionality coming soon." })}>
-              Print Map
-            </Button>
-            <Button onClick={() => toast({ title: "Save Layout", description: "Layout has been saved." })}>
-              Save Layout
-            </Button>
-          </div>
-        </Tabs>
-      </CardContent>
-    </Card>
+    <canvas 
+      ref={canvasRef}
+      className="w-full h-full"
+      style={{ display: 'block' }}
+    ></canvas>
   );
 }

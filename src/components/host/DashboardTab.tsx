@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,10 +43,29 @@ export default function DashboardTab() {
     if (stat.link) {
       navigate(stat.link);
     } else {
-      toast({
-        title: stat.title,
-        description: `View detailed ${stat.title.toLowerCase()} metrics and analytics`,
-      });
+      switch (stat.title.toLowerCase()) {
+        case "total revenue":
+        case "monthly revenue":
+          navigate("/host/finance");
+          break;
+        case "total guests":
+        case "guests this month":
+          navigate("/host/guests");
+          break;
+        case "events":
+        case "upcoming events":
+          navigate("/host/events");
+          break;
+        case "vendors":
+        case "active vendors":
+          navigate("/host/vendors");
+          break;
+        default:
+          toast({
+            title: stat.title,
+            description: `View detailed ${stat.title.toLowerCase()} metrics and analytics`,
+          });
+      }
     }
   };
 

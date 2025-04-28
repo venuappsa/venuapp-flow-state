@@ -43,6 +43,35 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
   
   const currentTierLevel = getTierLevel(subscriptionTier);
   
+  const handleTabClick = (tab: string) => {
+    if (currentTierLevel < 1 && tab !== "revenue") {
+      handleLockedFeatureClick();
+      return;
+    }
+    
+    setSelectedTab(tab);
+    
+    // Navigate to appropriate page based on tab
+    switch(tab) {
+      case "revenue":
+        navigate("/host/finance");
+        break;
+      case "guests":
+      case "guestDetails":
+        navigate("/host/guests");
+        break;
+      case "vendors":
+        navigate("/host/vendors");
+        break;
+      case "forecasts":
+        navigate("/host/events");
+        break;
+      default:
+        // Stay on current page if no match
+        break;
+    }
+  };
+
   const handleLockedFeatureClick = () => {
     toast({
       title: "Premium Feature",
@@ -122,8 +151,19 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
       
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="w-full bg-white border border-gray-100 p-1 rounded-lg">
-          <TabsTrigger value="revenue" className="flex-1">Revenue</TabsTrigger>
-          <TabsTrigger value="guests" className="flex-1" disabled={currentTierLevel < 1}>
+          <TabsTrigger 
+            value="revenue" 
+            className="flex-1"
+            onClick={() => handleTabClick("revenue")}
+          >
+            Revenue
+          </TabsTrigger>
+          <TabsTrigger 
+            value="guests" 
+            className="flex-1" 
+            disabled={currentTierLevel < 1}
+            onClick={() => handleTabClick("guests")}
+          >
             {currentTierLevel < 1 ? (
               <div className="flex items-center gap-1" onClick={handleLockedFeatureClick}>
                 Guests <Lock className="h-3 w-3" />
@@ -132,7 +172,12 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
               "Guests"
             )}
           </TabsTrigger>
-          <TabsTrigger value="guestDetails" className="flex-1" disabled={currentTierLevel < 2}>
+          <TabsTrigger 
+            value="guestDetails" 
+            className="flex-1" 
+            disabled={currentTierLevel < 2}
+            onClick={() => handleTabClick("guestDetails")}
+          >
             {currentTierLevel < 2 ? (
               <div className="flex items-center gap-1" onClick={handleLockedFeatureClick}>
                 Guest Details <Lock className="h-3 w-3" />
@@ -141,7 +186,12 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
               "Guest Details"
             )}
           </TabsTrigger>
-          <TabsTrigger value="vendors" className="flex-1" disabled={currentTierLevel < 2}>
+          <TabsTrigger 
+            value="vendors" 
+            className="flex-1" 
+            disabled={currentTierLevel < 2}
+            onClick={() => handleTabClick("vendors")}
+          >
             {currentTierLevel < 2 ? (
               <div className="flex items-center gap-1" onClick={handleLockedFeatureClick}>
                 Vendors <Lock className="h-3 w-3" />
@@ -150,7 +200,12 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
               "Vendors"
             )}
           </TabsTrigger>
-          <TabsTrigger value="forecasts" className="flex-1" disabled={currentTierLevel < 3}>
+          <TabsTrigger 
+            value="forecasts" 
+            className="flex-1" 
+            disabled={currentTierLevel < 3}
+            onClick={() => handleTabClick("forecasts")}
+          >
             {currentTierLevel < 3 ? (
               <div className="flex items-center gap-1" onClick={handleLockedFeatureClick}>
                 Forecasts <Lock className="h-3 w-3" />
@@ -257,6 +312,17 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
                 <ChartLegend>
                   <ChartLegendContent />
                 </ChartLegend>
+              </div>
+              
+              <div className="mt-4 text-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-venu-orange"
+                  onClick={() => navigate("/host/finance")}
+                >
+                  View Detailed Revenue Analysis <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
               </div>
             </CardContent>
           </Card>

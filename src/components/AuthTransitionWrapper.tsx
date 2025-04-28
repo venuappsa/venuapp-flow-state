@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
@@ -31,7 +30,6 @@ export default function AuthTransitionWrapper({
 
     const checkAuthAndRedirect = async () => {
       try {
-        // Wait a bit to prevent flash
         await new Promise(resolve => setTimeout(resolve, 100));
         
         if (!mounted) return;
@@ -45,6 +43,7 @@ export default function AuthTransitionWrapper({
         if (!rolesLoading && roles && allowedRoles.length > 0) {
           const hasAllowedRole = roles.some(role => allowedRoles.includes(role));
           if (!hasAllowedRole) {
+            console.log("User lacks required role, redirecting...");
             setMessage("Redirecting to appropriate page...");
             const redirectPath = getRedirectPageForRoles(roles);
             navigate(redirectPath, { replace: true });
@@ -52,7 +51,6 @@ export default function AuthTransitionWrapper({
           }
         }
 
-        // If we reach here, authentication is valid
         setIsTransitioning(false);
 
       } catch (error) {

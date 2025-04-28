@@ -52,8 +52,9 @@ export function useRoleRedirect({
   useEffect(() => {
     if (pendingRedirect && userId && userRoles && !rolesLoading) {
       const rolesArray = userRoles && Array.isArray(userRoles) ? userRoles : [];
-      console.log("Detected roles after login on AuthPage:", rolesArray);
+      console.log("Detected roles after login:", rolesArray);
       const redirectTo = getRedirectPageForRoles(rolesArray);
+      console.log("Redirecting to:", redirectTo);
       if (redirectTo !== window.location.pathname) {
         navigate(redirectTo, { replace: true });
       }
@@ -61,3 +62,4 @@ export function useRoleRedirect({
     }
   }, [pendingRedirect, userId, userRoles, rolesLoading, navigate, setPendingRedirect]);
 }
+

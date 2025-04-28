@@ -46,8 +46,10 @@ export default function AuthPage() {
   });
 
   useEffect(() => {
+    console.log("Checking initial session...");
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
+        console.log("Found existing session, initiating redirect...");
         setUserId(session.user.id);
         setPendingRedirect(true);
       }

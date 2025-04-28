@@ -96,6 +96,7 @@ export default function AdminHostVendorManager() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
+  // Fix: Make sure verification dialog data is properly typed
   const [verificationDialog, setVerificationDialog] = useState<VerificationDialogData | null>(null);
   const [suspensionDialog, setSuspensionDialog] = useState<SuspensionDialogData | null>(null);
   const [detailView, setDetailView] = useState<DetailViewData>(null);
@@ -112,7 +113,18 @@ export default function AdminHostVendorManager() {
   });
 
   const updateVerificationStatus = useMutation({
-    mutationFn: async ({ id, type, status, reason }: { id: string; type: RoleType; status: string; reason: string }) => {
+    mutationFn: async ({ 
+      id, 
+      type, 
+      // Fix: Ensure status is properly typed to match verification_status
+      status, 
+      reason 
+    }: { 
+      id: string; 
+      type: RoleType; 
+      status: "verified" | "declined" | "pending"; 
+      reason: string 
+    }) => {
       const table = type === "host" ? "host_profiles" : "vendor_profiles";
       const { error } = await supabase
         .from(table)
@@ -227,6 +239,7 @@ export default function AdminHostVendorManager() {
     updateVerificationStatus.mutate({
       id: verificationDialog.record.id,
       type: verificationDialog.record.type,
+      // Fix: Ensure status is properly typed as "verified" | "declined" | "pending"
       status: verificationDialog.action === "approve" ? "verified" : "declined",
       reason: verificationReason,
     });

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -21,12 +20,29 @@ import {
   BadgePercent,
   ChevronRight,
   Settings,
-  Store
+  Store,
+  LineChart,
+  Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { dashboardStats, dummyEvents, dummyVenues } from "@/data/hostDummyData";
+import SalesBreakdownDialog from "@/components/SalesBreakdownDialog";
+import { generateEventSalesData } from "@/data/salesData";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { toast } from "@/components/ui/use-toast";
 
 export default function HostPanel() {
   const { user } = useUser();
@@ -36,8 +52,13 @@ export default function HostPanel() {
   const isMobile = useIsMobile();
   const breakpoint = useBreakpoint();
 
+  const [salesDialogOpen, setSalesDialogOpen] = useState(false);
+  const [selectedSalesData, setSelectedSalesData] = useState<any>(null);
+  
+  const [venueDialogOpen, setVenueDialogOpen] = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState<any>(null);
+
   useEffect(() => {
-    // Ensure content is loaded before removing any loading states
     return () => {
       document.body.style.overflow = 'auto';
     };
@@ -52,17 +73,52 @@ export default function HostPanel() {
     }).format(date);
   };
 
+  const handleOpenSalesBreakdown = (eventId: string, eventName: string, revenue: number) => {
+    const salesData = generateEventSalesData(eventId, eventName, revenue);
+    setSelectedSalesData(salesData);
+    setSalesDialogOpen(true);
+  };
+
+  const handleOpenVenueDetails = (venue: any) => {
+    setSelectedVenue(venue);
+    setVenueDialogOpen(true);
+  };
+
+  const handleStatsCardClick = (stat: any) => {
+    toast({
+      title: stat.title,
+      description: `View detailed ${stat.title.toLowerCase()} metrics and analytics`,
+    });
+  };
+
+  const handleGenerateVenueLink = (venueId: string, venueName: string) => {
+    const shareableLink = `https://venuapp.co.za/v/${venueId}`;
+    navigator.clipboard.writeText(shareableLink).then(
+      () => {
+        toast({
+          title: "Link copied",
+          description: `Shareable link for ${venueName} copied to clipboard`,
+        });
+      },
+      (err) => {
+        console.error('Could not copy text: ', err);
+      }
+    );
+  };
+
   const renderDashboard = () => (
     <div className="space-y-8">
-      {/* Notice Board */}
       <div className="mb-8">
         <NoticeBoard />
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {dashboardStats.map((stat, index) => (
-          <Card key={index} className="overflow-hidden hover:shadow-md transition-shadow">
+          <Card 
+            key={index} 
+            className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => handleStatsCardClick(stat)}
+          >
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="bg-gray-100 p-2 rounded-full">
@@ -82,7 +138,6 @@ export default function HostPanel() {
         ))}
       </div>
 
-      {/* Venues Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Your Venues</h2>
@@ -96,7 +151,11 @@ export default function HostPanel() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {dummyVenues.map((venue) => (
-            <Card key={venue.id} className="overflow-hidden hover:shadow-md transition-shadow">
+            <Card 
+              key={venue.id} 
+              className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => handleOpenVenueDetails(venue)}
+            >
               <div className="h-32 overflow-hidden relative">
                 <img 
                   src={venue.imageUrl} 
@@ -115,7 +174,13 @@ export default function HostPanel() {
                     <h3 className="font-medium truncate">{venue.name}</h3>
                     <p className="text-sm text-gray-500">{venue.location}</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
+                  <Button variant="ghost" size="sm" className="p-0 h-8 w-8" onClick={(e) => {
+                    e.stopPropagation();
+                    toast({
+                      title: "Venue Settings",
+                      description: `Manage settings for ${venue.name}`,
+                    });
+                  }}>
                     <Settings className="h-4 w-4" />
                   </Button>
                 </div>
@@ -128,9 +193,22 @@ export default function HostPanel() {
                     <CalendarPlus className="h-4 w-4 text-venu-orange mr-1" />
                     <span>{venue.upcoming_events} upcoming events</span>
                   </div>
-                  <Button variant="ghost" size="sm" className="p-1">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  <div className="flex space-x-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="p-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGenerateVenueLink(venue.id, venue.name);
+                      }}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="p-1">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -138,7 +216,6 @@ export default function HostPanel() {
         </div>
       </div>
 
-      {/* Upcoming Events Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Upcoming Events</h2>
@@ -157,7 +234,41 @@ export default function HostPanel() {
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ticket Sales</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="text-left text-xs font-medium text-gray-500 uppercase hover:text-venu-orange focus:outline-none flex items-center gap-1">
+                            Event Sales
+                            <LineChart className="h-3 w-3" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-3">
+                          <div className="font-medium text-sm mb-2">Filter by revenue type</div>
+                          <div className="space-y-1">
+                            <div className="flex items-center">
+                              <input type="checkbox" id="filter-ticket" className="mr-2" defaultChecked />
+                              <label htmlFor="filter-ticket" className="text-sm">Ticket Sales</label>
+                            </div>
+                            <div className="flex items-center">
+                              <input type="checkbox" id="filter-merchant" className="mr-2" defaultChecked />
+                              <label htmlFor="filter-merchant" className="text-sm">Merchant Fees</label>
+                            </div>
+                            <div className="flex items-center">
+                              <input type="checkbox" id="filter-commission" className="mr-2" defaultChecked />
+                              <label htmlFor="filter-commission" className="text-sm">Commission</label>
+                            </div>
+                            <div className="flex items-center">
+                              <input type="checkbox" id="filter-food" className="mr-2" defaultChecked />
+                              <label htmlFor="filter-food" className="text-sm">Food & Drinks</label>
+                            </div>
+                            <div className="flex items-center">
+                              <input type="checkbox" id="filter-other" className="mr-2" defaultChecked />
+                              <label htmlFor="filter-other" className="text-sm">Other</label>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
                     <th scope="col" className="relative px-4 py-3"></th>
                   </tr>
@@ -169,7 +280,12 @@ export default function HostPanel() {
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{event.venueName}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{formatDate(event.date)}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                        {event.ticketsSold} / {event.capacity}
+                        <button
+                          className="text-blue-600 hover:underline focus:outline-none"
+                          onClick={() => handleOpenSalesBreakdown(event.id, event.name, event.revenue)}
+                        >
+                          {event.ticketsSold} / {event.capacity}
+                        </button>
                         <div className="w-full mt-1 bg-gray-200 rounded-full h-1.5">
                           <div 
                             className="bg-venu-orange h-1.5 rounded-full" 
@@ -177,7 +293,14 @@ export default function HostPanel() {
                           ></div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">R {event.revenue.toLocaleString()}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <button
+                          className="text-blue-600 hover:underline focus:outline-none"
+                          onClick={() => handleOpenSalesBreakdown(event.id, event.name, event.revenue)}
+                        >
+                          R {event.revenue.toLocaleString()}
+                        </button>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
                         <Button variant="ghost" size="sm" className="p-1">
                           <ChevronRight className="h-4 w-4" />
@@ -191,6 +314,72 @@ export default function HostPanel() {
           </div>
         </div>
       </div>
+
+      <SalesBreakdownDialog 
+        open={salesDialogOpen} 
+        onOpenChange={setSalesDialogOpen} 
+        salesData={selectedSalesData} 
+      />
+
+      <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
+        {selectedVenue && (
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>{selectedVenue.name}</DialogTitle>
+              <DialogDescription>
+                {selectedVenue.location} • Capacity: {selectedVenue.capacity}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="h-48 overflow-hidden rounded-md">
+                <img 
+                  src={selectedVenue.imageUrl} 
+                  alt={selectedVenue.name} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <h4 className="text-sm font-medium mb-2">Categories</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVenue.categories.map((category: string, idx: number) => (
+                        <span key={idx} className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <h4 className="text-sm font-medium mb-2">Status</h4>
+                    <div className={`inline-block text-xs px-2 py-1 rounded ${selectedVenue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {selectedVenue.status === 'active' ? 'Active' : 'Pending'}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Created on {new Date(selectedVenue.created_at).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="flex space-x-2 mt-4">
+                <Button className="flex-1" variant="outline" onClick={() => handleGenerateVenueLink(selectedVenue.id, selectedVenue.name)}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Venue
+                </Button>
+                <Button className="flex-1">
+                  Manage Venue
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 
@@ -272,7 +461,6 @@ export default function HostPanel() {
             </div>
           ) : (
             <div className="max-w-7xl mx-auto py-8">
-              {/* Top section with tabs */}
               <div className="mb-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <div className="flex justify-between items-center mb-4">
@@ -294,7 +482,6 @@ export default function HostPanel() {
                 </Tabs>
               </div>
               
-              {/* Tab Content */}
               {activeTab === 'dashboard' && renderDashboard()}
               {activeTab === 'vendors' && renderVendors()}
               {activeTab === 'events' && (

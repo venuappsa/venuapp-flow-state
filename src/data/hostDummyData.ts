@@ -1,4 +1,3 @@
-
 import { Building, BadgePercent, Clock, Users, Wallet } from "lucide-react";
 
 // Dummy venues data
@@ -52,6 +51,9 @@ export const dummyEvents = [
     capacity: 500,
     revenue: 86700,
     vendors: 7,
+    floorArea: 800,
+    multiLevel: false,
+    durationHours: 5
   },
   {
     id: "event-2",
@@ -65,6 +67,9 @@ export const dummyEvents = [
     capacity: 300,
     revenue: 43750,
     vendors: 5,
+    floorArea: 600,
+    multiLevel: false,
+    durationHours: 8
   },
   {
     id: "event-3",
@@ -78,6 +83,9 @@ export const dummyEvents = [
     capacity: 200,
     revenue: 22000,
     vendors: 12,
+    floorArea: 450,
+    multiLevel: false,
+    durationHours: 6
   },
   {
     id: "event-4",
@@ -91,6 +99,9 @@ export const dummyEvents = [
     capacity: 500,
     revenue: 143400,
     vendors: 10,
+    floorArea: 800,
+    multiLevel: true,
+    durationHours: 6
   },
 ];
 

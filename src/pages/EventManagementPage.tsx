@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -52,17 +51,23 @@ export default function EventManagementPage() {
     setTimeout(() => {
       const foundEvent = dummyEvents.find((e) => e.id === eventId);
       if (foundEvent) {
-        setEvent(foundEvent);
-        // Pre-calculate fetchman allocation
+        const eventWithDefaults = {
+          ...foundEvent,
+          floorArea: foundEvent.floorArea || 1000,
+          multiLevel: foundEvent.multiLevel || false,
+        };
+        
+        setEvent(eventWithDefaults);
+        
         const allocation = calculateFetchmanAllocation(
-          foundEvent.capacity, 
-          foundEvent.floorArea || 1000, 
-          foundEvent.multiLevel || false
+          eventWithDefaults.capacity, 
+          eventWithDefaults.floorArea, 
+          eventWithDefaults.multiLevel
         );
         setFetchmanAllocation(allocation);
       }
       setLoading(false);
-    }, 300); // Simulate API call
+    }, 300);
   }, [eventId]);
 
   const handleShareEvent = () => {

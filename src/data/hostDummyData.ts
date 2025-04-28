@@ -177,7 +177,8 @@ export const dashboardStats = [
     change: "+1",
     changeType: "positive",
     icon: Building,
-    link: "/host/venues"
+    link: "/host/venues",
+    description: "Active venue count"
   },
   {
     title: "Upcoming Events",
@@ -185,7 +186,8 @@ export const dashboardStats = [
     change: "+2",
     changeType: "positive",
     icon: Clock,
-    link: "/host/events"
+    link: "/host/events",
+    description: "Scheduled events"
   },
   {
     title: "Total Guests",
@@ -193,7 +195,8 @@ export const dashboardStats = [
     change: "+125",
     changeType: "positive",
     icon: Users,
-    link: "/host/guests"
+    link: "/host/guests",
+    description: "Guest capacity"
   },
   {
     title: "Monthly Revenue",
@@ -201,7 +204,8 @@ export const dashboardStats = [
     change: "+15%",
     changeType: "positive",
     icon: Wallet,
-    link: "/host/finance"
+    link: "/host/finance",
+    description: "Current month"
   },
   {
     title: "Subscription",
@@ -209,7 +213,8 @@ export const dashboardStats = [
     change: "23 days left",
     changeType: "neutral",
     icon: BadgePercent,
-    link: "/host?tab=subscription"
+    link: "/host?tab=subscription",
+    description: "Current plan"
   }
 ];
 

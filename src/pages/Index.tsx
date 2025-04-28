@@ -34,7 +34,7 @@ const Index = () => {
       console.log("Index: Detected user with roles:", userRoles);
       setIsRedirecting(true);
       
-      const redirectPath = getRedirectPageForRoles(userRoles);
+      const redirectPath = getRedirectPageForRoles(userRoles as string[]);
       console.log("Index: Redirecting to:", redirectPath);
       
       // Small timeout for smoother transition

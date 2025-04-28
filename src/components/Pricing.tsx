@@ -7,7 +7,16 @@ import { VenuePricingPlans } from "@/data/venuePricingPlans";
 import { EventPricingPlans } from "@/data/eventPricingPlans";
 import { useState } from "react";
 
-const ComparisonTable = ({ plans, pricingType }) => {
+type PricingPlan = {
+  name: string;
+  price: string;
+  eventPrice: string;
+  description: string;
+  features: Record<string, string>;
+  highlighted: boolean;
+};
+
+const ComparisonTable = ({ plans, pricingType }: { plans: PricingPlan[]; pricingType: string }) => {
   // Get all unique feature names across all plans
   const allFeatures = Array.from(
     new Set(
@@ -66,7 +75,11 @@ const ComparisonTable = ({ plans, pricingType }) => {
   );
 };
 
-const PricingCard = ({ plan, isHighlighted, pricingType }) => {
+const PricingCard = ({ plan, isHighlighted, pricingType }: { 
+  plan: PricingPlan; 
+  isHighlighted: boolean; 
+  pricingType: string 
+}) => {
   // Filter out certain features to display
   const allFeatures = Object.keys(plan.features).filter(name => name !== "Post-Event Sales Access");
   const featureNames = allFeatures.slice(0, 5);

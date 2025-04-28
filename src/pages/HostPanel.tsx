@@ -44,6 +44,8 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "@/components/ui/use-toast";
 import { calculateFetchmanEstimate } from "@/utils/fetchmanCalculator";
+import VenuesTab from "@/components/host/VenuesTab";
+import FinanceTab from "@/components/host/FinanceTab";
 
 export default function HostPanel() {
   const { user } = useUser();
@@ -429,6 +431,10 @@ export default function HostPanel() {
     </div>
   );
 
+  const renderVenues = () => (
+    <VenuesTab />
+  );
+
   const renderVendors = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -487,6 +493,10 @@ export default function HostPanel() {
     </div>
   );
 
+  const renderFinance = () => (
+    <FinanceTab />
+  );
+
   return (
     <AuthTransitionWrapper 
       requireAuth={true} 
@@ -521,6 +531,7 @@ export default function HostPanel() {
                   </div>
                   <TabsList className="bg-gray-100">
                     <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                    <TabsTrigger value="venues">Venues</TabsTrigger>
                     <TabsTrigger value="vendors">Vendors</TabsTrigger>
                     <TabsTrigger value="events">Events</TabsTrigger>
                     <TabsTrigger value="finance">Finance</TabsTrigger>
@@ -529,6 +540,7 @@ export default function HostPanel() {
               </div>
               
               {activeTab === 'dashboard' && renderDashboard()}
+              {activeTab === 'venues' && renderVenues()}
               {activeTab === 'vendors' && renderVendors()}
               {activeTab === 'events' && (
                 <div className="bg-white p-6 rounded-lg shadow text-center">
@@ -540,16 +552,7 @@ export default function HostPanel() {
                   <Button>Create New Event</Button>
                 </div>
               )}
-              {activeTab === 'finance' && (
-                <div className="bg-white p-6 rounded-lg shadow text-center">
-                  <Wallet className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                  <h2 className="text-xl font-medium text-gray-700 mb-2">Financial Dashboard</h2>
-                  <p className="text-gray-500 max-w-md mx-auto mb-6">
-                    Track revenue, expenses, and vendor commissions. Manage your wallet and make withdrawals.
-                  </p>
-                  <Button>View Wallet</Button>
-                </div>
-              )}
+              {activeTab === 'finance' && renderFinance()}
             </div>
           )}
         </main>

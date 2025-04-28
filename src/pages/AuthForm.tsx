@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -103,6 +102,7 @@ export default function AuthForm({
               autoComplete="given-name"
               onChange={e => setName(e.target.value)}
               aria-label="First name"
+              autoCapitalize="words"
             />
           </div>
           <div className="space-y-2">
@@ -116,6 +116,7 @@ export default function AuthForm({
               autoComplete="family-name"
               onChange={e => setSurname(e.target.value)}
               aria-label="Last name"
+              autoCapitalize="words"
             />
           </div>
           <div className="space-y-2">
@@ -128,6 +129,7 @@ export default function AuthForm({
               value={phone}
               autoComplete="tel"
               type="tel"
+              inputMode="tel"
               onChange={e => setPhone(e.target.value)}
               aria-label="Phone number"
             />
@@ -141,7 +143,7 @@ export default function AuthForm({
               value={role}
               autoComplete="off"
               onChange={e => setRole(e.target.value as Enums<"app_role"> | "")}
-              className="w-full bg-gray-100 border rounded px-3 py-2 text-base"
+              className="w-full bg-background border rounded px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label="Select your role"
             >
               <option value="">Select your role</option>
@@ -167,6 +169,7 @@ export default function AuthForm({
           autoComplete="email"
           onChange={e => setEmail(e.target.value)}
           aria-label="Email address"
+          inputMode="email"
         />
       </div>
 
@@ -184,6 +187,7 @@ export default function AuthForm({
           autoComplete={type === "login" ? "current-password" : "new-password"}
           onChange={e => setPassword(e.target.value)}
           aria-label="Password"
+          minLength={8}
         />
       </div>
 

@@ -1,5 +1,5 @@
 
-import { Input } from "@/components/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import React from "react";
 
@@ -19,24 +19,30 @@ export default function OtpStep({ loading, otpInput, setOtpInput, onOtpSubmit }:
     >
       <h2 id="otp-title" className="text-xl font-bold text-center">Verify your email</h2>
       <div className="space-y-2">
-        <label htmlFor="otp-input" className="sr-only">Enter OTP code</label>
-        <Input
-          id="otp-input"
-          required
-          autoFocus
-          placeholder="Enter OTP code"
+        <InputOTP
           value={otpInput}
-          onChange={e => setOtpInput(e.target.value.replace(/\D/g, ""))}
+          onChange={setOtpInput}
           maxLength={6}
-          type="text"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          pattern="[0-9]*"
-          className="text-center text-lg tracking-widest"
-          aria-label="One-time password"
+          render={({ slots }) => (
+            <InputOTPGroup className="gap-2 flex justify-center">
+              {slots.map((slot, index) => (
+                <InputOTPSlot
+                  key={index}
+                  {...slot}
+                  className="w-10 h-12 text-lg"
+                  aria-label={`Digit ${index + 1} of OTP`}
+                  autoComplete={index === 0 ? "one-time-code" : undefined}
+                />
+              ))}
+            </InputOTPGroup>
+          )}
         />
       </div>
-      <Button disabled={loading} type="submit">
+      <Button 
+        disabled={loading} 
+        type="submit"
+        aria-live="polite"
+      >
         {loading ? "Verifying..." : "Verify"}
       </Button>
     </form>

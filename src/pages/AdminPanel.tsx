@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import SecurePanelButton from "@/components/SecurePanelButton";
 import AdminDashboard from "@/components/AdminDashboard";
 import AdminHostVendorManager from "@/components/AdminHostVendorManager";
+import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 
 const SECTION_LABELS: Record<string, string> = {
   dashboard: "Dashboard & Oversight",
@@ -55,128 +56,100 @@ function AdminSideFrame() {
 }
 
 export default function AdminPanel() {
-  const { user } = useUser();
-  const { data: roles, isLoading } = useUserRoles(user?.id);
-  const navigate = useNavigate();
   const [selected, setSelected] = useState<string>("dashboard");
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (isLoading) return;
-    if (!user) {
-      setReady(false);
-      navigate("/auth", { replace: true });
-      return;
-    }
-    if (!roles?.includes("admin")) {
-      setReady(false);
-      navigate("/", { replace: true });
-      return;
-    }
-    setReady(true);
-  }, [user, roles, isLoading, navigate]);
-
-  if (!ready)
-    return (
-      <div className="fixed inset-0 z-[1000] w-screen h-screen bg-gray-50 flex items-center justify-center transition-none">
-        <div className="flex flex-col items-center gap-4">
-          <span className="animate-spin rounded-full border-4 border-venu-orange border-t-transparent w-12 h-12 mb-4" />
-          <span className="text-gray-400 text-xl font-semibold">
-            Loading your admin portal...
-          </span>
-        </div>
-      </div>
-    );
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        <AdminSidebar selected={selected} onSelect={setSelected} />
-        <SidebarInset>
-          <div className="p-8 flex flex-col gap-10">
-            <div className="flex items-center gap-4 mb-3">
-              <img
-                src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
-                alt="Venuapp Logo"
-                className="h-14 w-14 object-contain drop-shadow"
-                style={{ borderRadius: "10px" }}
-              />
-              <span className="text-[2.4rem] md:text-[2.5rem] font-extrabold text-venu-orange tracking-tight drop-shadow">
-                Venuapp
-              </span>
-              <span className="ml-2 px-3 py-1 rounded-full bg-venu-orange/10 text-venu-orange text-sm font-bold hidden sm:inline">
-                Admin
-              </span>
-              <div className="flex-1" />
-              <SecurePanelButton />
-            </div>
-            {selected === "dashboard" && (
-              <div className="rounded-2xl bg-white shadow-xl p-0 mb-4 flex flex-col items-stretch gap-0 md:flex-row md:gap-10">
-                <div className="flex-1 min-w-[230px] p-8 flex flex-col justify-center">
-                  <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">
-                    Welcome to your Admin Panel
-                  </h2>
-                  <p className="text-gray-700 mb-3 text-base">
-                    As an <span className="text-venu-orange font-bold">admin</span>, you have access to:
-                  </p>
-                  <ul className="list-disc pl-6 text-gray-800 grid gap-2 text-base font-medium mb-2">
-                    {ADMIN_TASKS.map((task, i) => (
-                      <li key={i}>{task}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex-shrink-0 flex items-center justify-center md:pr-8 pb-6 md:pb-0 w-full md:w-auto">
-                  <AdminSideFrame />
-                </div>
+    <AuthTransitionWrapper requireAuth allowedRoles={["admin"]}>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gray-50">
+          <AdminSidebar selected={selected} onSelect={setSelected} />
+          <SidebarInset>
+            <div className="p-8 flex flex-col gap-10">
+              <div className="flex items-center gap-4 mb-3">
+                <img
+                  src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
+                  alt="Venuapp Logo"
+                  className="h-14 w-14 object-contain drop-shadow"
+                  style={{ borderRadius: "10px" }}
+                />
+                <span className="text-[2.4rem] md:text-[2.5rem] font-extrabold text-venu-orange tracking-tight drop-shadow">
+                  Venuapp
+                </span>
+                <span className="ml-2 px-3 py-1 rounded-full bg-venu-orange/10 text-venu-orange text-sm font-bold hidden sm:inline">
+                  Admin
+                </span>
+                <div className="flex-1" />
+                <SecurePanelButton />
               </div>
-            )}
 
-            <div className="bg-white shadow rounded-2xl p-8 min-h-[300px]">
-              {selected === "dashboard" && <AdminDashboard />}
-              {selected === "host_vendor" && (
-                <div>
-                  <AdminHostVendorManager />
+              {selected === "dashboard" && (
+                <div className="rounded-2xl bg-white shadow-xl p-0 mb-4 flex flex-col items-stretch gap-0 md:flex-row md:gap-10">
+                  <div className="flex-1 min-w-[230px] p-8 flex flex-col justify-center">
+                    <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">
+                      Welcome to your Admin Panel
+                    </h2>
+                    <p className="text-gray-700 mb-3 text-base">
+                      As an <span className="text-venu-orange font-bold">admin</span>, you have access to:
+                    </p>
+                    <ul className="list-disc pl-6 text-gray-800 grid gap-2 text-base font-medium mb-2">
+                      {ADMIN_TASKS.map((task, i) => (
+                        <li key={i}>{task}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center justify-center md:pr-8 pb-6 md:pb-0 w-full md:w-auto">
+                    <AdminSideFrame />
+                  </div>
                 </div>
               )}
-              {selected === "events" && (
-                <div>
-                  <p className="text-gray-600">Event & Invitation tracking tools.</p>
-                </div>
-              )}
-              {selected === "billing" && (
-                <div>
-                  <p className="text-gray-600">Billing & Subscription management.</p>
-                </div>
-              )}
-              {selected === "payment" && (
-                <div>
-                  <p className="text-gray-600">Payment & payout controls.</p>
-                </div>
-              )}
-              {selected === "fetchman" && (
-                <div>
-                  <p className="text-gray-600">Fetchman (delivery staff) management.</p>
-                </div>
-              )}
-              {selected === "reporting" && (
-                <div>
-                  <p className="text-gray-600">Reporting & analytics tools.</p>
-                </div>
-              )}
-              {selected === "notifications" && (
-                <div>
-                  <p className="text-gray-600">Push announcements, CMS management.</p>
-                </div>
-              )}
-              {selected === "settings" && (
-                <div>
-                  <p className="text-gray-600">Platform settings and configuration controls.</p>
-                </div>
-              )}
+
+              <div className="bg-white shadow rounded-2xl p-8 min-h-[300px]">
+                {selected === "dashboard" && <AdminDashboard />}
+                {selected === "host_vendor" && (
+                  <div>
+                    <AdminHostVendorManager />
+                  </div>
+                )}
+                {selected === "events" && (
+                  <div>
+                    <p className="text-gray-600">Event & Invitation tracking tools.</p>
+                  </div>
+                )}
+                {selected === "billing" && (
+                  <div>
+                    <p className="text-gray-600">Billing & Subscription management.</p>
+                  </div>
+                )}
+                {selected === "payment" && (
+                  <div>
+                    <p className="text-gray-600">Payment & payout controls.</p>
+                  </div>
+                )}
+                {selected === "fetchman" && (
+                  <div>
+                    <p className="text-gray-600">Fetchman (delivery staff) management.</p>
+                  </div>
+                )}
+                {selected === "reporting" && (
+                  <div>
+                    <p className="text-gray-600">Reporting & analytics tools.</p>
+                  </div>
+                )}
+                {selected === "notifications" && (
+                  <div>
+                    <p className="text-gray-600">Push announcements, CMS management.</p>
+                  </div>
+                )}
+                {selected === "settings" && (
+                  <div>
+                    <p className="text-gray-600">Platform settings and configuration controls.</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </AuthTransitionWrapper>
   );
 }

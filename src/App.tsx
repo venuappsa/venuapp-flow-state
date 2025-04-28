@@ -18,6 +18,9 @@ import VenueCreate from "./pages/VenueCreate";
 import VendorRules from "./pages/VendorRules";
 import EventManagementPage from "./pages/EventManagementPage";
 import EventsPage from "./pages/EventsPage";
+import VendorsPage from "./pages/VendorsPage";
+import FinancePage from "./pages/FinancePage";
+import VenuesPage from "./pages/VenuesPage";
 
 const queryClient = new QueryClient();
 
@@ -34,10 +37,13 @@ const App = () => (
           
           {/* Host panel routes */}
           <Route path="/host" element={<HostPanel />} />
+          <Route path="/host/venues" element={<VenuesPage />} />
           <Route path="/host/venues/new" element={<VenueCreate />} />
           <Route path="/host/rules" element={<VendorRules />} />
           <Route path="/host/events" element={<EventsPage />} />
           <Route path="/host/events/:eventId" element={<EventManagementPage />} />
+          <Route path="/host/vendors" element={<VendorsPage />} />
+          <Route path="/host/finance" element={<FinancePage />} />
           
           <Route path="/customer" element={<CustomerPage />} />
           <Route path="/merchant" element={<MerchantPage />} />

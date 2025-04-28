@@ -86,14 +86,14 @@ export default function DashboardTab() {
         ))}
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 mb-12">
         <AnalyticsSnapshot 
           subscriptionTier={subscription_tier || "Free"} 
           subscriptionStatus={subscription_status}
         />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 pt-8">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Upcoming Events</h2>
           <Button 

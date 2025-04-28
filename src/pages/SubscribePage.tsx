@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +14,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreakpoint } from "@/hooks/useResponsive";
+import { Badge } from "@/components/ui/badge";
 
-// Stripe test price IDs - replace with your actual price IDs in production
 const PRICE_IDS = {
   basic: "price_1OT7NbGVnlGQn0rKkm5MNuMp",
   premium: "price_1OT7NuGVnlGQn0rKYTeHQsrE",
@@ -36,7 +35,6 @@ const SubscribePage = () => {
   const breakpoint = useBreakpoint();
   
   useEffect(() => {
-    // Check for subscription query param
     const params = new URLSearchParams(location.search);
     const subStatus = params.get('subscription');
     
@@ -63,14 +61,12 @@ const SubscribePage = () => {
     setIsSubmitting(true);
     
     try {
-      // Format email content
       const emailContent = `
         Name: ${name}
         Email: ${email}
         Interested as: ${role}
       `;
 
-      // Send to server
       const response = await fetch("https://formsubmit.co/ajax/hello@venuapp.co.za", {
         method: "POST",
         headers: {
@@ -479,7 +475,6 @@ const SubscribePage = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow pt-20">
-        {/* If the user is a host, show the subscription plans */}
         {isHost ? (
           <>
             {renderHostPricingPlans()}
@@ -504,7 +499,6 @@ const SubscribePage = () => {
             </section>
           </>
         ) : (
-          // If user is not a host, show the general subscription form
           <>
             {renderGuestSubscribeForm()}
             {renderPlanCTASection()}

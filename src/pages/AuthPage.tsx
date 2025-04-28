@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +11,6 @@ import useAuthLoadingState from "@/hooks/useAuthLoadingState";
 import { toast } from "@/components/ui/use-toast";
 import AuthForm from "./AuthForm";
 import OtpStep from "./OtpStep";
-import { ROLE_OPTIONS } from "./roleOptions";
 import useConnectionStatus from "@/hooks/useConnectionStatus";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
@@ -63,7 +61,6 @@ export default function AuthPage() {
     toast({ title: "Demo credentials filled!" });
   };
 
-  // Display connection error message
   if (isConnected === false) {
     return (
       <>
@@ -205,69 +202,45 @@ export default function AuthPage() {
     <>
       <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12">
-        <form
-          className="flex flex-col gap-4 bg-white p-6 rounded shadow max-w-sm w-full"
-          onSubmit={otpStep ? onOtpSubmit : onSubmit}
-        >
-          <h2 className="text-xl font-bold text-center">
-            {otpStep
-              ? "Enter OTP"
-              : type === "login"
-                ? "Login"
-                : "Create an account"}
-          </h2>
-          <div style={{ display: "none" }}>
-            <label htmlFor="extra">Leave blank</label>
-            <input
-              id="extra"
-              name="extra"
-              type="text"
-              tabIndex={-1}
-              autoComplete="off"
-              value={honeypot}
-              onChange={e => setHoneypot(e.target.value)}
-            />
-          </div>
-          {otpStep ? (
-            <OtpStep
-              loading={loading}
-              otpInput={otpInput}
-              setOtpInput={setOtpInput}
-              onOtpSubmit={onOtpSubmit}
-            />
-          ) : (
-            <AuthForm
-              type={type}
-              onTypeChange={setType}
-              otpStep={otpStep}
-              setOtpStep={setOtpStep}
-              setUserId={setUserId}
-              setPendingRedirect={setPendingRedirect}
-              setSentOtp={setSentOtp}
-              setSignupUserId={setSignupUserId}
-              setLoading={setLoading}
-              email={email}
-              setEmail={setEmail}
-              password={password}
-              setPassword={setPassword}
-              confirmPassword={confirmPassword}
-              setConfirmPassword={setConfirmPassword}
-              name={name}
-              setName={setName}
-              surname={surname}
-              setSurname={setSurname}
-              phone={phone}
-              setPhone={setPhone}
-              role={role}
-              setRole={setRole}
-              loading={loading}
-              honeypot={honeypot}
-              setHoneypot={setHoneypot}
-              handleQuickLogin={handleQuickLogin}
-              onSubmit={onSubmit}
-            />
-          )}
-        </form>
+        {otpStep ? (
+          <OtpStep
+            loading={loading}
+            otpInput={otpInput}
+            setOtpInput={setOtpInput}
+            onOtpSubmit={onOtpSubmit}
+          />
+        ) : (
+          <AuthForm
+            type={type}
+            onTypeChange={setType}
+            otpStep={otpStep}
+            setOtpStep={setOtpStep}
+            setUserId={setUserId}
+            setPendingRedirect={setPendingRedirect}
+            setSentOtp={setSentOtp}
+            setSignupUserId={setSignupUserId}
+            setLoading={setLoading}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            name={name}
+            setName={setName}
+            surname={surname}
+            setSurname={setSurname}
+            phone={phone}
+            setPhone={setPhone}
+            role={role}
+            setRole={setRole}
+            loading={loading}
+            honeypot={honeypot}
+            setHoneypot={setHoneypot}
+            handleQuickLogin={handleQuickLogin}
+            onSubmit={onSubmit}
+          />
+        )}
       </div>
     </>
   );

@@ -1,195 +1,105 @@
 
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
-import { useUserRoles } from "@/hooks/useUserRoles";
-import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { Loader, LogOut } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SecurePanelButtonProps {
-  className?: string;
   showWelcome?: boolean;
 }
 
-export default function SecurePanelButton({ className, showWelcome }: SecurePanelButtonProps) {
+export default function SecurePanelButton({ showWelcome = false }: SecurePanelButtonProps) {
   const { user, forceClearUser } = useUser();
-  const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [panelRoute, setPanelRoute] = useState("/customer");
-  const buttonClickTimeRef = useRef(0);
-  const MIN_CLICK_INTERVAL = 2000; // ms
+  const isMobile = useIsMobile();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // Update panel route whenever roles change
-  useEffect(() => {
-    if (user && userRoles && !rolesLoading) {
-      // Make sure userRoles is an array
-      const roleArray = Array.isArray(userRoles) ? userRoles : [];
-      const route = getRedirectPageForRoles(roleArray);
-      setPanelRoute(route);
-      console.log("SecurePanelButton: Panel route updated to:", route, "for roles:", roleArray);
-    }
-  }, [user, userRoles, rolesLoading]);
+  const displayName = user?.user_metadata?.full_name || 
+    user?.user_metadata?.name || 
+    user?.email?.split("@")[0] || 
+    "User";
 
-  const isLoggedIn = !!user;
-  const buttonLabel = isLoggedIn 
-    ? rolesLoading 
-      ? "Loading..." 
-      : "Go to Secure Panel" 
-    : "Login";
+  const initials = displayName.split(" ")
+    .map(name => name.charAt(0))
+    .join("")
+    .toUpperCase()
+    .substring(0, 2);
 
-  let displayName = "";
-  if (isLoggedIn) {
-    displayName =
-      user.user_metadata?.full_name ||
-      user.user_metadata?.name ||
-      user.email?.split("@")[0] ||
-      user.email ||
-      "User";
-  }
-
-  const handleButtonClick = async () => {
-    if (loading) return;
+  const handleSignOut = async () => {
+    if (isSigningOut) return;
     
-    // Prevent rapid clicks causing multiple navigations
-    const now = Date.now();
-    if (now - buttonClickTimeRef.current < MIN_CLICK_INTERVAL) {
-      console.log("SecurePanelButton: Click too soon, ignoring");
-      return;
-    }
-    buttonClickTimeRef.current = now;
-    
-    setLoading(true);
-    console.log("SecurePanelButton: Button clicked, logged in:", isLoggedIn, "roles loading:", rolesLoading);
-    
+    setIsSigningOut(true);
     try {
-      if (isLoggedIn) {
-        if (rolesLoading) {
-          // If roles are loading, wait a moment and try again
-          toast({ title: "Loading your dashboard...", duration: 2000 });
-          setTimeout(() => setLoading(false), 500);
-          return;
-        }
-        
-        // Ensure userRoles is an array
-        const roleArray = Array.isArray(userRoles) ? userRoles : [];
-        if (roleArray.length > 0) {
-          console.log("SecurePanelButton: Navigating to panel route:", panelRoute);
-          navigate(panelRoute, { 
-            replace: true,
-            state: { skipSessionCheck: true } // Prevent AuthPage from rechecking session
-          });
-        } else {
-          console.log("SecurePanelButton: No roles found for user");
-          toast({ 
-            title: "No role assigned", 
-            description: "Your account doesn't have a role assigned.", 
-            variant: "destructive" 
-          });
-        }
-      } else {
-        console.log("SecurePanelButton: User not logged in, navigating to auth page");
-        navigate("/auth", { 
-          replace: true,
-          state: { skipSessionCheck: true } // Prevent AuthPage from rechecking session
-        });
-      }
-    } catch (err) {
-      console.error("SecurePanelButton: Error navigating:", err);
-      toast({ 
-        title: "Navigation error", 
-        description: "There was a problem navigating to your dashboard.", 
-        variant: "destructive" 
-      });
+      await supabase.auth.signOut();
+      forceClearUser();
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error during sign out:", error);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const logOut = async () => {
-    setLoading(true);
-    try {
-      console.log("SecurePanelButton: Logging out user");
-      const { error } = await supabase.auth.signOut();
-      
-      // Clear any cached state
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Clear browser cache if possible
-      if (window && window.caches) {
-        try {
-          window.caches.keys().then(keys => keys.forEach(k => window.caches.delete(k)));
-        } catch (e) {
-          console.error("Failed to clear caches:", e);
-        }
-      }
-      
-      // Use our manual clear as a backup
-      if (forceClearUser) forceClearUser();
-      
-      if (error) {
-        console.error("SecurePanelButton: Logout error:", error);
-        toast({ title: "Logout failed", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Logged out!" });
-        
-        // Add a small delay to ensure state is updated before navigating
-        setTimeout(() => {
-          navigate("/auth", { 
-            replace: true,
-            state: { skipSessionCheck: true, freshLogout: true }
-          });
-          
-          // Force a full page reload after logout
-          setTimeout(() => {
-            window.location.reload();
-          }, 300);
-        }, 400);
-      }
-    } catch (e: any) {
-      console.error("SecurePanelButton: Logout exception:", e);
-      toast({ title: "Logout failed", description: e.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
+      setIsSigningOut(false);
     }
   };
 
   return (
-    <div className={className ?? ""}>
-      <div className="flex items-center gap-2">
-        <Button
-          className="text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10 min-w-[100px] justify-center"
-          variant="outline"
-          onClick={handleButtonClick}
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader className="h-4 w-4 animate-spin" />
-          ) : buttonLabel}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback className="bg-venu-orange text-white">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
         </Button>
-        {isLoggedIn && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-venu-orange hover:text-venu-orange/80 hover:bg-transparent"
-            onClick={logOut}
-            disabled={loading}
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="sr-only">Logout</span>
-          </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
+        {showWelcome && (
+          <>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">Welcome,</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {displayName}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+          </>
         )}
-      </div>
-      {isLoggedIn && showWelcome && (
-        <div className="text-[11px] sm:text-xs mt-1 text-gray-500 text-center font-medium">
-          Hi, {displayName}, welcome to Venuapp
-        </div>
-      )}
-    </div>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onSelect={() => navigate('/host')} className="cursor-pointer">
+            Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => navigate('/host/venues/new')} className="cursor-pointer">
+            Add Venue
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => navigate('/subscribe')} className="cursor-pointer">
+            Subscription
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
+            Settings
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          className="cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-50" 
+          disabled={isSigningOut}
+          onSelect={handleSignOut}
+        >
+          {isSigningOut ? "Signing out..." : "Sign out"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

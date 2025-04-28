@@ -33,5 +33,6 @@ export function useUserRoles(userId?: string | null) {
     staleTime: 60000, // Cache for 1 minute
     gcTime: 300000, // Keep in cache for 5 minutes (updated from cacheTime which is deprecated)
     retry: 2, // Retry failed requests up to 2 times
+    retryDelay: attempt => Math.min(attempt > 1 ? 2000 : 1000, 30000),
   });
 }

@@ -49,15 +49,35 @@ export function useRoleRedirect({
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Track if component is mounted to prevent state updates after unmount
+    let isMounted = true;
+    let redirectTimer: NodeJS.Timeout;
+    
     if (pendingRedirect && userId && userRoles && !rolesLoading) {
       const rolesArray = Array.isArray(userRoles) ? userRoles : [];
       console.log("Detected roles after login:", rolesArray);
       const redirectTo = getRedirectPageForRoles(rolesArray);
       console.log("Redirecting to:", redirectTo);
+      
       if (redirectTo !== window.location.pathname) {
-        navigate(redirectTo, { replace: true });
+        // Use a small timeout to ensure smoother transitions
+        redirectTimer = setTimeout(() => {
+          if (isMounted) {
+            navigate(redirectTo, { replace: true });
+            setPendingRedirect(false);
+          }
+        }, 100);
+      } else {
+        if (isMounted) {
+          setPendingRedirect(false);
+        }
       }
-      setPendingRedirect(false);
     }
+    
+    // Clean up timer when component unmounts
+    return () => {
+      isMounted = false;
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
   }, [pendingRedirect, userId, userRoles, rolesLoading, navigate, setPendingRedirect]);
 }

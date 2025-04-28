@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Loader, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SecurePanelButtonProps {
   className?: string;
@@ -20,11 +20,16 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
   const { data: userRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [panelRoute, setPanelRoute] = useState("/customer");
 
-  let panelRoute: string = "/customer";
-  if (user && userRoles && !rolesLoading) {
-    panelRoute = getRedirectPageForRoles(userRoles);
-  }
+  // Update panel route whenever roles change
+  useEffect(() => {
+    if (user && userRoles && !rolesLoading) {
+      const route = getRedirectPageForRoles(userRoles);
+      setPanelRoute(route);
+      console.log("Panel route updated to:", route, "for roles:", userRoles);
+    }
+  }, [user, userRoles, rolesLoading]);
 
   const isLoggedIn = !!user;
   const buttonLabel = isLoggedIn 
@@ -45,8 +50,12 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
 
   const handleButtonClick = () => {
     if (rolesLoading) return;
+    
     if (isLoggedIn && userRoles && userRoles.length > 0) {
+      console.log("Navigating to panel route:", panelRoute);
+      setLoading(true);
       navigate(panelRoute);
+      setLoading(false);
     } else {
       navigate("/auth");
     }
@@ -86,9 +95,11 @@ export default function SecurePanelButton({ className, showWelcome }: SecurePane
           className="text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 border border-venu-orange text-venu-orange hover:bg-venu-orange/10 min-w-[100px] justify-center"
           variant="outline"
           onClick={handleButtonClick}
-          disabled={rolesLoading}
+          disabled={rolesLoading || loading}
         >
-          {rolesLoading ? <Loader className="h-4 w-4 animate-spin" /> : buttonLabel}
+          {(rolesLoading || loading) ? (
+            <Loader className="h-4 w-4 animate-spin" />
+          ) : buttonLabel}
         </Button>
         {isLoggedIn && (
           <Button

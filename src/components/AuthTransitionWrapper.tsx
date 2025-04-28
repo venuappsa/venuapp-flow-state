@@ -32,22 +32,29 @@ export default function AuthTransitionWrapper({
     const checkAuthAndRedirect = async () => {
       if (!mounted) return;
 
+      console.log("AuthTransitionWrapper: Checking auth state:", { user, roles, rolesLoading });
+
       // Immediately redirect if auth is required but no user
       if (requireAuth && !user) {
+        console.log("AuthTransitionWrapper: No user found, redirecting to login");
         setMessage("Redirecting to login...");
         navigate(redirectTo, { replace: true });
         return;
       }
 
       // Wait for roles to load if we need to check them
-      if (user && !rolesLoading && roles && allowedRoles.length > 0) {
-        const hasAllowedRole = roles.some(role => allowedRoles.includes(role));
-        if (!hasAllowedRole) {
-          console.log("User lacks required role, redirecting...");
-          setMessage("Redirecting to appropriate page...");
-          const redirectPath = getRedirectPageForRoles(roles);
-          navigate(redirectPath, { replace: true });
-          return;
+      if (user && !rolesLoading && roles) {
+        console.log("AuthTransitionWrapper: Checking roles:", { allowedRoles, userRoles: roles });
+        
+        if (allowedRoles.length > 0) {
+          const hasAllowedRole = roles.some(role => allowedRoles.includes(role));
+          if (!hasAllowedRole) {
+            console.log("AuthTransitionWrapper: User lacks required role, redirecting...");
+            setMessage("Redirecting to appropriate page...");
+            const redirectPath = getRedirectPageForRoles(roles);
+            navigate(redirectPath, { replace: true });
+            return;
+          }
         }
       }
 

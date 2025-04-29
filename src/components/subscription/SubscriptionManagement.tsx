@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Calendar, CheckCircle, Clock, ExternalLink, Pause, RefreshCcw, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertTriangle, Calendar, CheckCircle, Clock, ExternalLink, Pause, RefreshCcw } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
@@ -11,9 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlanType } from "@/utils/pricingUtils";
-import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
 import PlanFeatureComparison from "@/components/subscription/PlanFeatureComparison";
 import SubscriptionUsage from "@/components/subscription/SubscriptionUsage";
 
@@ -23,7 +20,6 @@ export function SubscriptionManagement() {
     subscription_tier, 
     subscription_end, 
     subscription_status,
-    subscription_plan_type,
     isLoading,
     checkSubscription,
     createCheckout
@@ -33,7 +29,6 @@ export function SubscriptionManagement() {
   const [isPauseLoading, setIsPauseLoading] = useState(false);
   const [isPausing, setIsPausing] = useState(false);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
-  const [selectedPlanType, setSelectedPlanType] = useState<PlanType>(subscription_plan_type || "venue");
   const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({});
   
   // For this quarter's pause metrics
@@ -141,13 +136,6 @@ export function SubscriptionManagement() {
       fetchPauseHistory();
     }
   }, [subscription_status]);
-  
-  // Update selected plan type based on current subscription when component mounts
-  useEffect(() => {
-    if (subscription_plan_type) {
-      setSelectedPlanType(subscription_plan_type);
-    }
-  }, [subscription_plan_type]);
 
   if (isLoading) {
     return (
@@ -173,7 +161,6 @@ export function SubscriptionManagement() {
           
           {/* Show plan comparison for non-subscribers */}
           <PlanFeatureComparison 
-            planType={selectedPlanType} 
             onPlanSelect={createCheckout}
           />
         </CardContent>
@@ -199,14 +186,7 @@ export function SubscriptionManagement() {
               <div className="flex items-center justify-between">
                 <span className="font-medium">Plan</span>
                 <Badge className="bg-green-100 text-green-800">
-                  {subscription_tier || "Standard"} Plan
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Plan Type</span>
-                <Badge variant="outline">
-                  {subscription_plan_type === "venue" ? "Monthly Venue" : "Event-based"}
+                  {subscription_tier || "Free Plan"} Plan
                 </Badge>
               </div>
               
@@ -335,14 +315,7 @@ export function SubscriptionManagement() {
           <p className="text-gray-600">You can upgrade or change your plan anytime</p>
         </div>
 
-        <PlanTypeSelector
-          selectedPlanType={selectedPlanType}
-          onChange={setSelectedPlanType}
-          className="mb-4"
-        />
-
         <PlanFeatureComparison 
-          planType={selectedPlanType}
           onPlanSelect={createCheckout}
         />
       </div>

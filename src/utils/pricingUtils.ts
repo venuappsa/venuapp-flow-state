@@ -1,8 +1,5 @@
 
-import { EventPricingPlans } from "@/data/eventPricingPlans";
-import { VenuePricingPlans } from "@/data/venuePricingPlans";
-
-export type PlanType = "venue" | "event";
+import { UnifiedPricingPlans } from "@/data/unifiedPricingPlans";
 
 export interface PricingFeature {
   name: string;
@@ -94,7 +91,7 @@ export const isLimitExceeded = (tier: string, limitKey: keyof SubscriptionLimits
   return limit !== -1 && currentUsage >= limit;
 };
 
-export const getAnalyticsFeaturesForTier = (tier: string, planType: PlanType): PricingFeature[] => {
+export const getAnalyticsFeaturesForTier = (tier: string): PricingFeature[] => {
   const tierLevel = getTierLevel(tier);
   
   const features: PricingFeature[] = [
@@ -141,7 +138,7 @@ export const getAnalyticsFeaturesForTier = (tier: string, planType: PlanType): P
     {
       name: "Historical Data Access",
       includedInTiers: ["Starter", "Growth", "Pro", "Enterprise"],
-      description: planType === "venue" ? "Access to 30/90/365 days of data" : "Access to previous event data"
+      description: "Access to historical data"
     },
     {
       name: "Comparative Analytics",
@@ -196,8 +193,8 @@ export const getDataWindowForTier = (tier: string): number => {
   return subscriptionLimits[tier]?.dataRetentionDays || 7;
 };
 
-export const getPricingPlans = (planType: PlanType) => {
-  return planType === "venue" ? VenuePricingPlans : EventPricingPlans;
+export const getPricingPlans = () => {
+  return UnifiedPricingPlans;
 };
 
 export const isPremiumFeature = (featureName: string, tier: string): boolean => {
@@ -272,4 +269,3 @@ export const getTierBgClass = (tier: string): string => {
   const color = tierColors[tier as keyof typeof tierColors] || 'gray';
   return `bg-${color}-100 text-${color}-800`;
 };
-

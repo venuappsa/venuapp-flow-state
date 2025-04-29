@@ -12,8 +12,7 @@ const SubscriptionStatusBar = () => {
     subscribed, 
     subscription_tier, 
     subscription_end, 
-    subscription_status, 
-    subscription_plan_type,
+    subscription_status,
     isLoading 
   } = useSubscription();
   
@@ -31,10 +30,6 @@ const SubscriptionStatusBar = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="font-medium">{tier} Plan</span>
-            <Badge className={`${getTierBgClass(tier)}`}>
-              {subscription_plan_type === "venue" ? "Monthly" : "Per Event"}
-            </Badge>
-            
             {subscription_status && subscription_status !== "active" && (
               <Badge variant="outline" className="text-amber-500 border-amber-200">
                 {subscription_status}

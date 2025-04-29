@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VenuePricingPlans } from "@/data/venuePricingPlans";
-import { EventPricingPlans } from "@/data/eventPricingPlans";
+import { UnifiedPricingPlans } from "@/data/unifiedPricingPlans";
 import { useState } from "react";
 
 type PricingPlan = {
@@ -14,9 +13,10 @@ type PricingPlan = {
   description: string;
   features: Record<string, string>;
   highlighted: boolean;
+  billingType: string;
 };
 
-const ComparisonTable = ({ plans, pricingType }: { plans: PricingPlan[]; pricingType: string }) => {
+const ComparisonTable = ({ plans, billingType }: { plans: PricingPlan[]; billingType: string }) => {
   // Get all unique feature names across all plans
   const allFeatures = Array.from(
     new Set(
@@ -38,7 +38,7 @@ const ComparisonTable = ({ plans, pricingType }: { plans: PricingPlan[]; pricing
                 <span className="font-bold text-lg">{plan.name}</span>
                 <div className="text-sm text-gray-600 font-normal">
                   {plan.price === "Custom" ? "Custom" : 
-                    pricingType === "event" ? `${plan.eventPrice}/event` : `${plan.price}/month`
+                    billingType === "event" ? `${plan.eventPrice}/event` : `${plan.price}/month`
                   }
                 </div>
               </th>
@@ -75,10 +75,10 @@ const ComparisonTable = ({ plans, pricingType }: { plans: PricingPlan[]; pricing
   );
 };
 
-const PricingCard = ({ plan, isHighlighted, pricingType }: { 
+const PricingCard = ({ plan, isHighlighted, billingType }: { 
   plan: PricingPlan; 
   isHighlighted: boolean; 
-  pricingType: string 
+  billingType: string;
 }) => {
   // Filter out certain features to display
   const allFeatures = Object.keys(plan.features).filter(name => name !== "Post-Event Sales Access");
@@ -93,18 +93,15 @@ const PricingCard = ({ plan, isHighlighted, pricingType }: {
         </div>
       )}
       <CardHeader>
-        <div className={`inline-block px-2 py-1 rounded text-xs mb-2 ${pricingType === "venue" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-          {pricingType === "venue" ? "Venue Plan" : "Event Plan"}
-        </div>
         <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
         <CardDescription className="text-sm">{plan.description}</CardDescription>
         <div className="mt-2">
           <span className="text-3xl font-bold">
-            {pricingType === "venue" ? plan.price : plan.eventPrice}
+            {billingType === "monthly" ? plan.price : plan.eventPrice}
           </span>
           {plan.price !== "Custom" && plan.name !== "Free Plan" && (
             <span className="text-sm text-muted-foreground">
-              /{pricingType === "venue" ? "month" : "event"}
+              /{billingType === "monthly" ? "month" : "event"}
             </span>
           )}
         </div>
@@ -150,6 +147,8 @@ const PricingCard = ({ plan, isHighlighted, pricingType }: {
 
 const Pricing = () => {
   const [showComparison, setShowComparison] = useState(false);
+  const [billingType, setBillingType] = useState<"monthly" | "event">("monthly");
+  const plans = UnifiedPricingPlans;
 
   return (
     <section id="pricing" className="py-16 bg-white">
@@ -159,7 +158,7 @@ const Pricing = () => {
             Flexible <span className="text-venu-orange">Pricing</span>
           </h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Choose the perfect plan that fits your venue's needs or select an event-based package for one-time experiences.
+            Choose the perfect plan that fits your needs with flexible pricing options.
           </p>
         </div>
 
@@ -182,60 +181,41 @@ const Pricing = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="venues" className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="grid grid-cols-2 w-full max-w-md">
-              <TabsTrigger value="venues" className="text-lg py-3">
+        <div className="flex justify-center mb-8">
+          <Tabs defaultValue="monthly" value={billingType} onValueChange={(value) => setBillingType(value as "monthly" | "event")} className="w-full max-w-md">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="monthly" className="text-lg py-3">
                 <div className="flex flex-col items-center">
-                  <span>Venue Packages</span>
-                  <span className="text-xs text-gray-500 mt-1">Monthly subscription</span>
+                  <span>Monthly</span>
+                  <span className="text-xs text-gray-500 mt-1">Subscription billing</span>
                 </div>
               </TabsTrigger>
-              <TabsTrigger value="events" className="text-lg py-3">
+              <TabsTrigger value="event" className="text-lg py-3">
                 <div className="flex flex-col items-center">
-                  <span>Event Packages</span>
-                  <span className="text-xs text-gray-500 mt-1">Pay per event</span>
+                  <span>Per Event</span>
+                  <span className="text-xs text-gray-500 mt-1">One-time billing</span>
                 </div>
               </TabsTrigger>
             </TabsList>
+          </Tabs>
+        </div>
+        
+        {showComparison ? (
+          <ComparisonTable plans={plans} billingType={billingType} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            {plans.map((plan, index) => (
+              <PricingCard key={index} plan={plan} isHighlighted={plan.highlighted} billingType={billingType} />
+            ))}
           </div>
-          
-          <TabsContent value="venues" className="mt-4">
-            {showComparison ? (
-              <ComparisonTable plans={VenuePricingPlans} pricingType="venue" />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                {VenuePricingPlans.map((plan, index) => (
-                  <PricingCard key={index} plan={plan} isHighlighted={plan.highlighted} pricingType="venue" />
-                ))}
-              </div>
-            )}
-            <div className="text-center mt-10">
-              <p className="text-gray-600 mb-4">Need a customized solution for your specific venue needs?</p>
-              <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
-                Contact Sales
-              </Button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="events" className="mt-4">
-            {showComparison ? (
-              <ComparisonTable plans={EventPricingPlans} pricingType="event" />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                {EventPricingPlans.map((plan, index) => (
-                  <PricingCard key={index} plan={plan} isHighlighted={plan.highlighted} pricingType="event" />
-                ))}
-              </div>
-            )}
-            <div className="text-center mt-10">
-              <p className="text-gray-600 mb-4">Planning a large-scale event? Let's discuss your custom requirements.</p>
-              <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
-                Contact Sales
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
+        )}
+        
+        <div className="text-center mt-10">
+          <p className="text-gray-600 mb-4">Need a customized solution for your specific needs?</p>
+          <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
+            Contact Sales
+          </Button>
+        </div>
       </div>
     </section>
   );

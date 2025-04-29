@@ -89,7 +89,7 @@ serve(async (req) => {
         subscribed: false, 
         subscription_status: "none", 
         subscription_end: null,
-        subscription_plan_type: "venue" 
+        subscription_tier: "Free Plan"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -112,10 +112,9 @@ serve(async (req) => {
       
       return new Response(JSON.stringify({
         subscribed: true,
-        subscription_tier: hostProfile.subscription_tier || "basic",
+        subscription_tier: hostProfile.subscription_tier || "Free Plan",
         subscription_end: hostProfile.subscription_renewal,
         subscription_status: "paused",
-        subscription_plan_type: hostProfile.subscription_plan_type || "venue",
         pause_ends_at: activePause.end_date
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -144,7 +143,7 @@ serve(async (req) => {
         subscribed: false, 
         subscription_status: "none", 
         subscription_end: null,
-        subscription_plan_type: hostProfile.subscription_plan_type || "venue" 
+        subscription_tier: hostProfile.subscription_tier || "Free Plan"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -161,8 +160,7 @@ serve(async (req) => {
     });
     
     const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionTier = "none";
-    let subscriptionPlanType = hostProfile.subscription_plan_type || "venue";
+    let subscriptionTier = "Free Plan";
     let subscriptionEnd = null;
 
     if (hasActiveSub) {
@@ -179,12 +177,10 @@ serve(async (req) => {
       const productId = price.product as string;
       const product = await stripe.products.retrieve(productId);
       
-      subscriptionTier = product.metadata.tier || "basic";
-      subscriptionPlanType = product.metadata.plan_type || "venue";
+      subscriptionTier = product.metadata.tier || "Free Plan";
       logStep("Determined subscription details", { 
         priceId, 
         tier: subscriptionTier,
-        planType: subscriptionPlanType,
         isPaused 
       });
       
@@ -194,7 +190,6 @@ serve(async (req) => {
         .update({
           subscription_status: isPaused ? "paused" : "active",
           subscription_tier: subscriptionTier,
-          subscription_plan_type: subscriptionPlanType,
           subscription_renewal: subscriptionEnd,
           updated_at: new Date().toISOString()
         })
@@ -217,14 +212,12 @@ serve(async (req) => {
     logStep("Subscription check complete", { 
       subscribed: hasActiveSub, 
       tier: subscriptionTier,
-      planType: subscriptionPlanType,
       end: subscriptionEnd
     });
     
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
-      subscription_plan_type: subscriptionPlanType,
       subscription_end: subscriptionEnd,
       subscription_status: hasActiveSub ? (hostProfile.subscription_status || "active") : (hostProfile.subscription_status || "none")
     }), {

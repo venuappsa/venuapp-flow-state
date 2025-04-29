@@ -47,8 +47,7 @@ const UsageItem = ({ label, current, limit, icon }: UsageItemProps) => {
         <Progress 
           value={usagePercent} 
           className="h-2" 
-          // Replace indicatorClassName with inline className for the indicator
-          // We'll style this in the progress.tsx file instead
+          indicatorClassName={getUsageBgClass(usagePercent)}
         />
       )}
     </div>

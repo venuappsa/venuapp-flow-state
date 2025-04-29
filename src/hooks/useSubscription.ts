@@ -3,14 +3,12 @@ import { useState, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { PlanType } from "@/utils/pricingUtils";
 
 export interface SubscriptionData {
   subscribed: boolean;
   subscription_tier?: string;
   subscription_end?: string;
   subscription_status?: "active" | "paused" | "expired" | "trial" | "none";
-  subscription_plan_type?: PlanType;
   isLoading: boolean;
   error: string | null;
 }
@@ -22,7 +20,6 @@ export function useSubscription() {
     subscription_tier: undefined,
     subscription_end: undefined,
     subscription_status: undefined,
-    subscription_plan_type: undefined,
     isLoading: true,
     error: null,
   });
@@ -57,7 +54,6 @@ export function useSubscription() {
         subscription_tier: data.subscription_tier,
         subscription_end: data.subscription_end,
         subscription_status: data.subscription_status,
-        subscription_plan_type: data.subscription_plan_type,
         isLoading: false,
         error: null,
       });
@@ -72,7 +68,7 @@ export function useSubscription() {
   };
 
   // Redirect to main site pricing page instead of checkout
-  const redirectToPricing = (planId: string, planName: string, planType: PlanType = "venue") => {
+  const redirectToPricing = (planId: string, planName: string) => {
     // Navigate to homepage pricing section
     window.location.href = "/#pricing";
   };

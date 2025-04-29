@@ -19,57 +19,33 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Badge } from "@/components/ui/badge";
-import { getTierBgClass, formatLimit, subscriptionLimits } from "@/utils/pricingUtils";
-import { PlanType } from "@/utils/pricingUtils";
+import { getTierBgClass, formatLimit, subscriptionLimits, getPricingPlans } from "@/utils/pricingUtils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PlanFeatureComparisonProps {
-  planType?: PlanType;
-  onPlanSelect?: (planId: string, planName: string, planType: PlanType) => void;
+  onPlanSelect?: (planId: string, planName: string) => void;
 }
 
 const PlanFeatureComparison = ({ 
-  planType = "venue",
   onPlanSelect 
 }: PlanFeatureComparisonProps) => {
-  const { subscription_tier, subscription_plan_type } = useSubscription();
+  const { subscription_tier } = useSubscription();
+  const [billingType, setBillingType] = useState<"monthly" | "per-event" | "annual">("monthly");
   const [displayType, setDisplayType] = useState<"monthly" | "annual">("monthly");
 
   // Price multipliers and discount text
   const annualMultiplier = 0.85; // 15% discount
   const annualDiscountText = "Save 15%";
 
-  // Define plans with pricing info
-  const plans = [
-    {
-      id: "free_plan",
-      name: "Free Plan",
-      description: "For testing and small events",
-      monthlyPrice: 0,
-      limits: subscriptionLimits["Free Plan"]
-    },
-    {
-      id: planType === "venue" ? "price_1OT7NbGVnlGQn0rKkm5MNuMp" : "price_1OT7NbGVnlGQn0rKkm5MNuMq",
-      name: "Starter",
-      description: "For small venues and events",
-      monthlyPrice: planType === "venue" ? 499 : 250,
-      limits: subscriptionLimits["Starter"]
-    },
-    {
-      id: planType === "venue" ? "price_1OT7NuGVnlGQn0rKYTeHQsrE" : "price_1OT7NuGVnlGQn0rKYTeHQsrF",
-      name: "Growth",
-      description: "For growing businesses with multiple events",
-      monthlyPrice: planType === "venue" ? 999 : 650,
-      limits: subscriptionLimits["Growth"],
-      highlighted: true
-    },
-    {
-      id: planType === "venue" ? "price_1OT7OPGVnlGQn0rKqTNCYLhc" : "price_1OT7OPGVnlGQn0rKqTNCYLhd",
-      name: "Enterprise",
-      description: "For large organizations with high volume",
-      monthlyPrice: planType === "venue" ? 2499 : 1070,
-      limits: subscriptionLimits["Enterprise"]
-    }
-  ];
+  const plans = getPricingPlans().map(plan => ({
+    id: plan.name.toLowerCase().replace(' ', '_'),
+    name: plan.name,
+    description: plan.description,
+    monthlyPrice: plan.price === "Custom" ? "Custom" : plan.price,
+    eventPrice: plan.eventPrice === "Custom" ? "Custom" : plan.eventPrice,
+    limits: subscriptionLimits[plan.name],
+    highlighted: plan.highlighted
+  }));
 
   // Features to display in the comparison table
   const features = [
@@ -86,6 +62,7 @@ const PlanFeatureComparison = ({
     "Free Plan": "Email Only",
     "Starter": "Email + Basic Chat",
     "Growth": "Priority Support",
+    "Pro": "Priority Support",
     "Enterprise": "Dedicated Account Manager"
   };
 
@@ -94,27 +71,41 @@ const PlanFeatureComparison = ({
     "Free Plan": "Basic",
     "Starter": "Standard",
     "Growth": "Advanced",
+    "Pro": "Advanced",
     "Enterprise": "Enterprise"
   };
 
-  const formatCurrency = (amount: number): string => {
-    if (amount === 0) return "Free";
-    return `R${amount.toFixed(2)}`;
+  const formatCurrency = (amount: string): string => {
+    if (amount === "Free" || amount === "R0" || amount === "Custom") return amount;
+    
+    // For annual pricing with numbers
+    if (displayType === "annual" && amount !== "Custom") {
+      // Remove R and any commas, convert to number
+      const numericValue = Number(amount.replace('R', '').replace(',', ''));
+      if (!isNaN(numericValue)) {
+        const annualPrice = numericValue * 12 * annualMultiplier;
+        return `R${annualPrice.toLocaleString('en-ZA', { maximumFractionDigits: 0 })}`;
+      }
+    }
+    
+    return amount;
   };
 
   const getPrice = (plan: typeof plans[0]): string => {
-    if (plan.monthlyPrice === 0) return "Free";
+    if (plan.name === "Free Plan") return "Free";
+    if (plan.monthlyPrice === "Custom") return "Custom";
     
-    const price = displayType === "annual" 
-      ? plan.monthlyPrice * 12 * annualMultiplier 
-      : plan.monthlyPrice;
-      
-    return `${formatCurrency(price)}${displayType === "monthly" ? "/mo" : "/year"}`;
+    if (billingType === "monthly" || billingType === "annual") {
+      const price = formatCurrency(plan.monthlyPrice as string);
+      return `${price}${billingType === "monthly" ? "/mo" : "/year"}`;
+    } else {
+      return `${plan.eventPrice}/event`;
+    }
   };
 
   const handlePlanSelection = (planId: string, planName: string) => {
     if (onPlanSelect) {
-      onPlanSelect(planId, planName, planType);
+      onPlanSelect(planId, planName);
     }
   };
 
@@ -123,21 +114,14 @@ const PlanFeatureComparison = ({
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Plan Comparison</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={displayType === "monthly" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setDisplayType("monthly")}
-            >
-              Monthly
-            </Button>
-            <Button
-              variant={displayType === "annual" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setDisplayType("annual")}
-            >
-              Annual {annualDiscountText && <span className="ml-1 text-xs text-emerald-600">{annualDiscountText}</span>}
-            </Button>
+          <div>
+            <Tabs value={billingType} onValueChange={(v) => setBillingType(v as "monthly" | "per-event" | "annual")}>
+              <TabsList>
+                <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                <TabsTrigger value="per-event">Per Event</TabsTrigger>
+                <TabsTrigger value="annual">Annual <span className="ml-1 text-xs text-emerald-600">{annualDiscountText}</span></TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
       </CardHeader>
@@ -154,7 +138,7 @@ const PlanFeatureComparison = ({
                   >
                     <div className="font-medium">
                       {plan.name}
-                      {subscription_tier === plan.name.toLowerCase() && subscription_plan_type === planType && (
+                      {subscription_tier === plan.name && (
                         <Badge className="ml-2 bg-green-100 text-green-800 border-green-300">Current</Badge>
                       )}
                     </div>
@@ -221,10 +205,10 @@ const PlanFeatureComparison = ({
                     <Button
                       onClick={() => handlePlanSelection(plan.id, plan.name)}
                       className={`w-full ${plan.highlighted ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-                      variant={subscription_tier === plan.name.toLowerCase() && subscription_plan_type === planType ? "outline" : "default"}
-                      disabled={subscription_tier === plan.name.toLowerCase() && subscription_plan_type === planType}
+                      variant={subscription_tier === plan.name ? "outline" : "default"}
+                      disabled={subscription_tier === plan.name}
                     >
-                      {subscription_tier === plan.name.toLowerCase() && subscription_plan_type === planType
+                      {subscription_tier === plan.name
                         ? "Current Plan"
                         : "Select"}
                     </Button>

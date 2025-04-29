@@ -1,23 +1,41 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Store, Plus, Filter, ChevronRight } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Search, Store, Plus, Filter, ChevronRight, QrCode, Share2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { dummyVendors } from "@/data/hostDummyData";
 import VendorDiscovery from "@/components/VendorDiscovery";
 import { Input } from "@/components/ui/input";
+import MerchantInviteQR from "@/components/MerchantInviteQR";
 
 export default function VendorsTab() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("my-vendors");
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
   const filteredVendors = dummyVendors.filter(
     vendor => vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               vendor.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleGenerateLink = () => {
+    const inviteLink = `https://venuapp.co.za/vendor-invite/${Date.now()}`;
+    navigator.clipboard.writeText(inviteLink).then(
+      () => {
+        toast({
+          title: "Link copied",
+          description: "Vendor invitation link copied to clipboard",
+        });
+      },
+      (err) => {
+        console.error('Could not copy text: ', err);
+      }
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -26,10 +44,20 @@ export default function VendorsTab() {
           <h2 className="text-2xl font-bold">Vendor Management</h2>
           <p className="text-gray-500">Manage vendors for your venues and events</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Vendor
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setQrDialogOpen(true)}>
+            <QrCode className="h-4 w-4 mr-2" />
+            Invitation QR
+          </Button>
+          <Button variant="outline" onClick={handleGenerateLink}>
+            <Share2 className="h-4 w-4 mr-2" />
+            Generate Link
+          </Button>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Vendor
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -134,6 +162,15 @@ export default function VendorsTab() {
           <VendorDiscovery />
         </TabsContent>
       </Tabs>
+      
+      <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Vendor Invitation QR Code</DialogTitle>
+          </DialogHeader>
+          <MerchantInviteQR title="Your Business" />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

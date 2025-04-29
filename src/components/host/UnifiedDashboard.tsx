@@ -253,42 +253,38 @@ export default function UnifiedDashboard() {
                   Quick Actions
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Link to="/host/events/new">
-                    <Button 
-                      variant="outline" 
-                      className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed" 
-                    >
-                      <CalendarPlus className="h-6 w-6" />
-                      <span>New Event</span>
-                    </Button>
-                  </Link>
-                  <Link to="/host/venues/new">
-                    <Button 
-                      variant="outline" 
-                      className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
-                    >
-                      <Building className="h-6 w-6" />
-                      <span>New Venue</span>
-                    </Button>
-                  </Link>
-                  <Link to="/host/vendors">
-                    <Button 
-                      variant="outline" 
-                      className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
-                    >
-                      <UserPlus className="h-6 w-6" />
-                      <span>Invite Vendor</span>
-                    </Button>
-                  </Link>
-                  <Link to="/host/finance">
-                    <Button 
-                      variant="outline" 
-                      className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
-                    >
-                      <CreditCard className="h-6 w-6" />
-                      <span>View Finance</span>
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
+                    onClick={() => navigate("/host/events/new")}
+                  >
+                    <CalendarPlus className="h-6 w-6" />
+                    <span>New Event</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
+                    onClick={() => navigate("/host/venues/new")}
+                  >
+                    <Building className="h-6 w-6" />
+                    <span>New Venue</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
+                    onClick={() => navigate("/host/merchants")}
+                  >
+                    <UserPlus className="h-6 w-6" />
+                    <span>Invite Vendor</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
+                    onClick={() => navigate("/host/finance")}
+                  >
+                    <CreditCard className="h-6 w-6" />
+                    <span>View Finance</span>
+                  </Button>
                 </div>
               </div>
             </TabsContent>

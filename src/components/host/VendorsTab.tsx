@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Store, Plus, Filter, ChevronRight, QrCode, Share2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { dummyVendors } from "@/data/hostDummyData";
@@ -12,18 +12,36 @@ import VendorDiscovery from "@/components/VendorDiscovery";
 import { Input } from "@/components/ui/input";
 import MerchantInviteQR from "@/components/MerchantInviteQR";
 
+const pricePlans = [
+  { id: "basic-stall", name: "Basic Stall", price: "R500 per day" },
+  { id: "premium-stall", name: "Premium Stall", price: "R1200 per day" },
+  { id: "exclusive-stall", name: "Exclusive Stall", price: "R2500 per day" }
+];
+
 export default function VendorsTab() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("my-vendors");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [selectedPriceId, setSelectedPriceId] = useState(pricePlans[0].id);
+  const [selectedPriceName, setSelectedPriceName] = useState(pricePlans[0].name);
 
   const filteredVendors = dummyVendors.filter(
     vendor => vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               vendor.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handlePriceChange = (priceId: string) => {
+    setSelectedPriceId(priceId);
+    const selectedPlan = pricePlans.find(plan => plan.id === priceId);
+    if (selectedPlan) {
+      setSelectedPriceName(selectedPlan.name);
+    }
+  };
+
   const handleGenerateLink = () => {
-    const inviteLink = `https://venuapp.co.za/vendor-invite/${Date.now()}`;
+    const priceParam = selectedPriceId ? `&price=${selectedPriceId}` : '';
+    const inviteLink = `https://venuapp.co.za/vendor-invite/venue-${Date.now()}${priceParam}`;
+    
     navigator.clipboard.writeText(inviteLink).then(
       () => {
         toast({
@@ -166,9 +184,36 @@ export default function VendorsTab() {
       <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Vendor Invitation QR Code</DialogTitle>
+            <DialogTitle>Vendor Invitation</DialogTitle>
+            <DialogDescription>
+              Share this QR code or link with vendors to apply to your venue or event
+            </DialogDescription>
           </DialogHeader>
-          <MerchantInviteQR title="Your Business" />
+          
+          <div className="py-2">
+            <label htmlFor="price-plan" className="block text-sm font-medium mb-2">
+              Select a price plan for vendors
+            </label>
+            <Select value={selectedPriceId} onValueChange={handlePriceChange}>
+              <SelectTrigger id="price-plan" className="w-full">
+                <SelectValue placeholder="Select a price plan" />
+              </SelectTrigger>
+              <SelectContent>
+                {pricePlans.map((plan) => (
+                  <SelectItem key={plan.id} value={plan.id}>
+                    <span className="font-medium">{plan.name}</span>
+                    <span className="text-gray-500 ml-2">- {plan.price}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <MerchantInviteQR 
+            title="Your Business" 
+            priceId={selectedPriceId}
+            priceName={selectedPriceName}
+          />
         </DialogContent>
       </Dialog>
     </div>

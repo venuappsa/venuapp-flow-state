@@ -22,6 +22,14 @@ import {
 import { Search, Store, Plus, Filter, User, ChevronRight, Check, X, Share2, QrCode } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { dummyVendors } from "@/data/hostDummyData";
+import MerchantInviteQR from "@/components/MerchantInviteQR";
+
+// Sample price plans to choose from
+const pricePlans = [
+  { id: "basic-stall", name: "Basic Stall", price: "R500 per day" },
+  { id: "premium-stall", name: "Premium Stall", price: "R1200 per day" },
+  { id: "exclusive-stall", name: "Exclusive Stall", price: "R2500 per day" }
+];
 
 interface VenueMerchantsTabProps {
   venueId: string;
@@ -42,6 +50,8 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedPriceId, setSelectedPriceId] = useState(pricePlans[0].id);
+  const [selectedPriceName, setSelectedPriceName] = useState(pricePlans[0].name);
   
   const filteredVendors = dummyVendors.filter(
     vendor => {
@@ -60,6 +70,15 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
     }
   ) as VendorWithEvents[];
 
+  // Handle price plan selection
+  const handlePriceChange = (priceId: string) => {
+    setSelectedPriceId(priceId);
+    const selectedPlan = pricePlans.find(plan => plan.id === priceId);
+    if (selectedPlan) {
+      setSelectedPriceName(selectedPlan.name);
+    }
+  };
+
   const handleInviteVendor = () => {
     toast({
       title: "Invitation Sent",
@@ -69,7 +88,10 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
   };
   
   const handleGenerateLink = () => {
-    const vendorLink = `https://venuapp.co.za/vendor-invite/venue-${venueId}-${Date.now()}`;
+    // Create a standardized URL structure that includes pricing information
+    const priceParam = selectedPriceId ? `&price=${selectedPriceId}` : '';
+    const vendorLink = `https://venuapp.co.za/vendor-invite/venue-${venueId}${priceParam}`;
+    
     navigator.clipboard.writeText(vendorLink).then(
       () => {
         toast({
@@ -527,32 +549,32 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
               Merchants can scan this QR code to apply to your venue.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-center py-6">
-            <div className="bg-white p-2 border rounded-md">
-              <img 
-                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://venuapp.co.za/merchant-apply/venue-123" 
-                alt="QR Code" 
-                className="w-48 h-48"
-              />
-            </div>
+          
+          <div className="py-2">
+            <label htmlFor="price-plan" className="block text-sm font-medium mb-2">
+              Select a price plan for merchants
+            </label>
+            <Select value={selectedPriceId} onValueChange={handlePriceChange}>
+              <SelectTrigger id="price-plan" className="w-full">
+                <SelectValue placeholder="Select a price plan" />
+              </SelectTrigger>
+              <SelectContent>
+                {pricePlans.map((plan) => (
+                  <SelectItem key={plan.id} value={plan.id}>
+                    <span className="font-medium">{plan.name}</span>
+                    <span className="text-gray-500 ml-2">- {plan.price}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="text-center text-sm text-gray-500">
-            <p>https://venuapp.co.za/merchant-apply/venue-123</p>
-          </div>
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="mr-2" 
-              onClick={handleGenerateLink}
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Copy Link
-            </Button>
-            <Button type="button" onClick={() => setQrDialogOpen(false)}>
-              Done
-            </Button>
-          </DialogFooter>
+          
+          <MerchantInviteQR 
+            title="Venue Name" 
+            venueId={venueId}
+            priceId={selectedPriceId}
+            priceName={selectedPriceName}
+          />
         </DialogContent>
       </Dialog>
     </div>

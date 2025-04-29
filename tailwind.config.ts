@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -65,11 +64,10 @@ export default {
 				},
 				venu: {
 					orange: '#F97316',
+					'dark-orange': '#D65F0C',
+					'light-orange': '#FFB586',
 					black: '#1A1F2C',
-					purple: '#9b87f5',
-					'dark-purple': '#7E69AB',
-					'light-purple': '#D6BCFA',
-					'soft-gray': '#F1F0FB',
+					'soft-gray': '#F7F3F0',
 					'accent-blue': '#33C3F0'
 				}
 			},
@@ -141,8 +139,8 @@ export default {
 			backgroundImage: {
 				'hero-pattern': 'url("/public/lovable-uploads/7be771e0-2f5a-4348-88c4-6a3c5d18ddde.png")',
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'purple-gradient': 'linear-gradient(135deg, #9b87f5 0%, #7E69AB 100%)',
-				'light-gradient': 'linear-gradient(135deg, #F1F0FB 0%, #D6BCFA 100%)',
+				'orange-gradient': 'linear-gradient(135deg, #F97316 0%, #D65F0C 100%)',
+				'light-gradient': 'linear-gradient(135deg, #F7F3F0 0%, #FFB586 100%)',
 			}
 		}
 	},

@@ -27,7 +27,7 @@ export default function HostPanelLayout({ children }: HostPanelLayoutProps) {
       allowedRoles={["host"]} 
       showFallback={true}
     >
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen bg-venu-soft-gray/30">
         <DashboardSidebar />
         <div className="flex-1 overflow-auto">
           <ScrollArea className="h-full">

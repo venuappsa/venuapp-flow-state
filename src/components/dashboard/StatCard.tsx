@@ -39,7 +39,7 @@ export function StatCard({
         <div className="flex items-start justify-between">
           <div className={cn(
             "rounded-full p-3 mb-4",
-            gradient ? "bg-white/80 text-venu-purple" : "bg-venu-purple/10 text-venu-purple"
+            gradient ? "bg-white/80 text-venu-orange" : "bg-venu-orange/10 text-venu-orange"
           )}>
             {icon}
           </div>
@@ -58,7 +58,7 @@ export function StatCard({
           <h3 className="font-medium text-gray-500 text-sm">{title}</h3>
           <div className={cn(
             "text-2xl font-bold mt-1",
-            gradient && "text-venu-purple"
+            gradient && "text-venu-orange"
           )}>
             {value}
           </div>

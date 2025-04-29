@@ -25,7 +25,7 @@ export function DashboardSection({
         <div>
           <h2 className={cn(
             "text-lg font-semibold flex items-center",
-            gradient && "bg-clip-text text-transparent bg-gradient-to-r from-venu-purple to-venu-dark-purple"
+            gradient && "bg-clip-text text-transparent bg-gradient-to-r from-venu-orange to-venu-dark-orange"
           )}>
             {title}
           </h2>

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUser } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "@/components/ui/use-toast";
 import {
   Building,
   CalendarRange,
@@ -26,6 +27,7 @@ import {
   BookOpen,
   Bell
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavItemProps {
   to: string;
@@ -51,7 +53,7 @@ const NavItem = ({ to, label, icon, isActive, badge, collapsed, onClick }: NavIt
   >
     <div className={cn(
       "flex h-7 w-7 items-center justify-center rounded-md",
-      isActive ? "bg-venu-purple text-white" : "text-muted-foreground"
+      isActive ? "bg-venu-orange text-white" : "text-muted-foreground"
     )}>
       {icon}
     </div>
@@ -76,6 +78,7 @@ const NavItem = ({ to, label, icon, isActive, badge, collapsed, onClick }: NavIt
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user } = useUser();
   const { subscribed, subscription_tier, subscription_status } = useSubscription();
   
@@ -89,6 +92,25 @@ export function DashboardSidebar() {
     .join("")
     .toUpperCase()
     .substring(0, 2);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate("/auth");
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account"
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
+  };
 
   const navItems = [
     { to: "/host", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
@@ -120,7 +142,7 @@ export function DashboardSidebar() {
                 alt="Venuapp Logo"
                 className="h-8 w-8 object-contain"
               />
-              <h1 className="text-xl font-semibold text-venu-purple ml-2">
+              <h1 className="text-xl font-semibold text-venu-orange ml-2">
                 Venuapp
               </h1>
             </Link>
@@ -153,7 +175,7 @@ export function DashboardSidebar() {
           "h-10 w-10 transition-all duration-300",
           collapsed ? "mb-2" : ""
         )}>
-          <AvatarFallback className="bg-venu-purple text-white">
+          <AvatarFallback className="bg-venu-orange text-white">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -191,26 +213,48 @@ export function DashboardSidebar() {
         </div>
       </ScrollArea>
 
-      <div className="border-t p-4 mt-auto">
+      <div className="border-t p-4 space-y-2">
         {!collapsed && (
-          <Link 
-            to="/#pricing" 
-            className={cn(
-              "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm",
-              "bg-venu-purple text-white hover:bg-venu-purple/90 transition-colors",
-            )}
-          >
-            <CreditCard size={18} />
-            <span>{subscribed ? "Manage Subscription" : "Upgrade Plan"}</span>
-          </Link>
+          <>
+            <Button 
+              variant="destructive" 
+              className="w-full flex items-center justify-between gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut size={18} />
+              <span>Log Out</span>
+            </Button>
+            <Link 
+              to="/#pricing" 
+              className={cn(
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm",
+                "bg-venu-orange text-white hover:bg-venu-dark-orange transition-colors",
+              )}
+            >
+              <CreditCard size={18} />
+              <span>{subscribed ? "Manage Subscription" : "Upgrade Plan"}</span>
+            </Link>
+          </>
         )}
         {collapsed && (
-          <Link 
-            to="/#pricing" 
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-venu-purple text-white hover:bg-venu-purple/90 transition-colors"
-          >
-            <CreditCard size={18} />
-          </Link>
+          <div className="flex flex-col gap-2 items-center">
+            <Button
+              variant="destructive"
+              size="icon"
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+              onClick={handleLogout}
+              title="Log Out"
+            >
+              <LogOut size={18} />
+            </Button>
+            <Link 
+              to="/#pricing" 
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-venu-orange text-white hover:bg-venu-dark-orange transition-colors"
+              title={subscribed ? "Manage Subscription" : "Upgrade Plan"}
+            >
+              <CreditCard size={18} />
+            </Link>
+          </div>
         )}
       </div>
     </aside>

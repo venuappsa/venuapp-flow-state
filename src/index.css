@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 255 82% 75%;
+    --primary: 24 94% 53%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -23,7 +23,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 252 100% 96%;
+    --accent: 24 100% 97%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,18 +31,18 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 255 82% 75%;
+    --ring: 24 94% 53%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 255 83% 98%;
+    --sidebar-background: 24 100% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 255 82% 75%;
+    --sidebar-primary: 24 94% 53%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 255 100% 94%;
-    --sidebar-accent-foreground: 255 60% 60%;
-    --sidebar-border: 255 100% 90%;
-    --sidebar-ring: 255 82% 75%;
+    --sidebar-accent: 24 100% 94%;
+    --sidebar-accent-foreground: 24 94% 45%;
+    --sidebar-border: 24 100% 90%;
+    --sidebar-ring: 24 94% 53%;
   }
 
   .dark {
@@ -55,7 +55,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 255 60% 60%;
+    --primary: 24 94% 53%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -72,16 +72,16 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 255 60% 60%;
+    --ring: 24 94% 53%;
     
     --sidebar-background: 240 10% 3.9%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 255 60% 60%;
+    --sidebar-primary: 24 94% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 255 60% 60%;
+    --sidebar-ring: 24 94% 53%;
   }
 }
 
@@ -105,6 +105,6 @@
   }
   
   .gradient-border {
-    border-image: linear-gradient(to right, theme('colors.venu.purple'), theme('colors.venu.light-purple')) 1;
+    border-image: linear-gradient(to right, theme('colors.venu.orange'), theme('colors.venu.light-orange')) 1;
   }
 }

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useUser } from "@/hooks/useUser";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { 
@@ -20,29 +21,77 @@ import {
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
 import MerchantManagement from "@/components/host/MerchantManagement";
 import MerchantDiscovery from "@/components/MerchantDiscovery";
+import MerchantPricingManager from "@/components/host/MerchantPricingManager";
 import { Store, Search, QrCode, Share2 } from "lucide-react";
 import MerchantInviteQR from "@/components/MerchantInviteQR";
-
-// Sample price plans to choose from
-const pricePlans = [
-  { id: "basic-stall", name: "Basic Stall", price: "R500 per day" },
-  { id: "premium-stall", name: "Premium Stall", price: "R1200 per day" },
-  { id: "exclusive-stall", name: "Exclusive Stall", price: "R2500 per day" }
-];
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 export default function MerchantsPage() {
   const [activeTab, setActiveTab] = useState("manage");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const [selectedPriceId, setSelectedPriceId] = useState(pricePlans[0].id);
-  const [selectedPriceName, setSelectedPriceName] = useState(pricePlans[0].name);
+  const [selectedPriceId, setSelectedPriceId] = useState("");
+  const [selectedPriceName, setSelectedPriceName] = useState("");
+  const [pricingPlans, setPricingPlans] = useState([]);
   const location = useLocation();
+  const { user } = useUser();
 
   // Set price plan based on selection
   const handlePriceChange = (priceId: string) => {
     setSelectedPriceId(priceId);
-    const selectedPlan = pricePlans.find(plan => plan.id === priceId);
+    const selectedPlan = pricingPlans.find(plan => plan.id === priceId);
     if (selectedPlan) {
       setSelectedPriceName(selectedPlan.name);
+    }
+  };
+
+  // Load pricing plans from database
+  const loadPricingPlans = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('merchant_pricing_plans')
+        .select('*')
+        .eq('plan_type', 'venue')
+        .order('price', { ascending: true });
+
+      if (error) throw error;
+      
+      setPricingPlans(data);
+      
+      // Set default selection to first plan if available
+      if (data.length > 0 && !selectedPriceId) {
+        setSelectedPriceId(data[0].id);
+        setSelectedPriceName(data[0].name);
+      }
+    } catch (error) {
+      console.error('Error loading pricing plans:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load pricing plans",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Load pricing plans on component mount
+  useEffect(() => {
+    loadPricingPlans();
+  }, [user]);
+
+  // Handle plans update from the pricing manager
+  const handlePlanChange = (newPlans) => {
+    setPricingPlans(newPlans);
+    // Update selected plan if needed
+    if (newPlans.length > 0) {
+      if (!selectedPriceId || !newPlans.some(plan => plan.id === selectedPriceId)) {
+        setSelectedPriceId(newPlans[0].id);
+        setSelectedPriceName(newPlans[0].name);
+      }
+    } else {
+      setSelectedPriceId("");
+      setSelectedPriceName("");
     }
   };
 
@@ -79,6 +128,10 @@ export default function MerchantsPage() {
               <Search className="h-4 w-4" />
               <span>Discover</span>
             </TabsTrigger>
+            <TabsTrigger value="pricing" className="flex items-center gap-1">
+              <Share2 className="h-4 w-4" />
+              <span>Pricing</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="manage">
@@ -87,6 +140,10 @@ export default function MerchantsPage() {
 
           <TabsContent value="discover">
             <MerchantDiscovery />
+          </TabsContent>
+          
+          <TabsContent value="pricing">
+            <MerchantPricingManager onPlanChange={handlePlanChange} />
           </TabsContent>
         </Tabs>
         
@@ -108,14 +165,19 @@ export default function MerchantsPage() {
                   <SelectValue placeholder="Select a price plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  {pricePlans.map((plan) => (
+                  {pricingPlans.map((plan) => (
                     <SelectItem key={plan.id} value={plan.id}>
                       <span className="font-medium">{plan.name}</span>
-                      <span className="text-gray-500 ml-2">- {plan.price}</span>
+                      <span className="text-gray-500 ml-2">- R{plan.price} {plan.price_unit}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {pricingPlans.length === 0 && (
+                <div className="mt-2 text-sm text-amber-600">
+                  Please create pricing plans in the Pricing tab
+                </div>
+              )}
             </div>
             
             <MerchantInviteQR 

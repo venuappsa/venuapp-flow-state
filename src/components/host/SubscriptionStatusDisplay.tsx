@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
 import { PlanType } from "@/utils/pricingUtils";
 import { Building, CalendarPlus } from "lucide-react";
+import SubscriptionPlanDialog from "@/components/subscription/SubscriptionPlanDialog";
 
 export default function SubscriptionStatusDisplay() {
   const navigate = useNavigate();
   const { subscribed, subscription_tier, subscription_status } = useSubscription();
   const [selectedPlanType, setSelectedPlanType] = useState<PlanType>("venue");
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
 
   const getStatusColor = (status: string | undefined) => {
     switch (status) {
@@ -29,44 +31,48 @@ export default function SubscriptionStatusDisplay() {
     }
   };
 
-  const handleSubscribe = () => {
-    navigate(`/#pricing?type=${selectedPlanType}`);
-  };
-
   return (
-    <Card className="border-dashed border-gray-300 shadow-sm">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="font-medium text-sm">Subscription Status</h4>
-          <Badge className={getStatusColor(subscription_status)}>
-            {subscription_status || "None"}
-          </Badge>
-        </div>
-        
-        <PlanTypeSelector
-          selectedPlanType={selectedPlanType}
-          onChange={setSelectedPlanType}
-          className="mb-2"
-        />
-        
-        <div className="flex items-center justify-between mt-3">
-          <div>
-            <p className="text-sm font-medium">
-              {selectedPlanType === "venue" ? "Venue Plan:" : "Event Plan:"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {subscription_tier || "Free Plan"}
-            </p>
+    <>
+      <Card className="border-dashed border-gray-300 shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium text-sm">Subscription Status</h4>
+            <Badge className={getStatusColor(subscription_status)}>
+              {subscription_status || "None"}
+            </Badge>
           </div>
-          <Button 
-            size="sm" 
-            className="whitespace-nowrap"
-            onClick={handleSubscribe}
-          >
-            {subscribed ? "Upgrade Plan" : "Subscribe"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          
+          <PlanTypeSelector
+            selectedPlanType={selectedPlanType}
+            onChange={setSelectedPlanType}
+            className="mb-2"
+          />
+          
+          <div className="flex items-center justify-between mt-3">
+            <div>
+              <p className="text-sm font-medium">
+                {selectedPlanType === "venue" ? "Venue Plan:" : "Event Plan:"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {subscription_tier || "Free Plan"}
+              </p>
+            </div>
+            <Button 
+              size="sm" 
+              className="whitespace-nowrap"
+              onClick={() => setPlanDialogOpen(true)}
+            >
+              {subscribed ? "Manage Plan" : "Subscribe"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <SubscriptionPlanDialog 
+        open={planDialogOpen}
+        onOpenChange={setPlanDialogOpen}
+        defaultPlanType={selectedPlanType}
+      />
+    </>
   );
 }

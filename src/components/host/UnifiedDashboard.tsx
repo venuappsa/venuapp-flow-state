@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,7 @@ export default function UnifiedDashboard() {
   const { subscribed, subscription_tier, subscription_status } = useSubscription();
   const [salesDialogOpen, setSalesDialogOpen] = useState(false);
   const [selectedSalesData, setSelectedSalesData] = useState<any>(null);
+  const [dashboardView, setDashboardView] = useState("summary");
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

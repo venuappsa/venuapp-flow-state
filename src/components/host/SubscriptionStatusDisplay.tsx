@@ -43,7 +43,7 @@ export default function SubscriptionStatusDisplay() {
           
           <PlanTypeSelector
             selectedPlanType={selectedPlanType}
-            onChange={setSelectedPlanType}
+            onChange={(planType: string) => setSelectedPlanType(planType)}
             className="mb-2"
           />
           

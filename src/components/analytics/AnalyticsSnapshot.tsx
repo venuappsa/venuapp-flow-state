@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,7 @@ import { generateMockAnalyticsData } from "@/data/analyticsData";
 import DetailedAnalytics from "./DetailedAnalytics";
 import PlanTypeSelector from "./PlanTypeSelector";
 import AnalyticsFeaturesList from "./AnalyticsFeaturesList";
-import { PlanType, getTierLevel, isPremiumFeature, getPricingPlans } from "@/utils/pricingUtils";
+import { getTierLevel, isPremiumFeature, getPricingPlans } from "@/utils/pricingUtils";
 
 interface AnalyticsSnapshotProps {
   subscriptionTier?: string;
@@ -38,7 +39,7 @@ interface AnalyticsSnapshotProps {
 
 export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subscriptionStatus = "active", className = "" }: AnalyticsSnapshotProps) {
   const [selectedTab, setSelectedTab] = useState<string>("revenue");
-  const [planType, setPlanType] = useState<PlanType>("venue");
+  const [planType, setPlanType] = useState<string>("venue");
   const navigate = useNavigate();
   const data = generateMockAnalyticsData(subscriptionTier);
   
@@ -145,7 +146,7 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
       
       <PlanTypeSelector
         selectedPlanType={planType}
-        onChange={setPlanType}
+        onChange={(newPlanType: string) => setPlanType(newPlanType)}
       />
       
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
@@ -1046,7 +1047,7 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
       </Tabs>
       
       <div className="mt-6">
-        <AnalyticsFeaturesList tier={subscriptionTier} planType={planType} />
+        <AnalyticsFeaturesList tier={subscriptionTier} />
       </div>
 
       <div className="mt-8 flex justify-end">
@@ -1062,7 +1063,7 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
 
       {currentTierLevel >= 2 && (
         <div className="mt-8">
-          <DetailedAnalytics subscriptionTier={subscriptionTier} planType={planType} />
+          <DetailedAnalytics subscriptionTier={subscriptionTier} />
         </div>
       )}
     </div>

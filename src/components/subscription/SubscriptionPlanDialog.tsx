@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -79,7 +80,7 @@ export default function SubscriptionPlanDialog({
         <div className="py-6">
           <PlanTypeSelector 
             selectedPlanType={selectedPlanType} 
-            onChange={setSelectedPlanType} 
+            onChange={(planType: string) => setSelectedPlanType(planType)} 
             className="mb-6"
           />
 

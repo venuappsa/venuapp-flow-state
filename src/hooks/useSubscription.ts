@@ -67,7 +67,7 @@ export function useSubscription() {
     }
   };
 
-  // Updated to remove planType parameter
+  // Updated to handle only planId and planName
   const createCheckout = async (planId: string, planName: string) => {
     if (!user) {
       toast({

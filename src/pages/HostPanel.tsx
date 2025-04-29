@@ -3,7 +3,6 @@ import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBreakpoint } from "@/hooks/useResponsive";
-import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import UnifiedDashboard from "@/components/host/UnifiedDashboard";
@@ -18,7 +17,7 @@ export default function HostPanel() {
   return (
     <HostPanelLayout>
       {rolesLoading ? (
-        <div className="max-w-7xl mx-auto py-8">
+        <div className="max-w-7xl mx-auto">
           <Skeleton className="h-8 w-64 mb-6" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Skeleton className="h-32" />
@@ -27,12 +26,11 @@ export default function HostPanel() {
           </div>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto py-8">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">Host Dashboard</h1>
-              {/* Subscription badge removed as per requirement */}
-            </div>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-venu-purple to-venu-dark-purple">
+              Welcome to your Dashboard
+            </h1>
           </div>
           
           <UnifiedDashboard />

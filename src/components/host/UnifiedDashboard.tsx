@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,8 @@ import {
   Settings,
   MessageSquare,
   ExternalLink,
-  Activity
+  Activity,
+  LineChart
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -26,7 +28,8 @@ import NoticeBoard from "@/components/NoticeBoard";
 import SalesBreakdownDialog from "@/components/SalesBreakdownDialog";
 import { generateEventSalesData } from "@/data/salesData";
 import AnalyticsSnapshot from "@/components/analytics/AnalyticsSnapshot";
-import SubscriptionStatusDisplay from "@/components/host/SubscriptionStatusDisplay";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { DashboardSection } from "@/components/dashboard/DashboardSection";
 
 export default function UnifiedDashboard() {
   const navigate = useNavigate();
@@ -119,334 +122,333 @@ export default function UnifiedDashboard() {
         <NoticeBoard />
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 mb-6">
-        <div className="flex-1">
-          <Tabs defaultValue="summary" value={dashboardView} onValueChange={setDashboardView} className="w-full">
-            <TabsList className="bg-gray-50">
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="venues">Venues</TabsTrigger>
-              <TabsTrigger value="events">Events</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="summary" className="space-y-8 mt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                {dashboardStats.map((stat, index) => (
-                  <Card 
-                    key={index} 
-                    className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => handleStatsCardClick(stat)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="bg-gray-100 p-2 rounded-full">
-                          <stat.icon className="h-5 w-5 text-venu-orange" />
-                        </div>
-                        <div className={`text-xs px-2 py-1 rounded ${stat.changeType === 'positive' ? 'bg-green-100 text-green-800' : stat.changeType === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700'}`}>
-                          {stat.change}
-                        </div>
-                      </div>
-                      <div className="mt-2">
-                        <h3 className="font-medium text-gray-500 text-sm">{stat.title}</h3>
-                        <div className="text-2xl font-bold mt-1">{stat.value}</div>
-                        <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+      <Tabs defaultValue="summary" value={dashboardView} onValueChange={setDashboardView} className="w-full">
+        <TabsList className="bg-white border w-full md:w-auto p-1 rounded-xl mb-6">
+          <TabsTrigger value="summary" className="rounded-lg data-[state=active]:bg-venu-purple data-[state=active]:text-white">Summary</TabsTrigger>
+          <TabsTrigger value="venues" className="rounded-lg data-[state=active]:bg-venu-purple data-[state=active]:text-white">Venues</TabsTrigger>
+          <TabsTrigger value="events" className="rounded-lg data-[state=active]:bg-venu-purple data-[state=active]:text-white">Events</TabsTrigger>
+        </TabsList>
+          
+        <TabsContent value="summary" className="space-y-8 mt-6">
+          <DashboardSection title="Key Metrics" gradient>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {dashboardStats.slice(0, 8).map((stat, index) => (
+                <StatCard
+                  key={index}
+                  title={stat.title}
+                  value={stat.value}
+                  description={stat.description}
+                  icon={<stat.icon className="h-5 w-5" />}
+                  change={stat.change}
+                  changeType={stat.changeType as 'positive' | 'negative' | 'neutral'}
+                  onClick={() => handleStatsCardClick(stat)}
+                  gradient={index % 2 === 0}
+                />
+              ))}
+            </div>
+          </DashboardSection>
 
-              <div className="space-y-6">
-                <AnalyticsSnapshot 
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+            <Card className="lg:col-span-2 bg-gradient-to-br from-white to-venu-soft-gray hover:shadow-lg transition-all duration-300">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-lg flex items-center">
+                  <LineChart className="h-5 w-5 mr-2 text-venu-purple" />
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-venu-purple to-venu-dark-purple">
+                    Performance Analytics
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <AnalyticsSnapshot
                   subscriptionTier={subscription_tier || "Free"} 
                   subscriptionStatus={subscription_status}
                 />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg flex items-center">
-                        <CalendarPlus className="h-5 w-5 mr-2 text-venu-orange" />
-                        Recent Events
-                      </CardTitle>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => navigate("/host/events")}
-                      >
-                        View All
-                        <ChevronRight className="h-4 w-4 ml-1" />
+              </CardContent>
+            </Card>
+            
+            <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+              <CardHeader className="pb-0 border-b">
+                <CardTitle className="text-lg flex items-center text-venu-purple">
+                  <CalendarPlus className="h-5 w-5 mr-2 text-venu-purple" />
+                  Upcoming Events
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="space-y-0">
+                  {dummyEvents.filter(event => event.status === 'upcoming').slice(0, 5).map((event) => (
+                    <div 
+                      key={event.id}
+                      className="flex items-center justify-between p-4 border-b last:border-b-0 cursor-pointer hover:bg-venu-soft-gray/50 transition-colors"
+                      onClick={() => navigateToEvent(event.id)}
+                    >
+                      <div className="flex-1">
+                        <h3 className="font-medium text-sm">{event.name}</h3>
+                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                          <span className="mr-3">{formatDate(event.date)}</span>
+                          <span className="flex items-center">
+                            <Users className="h-3 w-3 mr-1" />
+                            {event.ticketsSold}/{event.capacity}
+                          </span>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="px-6">
-                    <div className="space-y-4">
-                      {dummyEvents.slice(0, 3).map((event) => (
-                        <div 
-                          key={event.id}
-                          className="flex items-center justify-between py-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 px-2 rounded"
-                          onClick={() => navigateToEvent(event.id)}
-                        >
-                          <div className="flex-1">
-                            <h3 className="font-medium">{event.name}</h3>
-                            <div className="flex items-center text-sm text-gray-500">
-                              <span className="mr-3">{formatDate(event.date)}</span>
-                              <span>{event.ticketsSold}/{event.capacity} guests</span>
-                            </div>
-                          </div>
-                          <Badge className={event.status === 'upcoming' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}>
-                            {event.status === 'upcoming' ? 'Upcoming' : 'Active'}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg flex items-center">
-                        <Building className="h-5 w-5 mr-2 text-venu-orange" />
-                        Recent Venues
-                      </CardTitle>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => navigate("/host/venues")}
-                      >
-                        View All
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="px-6">
-                    <div className="space-y-4">
-                      {dummyVenues.slice(0, 3).map((venue) => (
-                        <div 
-                          key={venue.id}
-                          className="flex items-center justify-between py-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 px-2 rounded"
-                          onClick={() => navigateToVenue(venue.id)}
-                        >
-                          <div className="flex-1">
-                            <h3 className="font-medium">{venue.name}</h3>
-                            <div className="flex items-center text-sm text-gray-500">
-                              <span>{venue.location}</span>
-                              <span className="mx-2">•</span>
-                              <span>{venue.upcoming_events} upcoming events</span>
-                            </div>
-                          </div>
-                          <Badge className={venue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}>
-                            {venue.status}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <Activity className="h-5 w-5 mr-2 text-venu-orange" />
-                  Quick Actions
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  ))}
+                </div>
+                <div className="p-3 bg-venu-soft-gray/50 border-t">
                   <Button 
-                    variant="outline" 
-                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
-                    onClick={() => navigate("/host/events/new")}
+                    variant="ghost" 
+                    className="text-xs text-venu-purple w-full"
+                    onClick={() => navigate("/host/events")}
                   >
-                    <CalendarPlus className="h-6 w-6" />
-                    <span>New Event</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
-                    onClick={() => navigate("/host/venues/new")}
-                  >
-                    <Building className="h-6 w-6" />
-                    <span>New Venue</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
-                    onClick={() => navigate("/host/merchants")}
-                  >
-                    <UserPlus className="h-6 w-6" />
-                    <span>Invite Vendor</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-auto py-6 w-full flex flex-col items-center justify-center gap-2 border-dashed"
-                    onClick={() => navigate("/host/finance")}
-                  >
-                    <CreditCard className="h-6 w-6" />
-                    <span>View Finance</span>
+                    View All Events
                   </Button>
                 </div>
-              </div>
-            </TabsContent>
+              </CardContent>
+            </Card>
+          </div>
 
-            <TabsContent value="venues" className="space-y-4 mt-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold">Your Venues</h2>
-                <Button onClick={() => navigate("/host/venues/new")}>
-                  <Building className="h-4 w-4 mr-2" />
-                  Add Venue
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {dummyVenues.map((venue) => (
-                  <Card 
-                    key={venue.id} 
-                    className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => navigateToVenue(venue.id)}
-                  >
-                    <div className="h-32 overflow-hidden relative">
-                      <img 
-                        src={venue.imageUrl} 
-                        alt={venue.name} 
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                        <div className={`inline-block text-xs px-2 py-1 rounded ${venue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                          {venue.status === 'active' ? 'Active' : 'Pending'}
-                        </div>
-                      </div>
+          <DashboardSection 
+            title="Quick Actions"
+            description="Common tasks and actions to manage your venues and events"
+            action={
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1 border-venu-purple text-venu-purple hover:bg-venu-purple/10"
+                onClick={() => navigate("/host/settings")}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Customize</span>
+              </Button>
+            }
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-auto py-6 w-full flex flex-col items-center justify-center gap-3 border-dashed border-venu-purple text-venu-purple hover:bg-venu-purple/10"
+                onClick={() => navigate("/host/events/new")}
+              >
+                <div className="bg-venu-purple/10 p-3 rounded-full">
+                  <CalendarPlus className="h-5 w-5" />
+                </div>
+                <span className="text-sm">New Event</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-auto py-6 w-full flex flex-col items-center justify-center gap-3 border-dashed border-venu-purple text-venu-purple hover:bg-venu-purple/10"
+                onClick={() => navigate("/host/venues/new")}
+              >
+                <div className="bg-venu-purple/10 p-3 rounded-full">
+                  <Building className="h-5 w-5" />
+                </div>
+                <span className="text-sm">New Venue</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-auto py-6 w-full flex flex-col items-center justify-center gap-3 border-dashed border-venu-purple text-venu-purple hover:bg-venu-purple/10"
+                onClick={() => navigate("/host/merchants")}
+              >
+                <div className="bg-venu-purple/10 p-3 rounded-full">
+                  <UserPlus className="h-5 w-5" />
+                </div>
+                <span className="text-sm">Invite Vendor</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-auto py-6 w-full flex flex-col items-center justify-center gap-3 border-dashed border-venu-purple text-venu-purple hover:bg-venu-purple/10"
+                onClick={() => navigate("/host/finance")}
+              >
+                <div className="bg-venu-purple/10 p-3 rounded-full">
+                  <CreditCard className="h-5 w-5" />
+                </div>
+                <span className="text-sm">View Finance</span>
+              </Button>
+            </div>
+          </DashboardSection>
+        </TabsContent>
+
+        <TabsContent value="venues" className="space-y-8 mt-6 animate-fade-in">
+          <DashboardSection 
+            title="Your Venues" 
+            gradient
+            action={
+              <Button 
+                className="bg-venu-purple text-white hover:bg-venu-purple/90"
+                onClick={() => navigate("/host/venues/new")}
+              >
+                <Building className="h-4 w-4 mr-2" />
+                Add Venue
+              </Button>
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {dummyVenues.map((venue) => (
+                <Card 
+                  key={venue.id} 
+                  className="overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+                  onClick={() => navigateToVenue(venue.id)}
+                >
+                  <div className="h-36 overflow-hidden relative">
+                    <img 
+                      src={venue.imageUrl} 
+                      alt={venue.name} 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                      <Badge className={cn(
+                        "text-white",
+                        venue.status === 'active' ? 'bg-green-500' : 'bg-amber-500'
+                      )}>
+                        {venue.status === 'active' ? 'Active' : 'Pending'}
+                      </Badge>
                     </div>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-medium truncate">{venue.name}</h3>
-                          <p className="text-sm text-gray-500">{venue.location}</p>
-                        </div>
-                        <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
-                          <Settings className="h-4 w-4" />
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium truncate">{venue.name}</h3>
+                        <p className="text-sm text-gray-500">{venue.location}</p>
+                      </div>
+                      <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
+                        <Settings className="h-4 w-4 text-venu-purple" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center text-sm mt-2">
+                      <Building className="h-4 w-4 text-venu-purple mr-1" />
+                      <span className="text-gray-600">Capacity: {venue.capacity}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center text-sm">
+                        <CalendarPlus className="h-4 w-4 text-venu-purple mr-1" />
+                        <span>{venue.upcoming_events} upcoming events</span>
+                      </div>
+                      <div className="flex space-x-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="p-1 h-8 w-8"
+                          onClick={(e) => handleGenerateVenueLink(venue.id, venue.name, e)}
+                        >
+                          <Share2 className="h-4 w-4 text-venu-purple" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
+                          <ChevronRight className="h-4 w-4 text-venu-purple" />
                         </Button>
                       </div>
-                      <div className="flex items-center text-sm mt-2">
-                        <Building className="h-4 w-4 text-gray-400 mr-1" />
-                        <span className="text-gray-600">Capacity: {venue.capacity}</span>
-                      </div>
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center text-sm">
-                          <CalendarPlus className="h-4 w-4 text-venu-orange mr-1" />
-                          <span>{venue.upcoming_events} upcoming events</span>
-                        </div>
-                        <div className="flex space-x-1">
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </DashboardSection>
+        </TabsContent>
+
+        <TabsContent value="events" className="space-y-8 animate-fade-in mt-6">
+          <DashboardSection 
+            title="Your Events" 
+            gradient
+            action={
+              <Button 
+                className="bg-venu-purple text-white hover:bg-venu-purple/90"
+                onClick={() => navigate("/host/events/new")}
+              >
+                <CalendarPlus className="h-4 w-4 mr-2" />
+                Add Event
+              </Button>
+            }
+          >
+            <Card className="overflow-hidden border-0 shadow-md">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-venu-soft-gray">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-venu-purple uppercase tracking-wider">Name</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-venu-purple uppercase tracking-wider">Venue</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-venu-purple uppercase tracking-wider">Date</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-venu-purple uppercase tracking-wider">Event Sales</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-venu-purple uppercase tracking-wider">Revenue</th>
+                      <th scope="col" className="relative px-6 py-3">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {dummyEvents.map((event) => (
+                      <tr 
+                        key={event.id} 
+                        className="hover:bg-venu-soft-gray/30 cursor-pointer transition-colors"
+                        onClick={() => navigateToEvent(event.id)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{event.name}</div>
+                          <div className="text-xs text-gray-500">ID: {event.id.slice(0, 8)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{event.venueName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{formatDate(event.date)}</div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            className="text-venu-purple hover:underline focus:outline-none text-sm font-medium"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenSalesBreakdown(event.id, event.name, event.revenue);
+                            }}
+                          >
+                            {event.ticketsSold} / {event.capacity}
+                          </button>
+                          <div className="w-32 mt-1 bg-gray-200 rounded-full h-1.5">
+                            <div 
+                              className="bg-venu-purple h-1.5 rounded-full" 
+                              style={{ width: `${(event.ticketsSold / event.capacity) * 100}%` }} 
+                            ></div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            className="text-venu-purple hover:underline focus:outline-none text-sm font-medium"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenSalesBreakdown(event.id, event.name, event.revenue);
+                            }}
+                          >
+                            R {event.revenue.toLocaleString()}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="p-1"
-                            onClick={(e) => handleGenerateVenueLink(venue.id, venue.name, e)}
+                            className="p-0 h-8 w-8 text-venu-purple"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigateToEvent(event.id);
+                            }}
                           >
-                            <Share2 className="h-4 w-4" />
+                            <ChevronRight className="h-5 w-5" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="p-1">
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </TabsContent>
+            </Card>
+          </DashboardSection>
+        </TabsContent>
+      </Tabs>
 
-            <TabsContent value="events" className="space-y-8 mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold">Your Events</h2>
-                <Button 
-                  onClick={() => navigate("/host/events/new")}
-                >
-                  <CalendarPlus className="h-4 w-4 mr-2" />
-                  Add Event
-                </Button>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <div className="min-w-full inline-block align-middle">
-                  <div className="overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event Sales</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                          <th scope="col" className="relative px-4 py-3"></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {dummyEvents.map((event) => (
-                          <tr 
-                            key={event.id} 
-                            className="hover:bg-gray-50 cursor-pointer"
-                            onClick={() => navigateToEvent(event.id)}
-                          >
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">{event.name}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{event.venueName}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{formatDate(event.date)}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                              <button
-                                className="text-blue-600 hover:underline focus:outline-none"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenSalesBreakdown(event.id, event.name, event.revenue);
-                                }}
-                              >
-                                {event.ticketsSold} / {event.capacity}
-                              </button>
-                              <div className="w-full mt-1 bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className="bg-venu-orange h-1.5 rounded-full" 
-                                  style={{ width: `${(event.ticketsSold / event.capacity) * 100}%` }} 
-                                ></div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                              <button
-                                className="text-blue-600 hover:underline focus:outline-none"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenSalesBreakdown(event.id, event.name, event.revenue);
-                                }}
-                              >
-                                R {event.revenue.toLocaleString()}
-                              </button>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="p-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigateToEvent(event.id);
-                                }}
-                              >
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        <div className="md:w-72">
-          <SubscriptionStatusDisplay />
-        </div>
-      </div>
+      <SalesBreakdownDialog 
+        open={salesDialogOpen} 
+        onOpenChange={setSalesDialogOpen} 
+        salesData={selectedSalesData} 
+      />
     </div>
   );
 }

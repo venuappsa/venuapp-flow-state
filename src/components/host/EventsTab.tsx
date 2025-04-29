@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, CalendarPlus, ChevronRight, Share2, Settings } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
@@ -73,7 +72,7 @@ export default function EventsTab() {
               Past
             </button>
           </div>
-          <Button>
+          <Button onClick={() => navigate("/host/events/new")}>
             <CalendarPlus className="h-4 w-4 mr-2" />
             Create Event
           </Button>

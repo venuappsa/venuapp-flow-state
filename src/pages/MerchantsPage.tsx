@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
 import MerchantManagement from "@/components/host/MerchantManagement";
 import MerchantDiscovery from "@/components/MerchantDiscovery";
-import { Store, Search } from "lucide-react";
+import { Store, Search, PricingCard } from "@/components/ui/icons";
 
 export default function MerchantsPage() {
   const [activeTab, setActiveTab] = useState("manage");

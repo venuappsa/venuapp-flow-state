@@ -11,7 +11,6 @@ import HostPage from "./pages/HostPage";
 import MerchantPage from "./pages/MerchantPage";
 import FetchmanPage from "./pages/FetchmanPage";
 import SubscribePage from "./pages/SubscribePage";
-import SubscriptionManagementPage from "./pages/SubscriptionManagementPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPanel from "./pages/AdminPanel";
 import HostPanel from "./pages/HostPanel";
@@ -57,7 +56,6 @@ const App = () => (
           <Route path="/host/vendors" element={<VendorsPage />} />
           <Route path="/host/finance" element={<FinancePage />} />
           <Route path="/host/guests" element={<GuestPage />} />
-          <Route path="/host/subscription" element={<SubscriptionManagementPage />} />
           <Route path="/host/analytics" element={<AnalyticsPage />} />
           <Route path="/host/settings" element={<SettingsPage />} />
           <Route path="/host/knowledge" element={<KnowledgeBasePage />} />

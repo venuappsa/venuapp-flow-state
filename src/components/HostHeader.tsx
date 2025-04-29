@@ -1,4 +1,3 @@
-
 import { Bell, Menu, CreditCard, MessageSquare, Book, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SecurePanelButton from "@/components/SecurePanelButton";
@@ -43,7 +42,6 @@ export default function HostHeader() {
     { label: "Analytics", href: "/host/analytics" },
     { label: "Settings", href: "/host/settings" },
     { label: "Knowledge Base", href: "/host/knowledge" },
-    { label: "Subscription", href: "/host/subscription" },
   ];
 
   const [notifications, setNotifications] = useState([
@@ -125,7 +123,7 @@ export default function HostHeader() {
                     ))}
                     {!subscribed && (
                       <Link 
-                        to="/subscribe"
+                        to="/#pricing"
                         className="flex items-center px-3 py-2 text-venu-orange font-medium hover:bg-orange-50 rounded-md mt-4"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -151,14 +149,14 @@ export default function HostHeader() {
             Host
           </Badge>
           {!subscribed && !isMobile && (
-            <Link to="/subscribe">
+            <Link to="/#pricing">
               <Badge variant="outline" className="ml-2 border-amber-400 text-amber-600 hover:bg-amber-50 cursor-pointer">
                 Upgrade Plan
               </Badge>
             </Link>
           )}
           {subscribed && !isMobile && (
-            <Link to="/host/subscription">
+            <Link to="/#pricing">
               <Badge className={`ml-2 ${
                 subscription_status === "active"
                   ? "bg-green-100 text-green-700"

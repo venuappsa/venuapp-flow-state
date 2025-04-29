@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +33,6 @@ export default function UnifiedDashboard() {
   const { subscribed, subscription_tier, subscription_status } = useSubscription();
   const [salesDialogOpen, setSalesDialogOpen] = useState(false);
   const [selectedSalesData, setSelectedSalesData] = useState<any>(null);
-  const [dashboardView, setDashboardView] = useState("summary"); // summary, venues, events
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -78,7 +76,7 @@ export default function UnifiedDashboard() {
           break;
         case "subscription":
         case "growth":
-          navigate("/host/subscription");
+          navigate("/#pricing");
           break;
         default:
           toast({
@@ -119,7 +117,7 @@ export default function UnifiedDashboard() {
         <NoticeBoard />
       </div>
 
-      <Tabs defaultValue={dashboardView} onValueChange={setDashboardView} className="w-full">
+      <Tabs defaultValue="summary" onValueChange={setDashboardView} className="w-full">
         <TabsList className="bg-gray-50 mb-6">
           <TabsTrigger value="summary">Summary</TabsTrigger>
           <TabsTrigger value="venues">Venues</TabsTrigger>
@@ -160,9 +158,7 @@ export default function UnifiedDashboard() {
             />
           </div>
 
-          {/* Recently Active Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Recent Events */}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-center">
@@ -204,7 +200,6 @@ export default function UnifiedDashboard() {
               </CardContent>
             </Card>
 
-            {/* Recent Venues */}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-center">
@@ -248,7 +243,6 @@ export default function UnifiedDashboard() {
             </Card>
           </div>
 
-          {/* Quick Actions */}
           <div>
             <h2 className="text-lg font-semibold mb-4 flex items-center">
               <Activity className="h-5 w-5 mr-2 text-venu-orange" />
@@ -274,7 +268,7 @@ export default function UnifiedDashboard() {
               <Button 
                 variant="outline" 
                 className="h-auto py-6 flex flex-col items-center justify-center gap-2 border-dashed" 
-                onClick={() => navigate("/host/vendors/invite")}
+                onClick={() => navigate("/host/vendors")}
               >
                 <UserPlus className="h-6 w-6" />
                 <span>Invite Vendor</span>

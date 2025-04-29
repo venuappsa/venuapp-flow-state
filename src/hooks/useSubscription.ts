@@ -68,41 +68,10 @@ export function useSubscription() {
     }
   };
 
-  const createCheckout = async (planId: string, planName: string, planType: PlanType = "venue") => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to subscribe",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { planId, planName, planType },
-      });
-
-      if (error) {
-        console.error("Error creating checkout:", error);
-        toast({
-          title: "Checkout Error",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
-    } catch (err: any) {
-      console.error("Exception creating checkout:", err);
-      toast({
-        title: "Checkout Error",
-        description: err.message,
-        variant: "destructive",
-      });
-    }
+  // Redirect to main site pricing page instead of checkout
+  const redirectToPricing = (planId: string, planName: string, planType: PlanType = "venue") => {
+    // Navigate to homepage pricing section
+    window.location.href = "/#pricing";
   };
 
   useEffect(() => {
@@ -114,6 +83,6 @@ export function useSubscription() {
   return {
     ...subscriptionData,
     checkSubscription,
-    createCheckout,
+    createCheckout: redirectToPricing,
   };
 }

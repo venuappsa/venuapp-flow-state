@@ -91,7 +91,7 @@ export default function MerchantsPage() {
         </Tabs>
         
         <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-3xl">
             <DialogHeader>
               <DialogTitle>Merchant Invitation</DialogTitle>
               <DialogDescription>

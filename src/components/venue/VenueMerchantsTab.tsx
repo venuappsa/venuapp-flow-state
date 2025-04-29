@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -542,7 +543,7 @@ export default function VenueMerchantsTab({ venueId }: VenueMerchantsTabProps) {
       </Dialog>
       
       <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Merchant Application QR Code</DialogTitle>
             <DialogDescription>

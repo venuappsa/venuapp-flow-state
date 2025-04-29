@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import HostHeader from "@/components/HostHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -27,11 +27,11 @@ export default function HostPanelLayout({ children }: HostPanelLayoutProps) {
       allowedRoles={["host"]} 
       showFallback={true}
     >
-      <div className="flex h-screen bg-venu-soft-gray/30">
-        <DashboardSidebar />
-        <div className="flex-1 overflow-auto">
+      <div className="flex flex-col h-screen bg-venu-soft-gray/30">
+        <HostHeader />
+        <div className="flex-1 overflow-auto pt-16">
           <ScrollArea className="h-full">
-            <main className="px-4 md:px-8 py-8">
+            <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
               {children || <Outlet />}
             </main>
           </ScrollArea>

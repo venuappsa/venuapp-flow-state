@@ -31,11 +31,7 @@ export default function HostPanel() {
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">Host Dashboard</h1>
-              {!subscribed && (
-                <Link to="/subscription-management">
-                  <Button size="sm" variant="outline" className="text-xs h-7">Upgrade</Button>
-                </Link>
-              )}
+              {/* Subscription badge removed as per requirement */}
             </div>
           </div>
           

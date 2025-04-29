@@ -17,9 +17,9 @@ import { Badge } from "@/components/ui/badge";
 import { Check, AlertCircle } from "lucide-react";
 import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
 
-// Import pricing plans
-import { venuePricingPlans } from "@/data/venuePricingPlans";
-import { eventPricingPlans } from "@/data/eventPricingPlans";
+// Import pricing plans with correct casing
+import { VenuePricingPlans } from "@/data/venuePricingPlans";
+import { EventPricingPlans } from "@/data/eventPricingPlans";
 
 interface SubscriptionPlanDialogProps {
   open: boolean;
@@ -37,7 +37,7 @@ export default function SubscriptionPlanDialog({
   const { subscribed, subscription_tier, createCheckout } = useSubscription();
   const [selectedPlanType, setSelectedPlanType] = useState<PlanType>(defaultPlanType);
 
-  const plans = selectedPlanType === "venue" ? venuePricingPlans : eventPricingPlans;
+  const plans = selectedPlanType === "venue" ? VenuePricingPlans : EventPricingPlans;
 
   const handleSubscribe = (planId: string, planName: string) => {
     if (!user) {
@@ -51,7 +51,7 @@ export default function SubscriptionPlanDialog({
   };
 
   const getRecommendedPlan = () => {
-    return plans.find(plan => plan.recommended);
+    return plans.find(plan => plan.highlighted);
   };
 
   const getPlanFeatures = (planId: string) => {
@@ -89,13 +89,13 @@ export default function SubscriptionPlanDialog({
                 <div
                   key={plan.id}
                   className={`border rounded-xl overflow-hidden ${
-                    plan.recommended ? "border-venu-orange shadow-lg" : ""
+                    plan.highlighted ? "border-venu-orange shadow-lg" : ""
                   } ${isCurrent ? "border-green-500 ring-2 ring-green-200" : ""}`}
                 >
                   <div className="p-6">
                     <div className="flex justify-between items-start">
                       <h3 className="text-xl font-bold">{plan.name}</h3>
-                      {plan.recommended && (
+                      {plan.highlighted && (
                         <Badge className="bg-venu-orange">Recommended</Badge>
                       )}
                       {isCurrent && (
@@ -105,7 +105,7 @@ export default function SubscriptionPlanDialog({
 
                     <div className="mt-4">
                       <span className="text-3xl font-bold">
-                        R{plan.monthlyPrice}
+                        R{plan.price}
                       </span>
                       <span className="text-gray-500">/month</span>
                     </div>
@@ -123,7 +123,7 @@ export default function SubscriptionPlanDialog({
 
                     <Button
                       className="w-full mt-6"
-                      variant={plan.recommended ? "default" : "outline"}
+                      variant={plan.highlighted ? "default" : "outline"}
                       onClick={() => handleSubscribe(plan.id, plan.name)}
                       disabled={isCurrent}
                     >

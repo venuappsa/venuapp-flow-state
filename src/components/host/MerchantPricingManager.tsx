@@ -42,6 +42,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/hooks/useUser";
 
+interface PricingFeature {
+  name: string;
+  included: boolean;
+  description?: string;
+}
+
 interface PricingPlan {
   id?: string;
   name: string;
@@ -51,12 +57,6 @@ interface PricingPlan {
   is_highlighted: boolean;
   plan_type: string;
   features: PricingFeature[];
-}
-
-interface PricingFeature {
-  name: string;
-  included: boolean;
-  description?: string;
 }
 
 export default function MerchantPricingManager({
@@ -108,7 +108,7 @@ export default function MerchantPricingManager({
       
       const plans = data.map(plan => ({
         ...plan,
-        features: plan.features as PricingFeature[]
+        features: plan.features as unknown as PricingFeature[] // Type assertion to address the type error
       }));
       
       setPricingPlans(plans);
@@ -175,7 +175,7 @@ export default function MerchantPricingManager({
       const planData = {
         ...data,
         host_id: user.id,
-        features
+        features: features as unknown as any // Convert to any to satisfy Supabase JSON type
       };
       
       let result;

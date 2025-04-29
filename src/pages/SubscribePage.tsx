@@ -15,7 +15,7 @@ import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBreakpoint } from "@/hooks/useResponsive";
 import { Badge } from "@/components/ui/badge";
-import { getPricingPlans, PlanType } from "@/utils/pricingUtils";
+import { getPricingPlans } from "@/utils/pricingUtils";
 import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
 import { Separator } from "@/components/ui/separator";
 
@@ -49,7 +49,7 @@ const SubscribePage = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedPlanType, setSelectedPlanType] = useState<PlanType>("venue");
+  const [selectedPlanType, setSelectedPlanType] = useState<string>("venue");
   const navigate = useNavigate();
   const location = useLocation();
   const breakpoint = useBreakpoint();
@@ -75,7 +75,7 @@ const SubscribePage = () => {
   }, [location.search]);
 
   const isHost = userRoles?.includes("host");
-  const pricingPlans = getPricingPlans(selectedPlanType);
+  const pricingPlans = getPricingPlans();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +125,7 @@ const SubscribePage = () => {
   };
 
   const handlePlanSelect = async (planId: string, planName: string) => {
-    await createCheckout(planId, planName, selectedPlanType);
+    await createCheckout(planId, planName);
   };
 
   const renderGuestSubscribeForm = () => (

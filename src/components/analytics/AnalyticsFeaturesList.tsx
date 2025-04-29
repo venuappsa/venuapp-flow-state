@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Info, X } from "lucide-react";
@@ -11,21 +10,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
-  PlanType, 
-  getAnalyticsFeaturesForTier, 
   getTierLevel,
   PricingFeature 
 } from "@/utils/pricingUtils";
 
 interface AnalyticsFeaturesListProps {
   tier: string;
-  planType: PlanType;
 }
 
-export default function AnalyticsFeaturesList({ tier, planType }: AnalyticsFeaturesListProps) {
+export default function AnalyticsFeaturesList({ tier }: AnalyticsFeaturesListProps) {
   const navigate = useNavigate();
   const currentTierLevel = getTierLevel(tier);
-  const availableFeatures = getAnalyticsFeaturesForTier(tier, planType);
+  const availableFeatures = getAnalyticsFeaturesForTier(tier);
   
   // All possible features
   const allFeatures: PricingFeature[] = [
@@ -72,7 +68,7 @@ export default function AnalyticsFeaturesList({ tier, planType }: AnalyticsFeatu
     {
       name: "Historical Data Access",
       includedInTiers: ["Starter", "Growth", "Pro", "Enterprise"],
-      description: planType === "venue" ? "Access to 30/90/365 days of data" : "Access to previous event data"
+      description: "Access to 30/90/365 days of data"
     },
     {
       name: "Comparative Analytics",
@@ -88,6 +84,16 @@ export default function AnalyticsFeaturesList({ tier, planType }: AnalyticsFeatu
   const getMinimumTierForFeature = (feature: PricingFeature): string => {
     return feature.includedInTiers[0];
   };
+
+  // Helper function for getAnalyticsFeaturesForTier since we're not importing it directly
+  function getAnalyticsFeaturesForTier(tier: string): PricingFeature[] {
+    const tierLevel = getTierLevel(tier);
+    
+    return allFeatures.filter(feature => {
+      const lowestTierWithFeature = feature.includedInTiers[0];
+      return getTierLevel(lowestTierWithFeature) <= tierLevel;
+    });
+  }
 
   return (
     <Card className="mt-4">

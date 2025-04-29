@@ -1,473 +1,621 @@
-import HostPanelLayout from "@/components/layouts/HostPanelLayout";
+// Import statements
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer } from "@/components/ui/chart";
-import { ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
-import { generateMockAnalyticsData } from "@/data/analyticsData";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import { Check, Info } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { useUser } from "@/hooks/useUser";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { useNavigate, useLocation } from "react-router-dom";
+import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useBreakpoint } from "@/hooks/useResponsive";
+import { Badge } from "@/components/ui/badge";
+import { getPricingPlans } from "@/utils/pricingUtils";
 import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
-import { PlanType, getTierLevel } from "@/utils/pricingUtils";
-import AnalyticsFeaturesList from "@/components/analytics/AnalyticsFeaturesList";
+import { Separator } from "@/components/ui/separator";
 
-const GuestAnalyticsPage = () => {
-  const [selectedTab, setSelectedTab] = useState<string>("demographics");
-  const [planType, setPlanType] = useState<PlanType>("venue");
+const GuestPage = () => {
+  // Replace PlanType with string for selectedPlanType
+  const [selectedPlanType, setSelectedPlanType] = useState<string>("venue");
+  const { user } = useUser();
+  const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
+  const { 
+    subscribed, 
+    subscription_tier, 
+    subscription_end, 
+    subscription_status,
+    isLoading: subLoading, 
+    checkSubscription, 
+    createCheckout 
+  } = useSubscription();
+  
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { subscribed, subscription_tier } = useSubscription();
-  const currentTier = subscription_tier || "Free Plan";
-  const data = generateMockAnalyticsData(currentTier);
-  const tierLevel = getTierLevel(currentTier);
+  const location = useLocation();
+  const breakpoint = useBreakpoint();
+  
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const subStatus = params.get('subscription');
+    
+    if (subStatus === 'success') {
+      toast({
+        title: "Subscription successful!",
+        description: "Your subscription has been activated.",
+        variant: "default"
+      });
+      checkSubscription();
+    } else if (subStatus === 'canceled') {
+      toast({
+        title: "Subscription canceled",
+        description: "You can subscribe at any time when you're ready.",
+        variant: "default"
+      });
+    }
+  }, [location.search]);
 
-  const ageData = [
-    { name: "18-24", value: 28, color: "#22c55e" },
-    { name: "25-34", value: 35, color: "#16a34a" },
-    { name: "35-44", value: 22, color: "#15803d" },
-    { name: "45-54", value: 10, color: "#166534" },
-    { name: "55+", value: 5, color: "#14532d" }
-  ];
+  const isHost = userRoles?.includes("host");
+  const pricingPlans = getPricingPlans();
 
-  const genderData = [
-    { name: "Male", value: 52, color: "#3b82f6" },
-    { name: "Female", value: 45, color: "#ec4899" },
-    { name: "Other", value: 3, color: "#8b5cf6" }
-  ];
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const emailContent = `
+        Name: ${name}
+        Email: ${email}
+        Interested as: ${role}
+      `;
 
-  const attendanceData = [
-    { month: "Jan", attendance: 1200 },
-    { month: "Feb", attendance: 1500 },
-    { month: "Mar", attendance: 1800 },
-    { month: "Apr", attendance: 1600 },
-    { month: "May", attendance: 2100 },
-    { month: "Jun", attendance: 2400 }
-  ];
+      const response = await fetch("https://formsubmit.co/ajax/hello@venuapp.co.za", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          subject: "Early Access Subscription - Venuapp",
+          message: emailContent,
+          email: email,
+          name: name
+        }),
+      });
 
-  const retentionData = [
-    { name: "First-time", value: 65, color: "#3b82f6" },
-    { name: "Returning", value: 35, color: "#8b5cf6" }
-  ];
-
-  const satisfactionData = [
-    { category: "Overall Experience", rating: 4.2 },
-    { category: "Event Quality", rating: 4.5 },
-    { category: "Food & Beverage", rating: 3.9 },
-    { category: "Staff Service", rating: 4.3 },
-    { category: "Value for Money", rating: 3.8 },
-    { category: "Venue Facilities", rating: 4.1 }
-  ];
-
-  // Fixed colors for group size chart
-  const groupSizeColors = [
-    { name: "Solo", color: "#f59e0b" },
-    { name: "Couples", color: "#ff6b00" },
-    { name: "Groups (3-5)", color: "#ef4444" },
-    { name: "Large Groups (6+)", color: "#8b5cf6" }
-  ];
-
-  const navigateBack = () => {
-    navigate('/host/dashboard');
+      if (response.ok) {
+        toast({
+          title: "Subscription successful!",
+          description: "You're now on the list to get early access to Venuapp.",
+        });
+        setEmail("");
+        setName("");
+        setRole("");
+      } else {
+        throw new Error("Failed to subscribe");
+      }
+    } catch (error) {
+      toast({
+        title: "Error subscribing",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  return (
-    <HostPanelLayout>
-      <div className="max-w-7xl mx-auto py-8">
-        <div className="flex justify-between items-center mb-6">
+  const handlePlanSelect = async (planId: string, planName: string) => {
+    await createCheckout(planId, planName);
+  };
+
+  const renderGuestSubscribeForm = () => (
+    <section className="py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <Button variant="ghost" onClick={navigateBack} className="mb-2">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
-            </Button>
-            <h1 className="text-2xl font-bold">Guest Analytics</h1>
-            <p className="text-gray-500">Comprehensive insights on guest profiles and behavior</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-venu-black mb-6">
+              Be The <span className="text-venu-orange">First</span> To Know
+            </h1>
+            <p className="text-gray-600 text-lg mb-8">
+              Venuapp is coming soon to revolutionize South Africa's event experience. Join our waiting list to be among the first to access our platform when we launch.
+            </p>
+            <div className="space-y-6">
+              <div className="flex items-start">
+                <Check className="mr-2 h-5 w-5 text-venu-orange flex-shrink-0 mt-0.5" />
+                <span>Be first in line when we launch</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="mr-2 h-5 w-5 text-venu-orange flex-shrink-0 mt-0.5" />
+                <span>Receive exclusive pre-launch offers</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="mr-2 h-5 w-5 text-venu-orange flex-shrink-0 mt-0.5" />
+                <span>Get early access to features and benefits</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="mr-2 h-5 w-5 text-venu-orange flex-shrink-0 mt-0.5" />
+                <span>Stay updated on our progress and launch date</span>
+              </div>
+            </div>
           </div>
-          
-          {planType === "venue" ? (
-            <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-              Venue Plan: {currentTier}
-            </div>
-          ) : (
-            <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-              Event Plan: {currentTier}
-            </div>
-          )}
-        </div>
-
-        <PlanTypeSelector
-          selectedPlanType={planType}
-          onChange={setPlanType}
-        />
-
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
-          <TabsList className="bg-white border p-1 rounded-lg">
-            <TabsTrigger value="demographics">Demographics</TabsTrigger>
-            <TabsTrigger value="attendance">Attendance</TabsTrigger>
-            <TabsTrigger value="satisfaction">Satisfaction</TabsTrigger>
-            <TabsTrigger value="retention">Retention</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="demographics" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Age Distribution</CardTitle>
-                  <CardDescription>Breakdown of attendees by age group</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <ChartContainer config={{}}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={ageData}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {ageData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => `${value}%`} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Gender Distribution</CardTitle>
-                  <CardDescription>Breakdown of attendees by gender</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <ChartContainer config={{}}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={genderData}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {genderData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => `${value}%`} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
+          <div>
+            <Card className="border-t-4 border-t-venu-orange shadow-lg">
               <CardHeader>
-                <CardTitle className="text-lg">Regional Distribution</CardTitle>
-                <CardDescription>Where your guests are coming from</CardDescription>
+                <CardTitle className="text-2xl">Subscribe for Early Access</CardTitle>
+                <CardDescription>
+                  Fill in your details to join our waiting list
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[400px]">
-                  <ChartContainer config={{value: {label: "Guests"}}}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={[
-                          { region: "Johannesburg", value: 35 },
-                          { region: "Pretoria", value: 22 },
-                          { region: "Cape Town", value: 15 },
-                          { region: "Durban", value: 12 },
-                          { region: "Port Elizabeth", value: 8 },
-                          { region: "Other", value: 8 }
-                        ]}
-                        layout="vertical"
-                        margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                        <XAxis type="number" />
-                        <YAxis dataKey="region" type="category" width={100} />
-                        <Tooltip formatter={(value) => `${value}%`} />
-                        <Bar dataKey="value" fill="#ff6b00" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="attendance" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Monthly Attendance</CardTitle>
-                <CardDescription>Guest attendance trends over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px]">
-                  <ChartContainer
-                    config={{
-                      attendance: {
-                        label: "Attendance",
-                        theme: {
-                          light: "#ff6b00",
-                          dark: "#ff6b00"
-                        }
-                      }
-                    }}
+                <form onSubmit={handleSubmit} className="space-y-6" aria-labelledby="subscribe-form-title">
+                  <h3 id="subscribe-form-title" className="sr-only">Subscribe for early access</h3>
+                  <div className="space-y-2">
+                    <label htmlFor="name" className="text-sm font-medium">
+                      Full Name
+                    </label>
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="name"
+                      required
+                      aria-label="Your full name"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium">
+                      Email Address
+                    </label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="email"
+                      required
+                      aria-label="Your email address"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="role" className="text-sm font-medium">
+                      I am interested as a
+                    </label>
+                    <Select value={role} onValueChange={setRole} name="role">
+                      <SelectTrigger id="role" aria-label="Select your role">
+                        <SelectValue placeholder="Select your role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="host">Event Host</SelectItem>
+                        <SelectItem value="merchant">Merchant</SelectItem>
+                        <SelectItem value="fetchman">Fetchman</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-venu-orange text-white hover:bg-venu-orange/90"
+                    disabled={isSubmitting}
                   >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={attendanceData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="attendance" stroke="#ff6b00" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
+                    {isSubmitting ? "Subscribing..." : "I Want This First!"}
+                  </Button>
+                  
+                  <p className="text-xs text-gray-500 text-center">
+                    By subscribing, you agree to receive updates about Venuapp.
+                    We respect your privacy and will never share your information.
+                  </p>
+                </form>
               </CardContent>
             </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Peak Arrival Times</CardTitle>
-                  <CardDescription>When guests typically arrive</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="h-[200px]">
-                    <ChartContainer config={{count: {label: "Guest Count"}}}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={[
-                            { time: "10:00", count: 50 },
-                            { time: "11:00", count: 120 },
-                            { time: "12:00", count: 200 },
-                            { time: "13:00", count: 180 },
-                            { time: "14:00", count: 140 },
-                            { time: "15:00", count: 90 },
-                            { time: "16:00", count: 70 },
-                            { time: "17:00", count: 110 },
-                            { time: "18:00", count: 180 },
-                            { time: "19:00", count: 220 },
-                            { time: "20:00", count: 170 },
-                          ]}
-                          margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
-                        >
-                          <XAxis dataKey="time" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="count" fill="#ff6b00" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Average Stay Duration</CardTitle>
-                  <CardDescription>How long guests remain at events</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="h-[200px]">
-                    <ChartContainer config={{percentage: {label: "% of Guests"}}}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={[
-                            { duration: "<1 hr", percentage: 5 },
-                            { duration: "1-2 hrs", percentage: 15 },
-                            { duration: "2-3 hrs", percentage: 30 },
-                            { duration: "3-4 hrs", percentage: 35 },
-                            { duration: "4+ hrs", percentage: 15 },
-                          ]}
-                          margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
-                        >
-                          <XAxis dataKey="duration" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="percentage" fill="#ff6b00" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Group Size</CardTitle>
-                  <CardDescription>How guests attend events</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="h-[200px]">
-                    <ChartContainer config={{percentage: {label: "% of Bookings"}}}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={[
-                              { name: "Solo", value: 20, color: "#f59e0b" },
-                              { name: "Couples", value: 35, color: "#ff6b00" },
-                              { name: "Groups (3-5)", value: 30, color: "#ef4444" },
-                              { name: "Large Groups (6+)", value: 15, color: "#8b5cf6" }
-                            ]}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={70}
-                            fill="#8884d8"
-                            dataKey="value"
-                          >
-                            {groupSizeColors.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => `${value}%`} />
-                          <Legend layout="vertical" align="right" verticalAlign="middle" />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="satisfaction" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Guest Satisfaction Ratings</CardTitle>
-                <CardDescription>Average ratings across categories (out of 5)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px]">
-                  <ChartContainer
-                    config={{
-                      rating: {
-                        label: "Rating",
-                        theme: {
-                          light: "#ff6b00",
-                          dark: "#ff6b00"
-                        }
-                      }
-                    }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={satisfactionData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="category" />
-                        <YAxis domain={[0, 5]} />
-                        <Tooltip formatter={(value) => `${value}/5`} />
-                        <Bar dataKey="rating" fill="#ff6b00">
-                          {satisfactionData.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={entry.rating > 4.2 ? "#22c55e" : entry.rating > 3.8 ? "#f59e0b" : "#ef4444"} 
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="retention" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Guest Type</CardTitle>
-                  <CardDescription>First-time vs. returning guests</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <ChartContainer config={{}}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={retentionData}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {retentionData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => `${value}%`} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Retention Rate</CardTitle>
-                  <CardDescription>Return rate by event type</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <ChartContainer config={{rate: {label: "Return Rate"}}}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={[
-                            { event: "Festivals", rate: 45 },
-                            { event: "Concerts", rate: 38 },
-                            { event: "Food Markets", rate: 65 },
-                            { event: "Sports Events", rate: 58 },
-                            { event: "Exhibitions", rate: 42 }
-                          ]}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="event" />
-                          <YAxis />
-                          <Tooltip formatter={(value) => `${value}%`} />
-                          <Bar dataKey="rate" fill="#8b5cf6" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-        
-        <div className="mt-8">
-          <AnalyticsFeaturesList tier={currentTier} planType={planType} />
+          </div>
         </div>
       </div>
-    </HostPanelLayout>
+    </section>
+  );
+
+  const renderPricingPlans = () => (
+    <section className="py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+            <span className="text-venu-orange">Subscription</span> Plans
+          </h1>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
+            Choose the right plan for your venues and events. All plans include our core features with varying capacities and additional benefits.
+          </p>
+          
+          <PlanTypeSelector 
+            selectedPlanType={selectedPlanType} 
+            onChange={setSelectedPlanType} 
+            className="mb-8"
+          />
+          
+          <div className="inline-flex items-center justify-center w-full">
+            <hr className="w-64 h-px my-8 bg-gray-200 border-0" />
+            <span className="absolute px-3 font-medium text-gray-500 bg-white">
+              {selectedPlanType === "venue" ? "Monthly Venue Plans" : "Per-Event Plans"}
+            </span>
+          </div>
+          
+          <p className="text-sm text-gray-500 mt-4 mb-8">
+            {selectedPlanType === "venue" 
+              ? "Perfect for venues that host multiple events over time. Billed monthly."
+              : "Ideal for one-time events or special occasions. Pay per event."}
+          </p>
+        </div>
+
+        {subLoading ? (
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Basic Plan */}
+            <Card className={`flex flex-col ${subscription_tier === 'basic' ? 'border-venu-orange shadow-lg' : ''}`}>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Basic</CardTitle>
+                  {subscription_tier === 'basic' && (
+                    <Badge className="bg-venu-orange">Current Plan</Badge>
+                  )}
+                </div>
+                <CardDescription>For smaller venues and events</CardDescription>
+                <div className="mt-4">
+                  <span className="text-3xl font-bold">
+                    {selectedPlanType === "venue" ? "R499" : "R250"}
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    /{selectedPlanType === "venue" ? "month" : "event"}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <ul className="space-y-3">
+                  {selectedPlanType === "venue" ? (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 3 venues</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 5 events per venue monthly</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Single event use</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 3 merchants allowed</span>
+                      </li>
+                    </>
+                  )}
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>Basic analytics</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>Standard support</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>5% commission on transactions</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                {subscription_tier === 'basic' ? (
+                  <Button className="w-full bg-gray-200 text-gray-700 cursor-not-allowed" disabled>
+                    Current Plan
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full" 
+                    variant={subscription_tier ? "outline" : "default"} 
+                    onClick={() => handlePlanSelect(
+                      "Basic", 
+                      "Basic"
+                    )}
+                    disabled={isSubmitting}
+                  >
+                    {subscription_tier ? "Switch to Basic" : "Select Basic"}
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+
+            {/* Premium Plan */}
+            <Card className={`flex flex-col ${subscription_tier === 'premium' ? 'border-venu-orange shadow-lg' : 'md:scale-105 shadow-lg border-venu-orange/80'}`}>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Premium</CardTitle>
+                  {subscription_tier === 'premium' ? (
+                    <Badge className="bg-venu-orange">Current Plan</Badge>
+                  ) : (
+                    <Badge variant="outline" className="border-venu-orange text-venu-orange">Popular</Badge>
+                  )}
+                </div>
+                <CardDescription>For growing businesses</CardDescription>
+                <div className="mt-4">
+                  <span className="text-3xl font-bold">
+                    {selectedPlanType === "venue" ? "R999" : "R650"}
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    /{selectedPlanType === "venue" ? "month" : "event"}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <ul className="space-y-3">
+                  {selectedPlanType === "venue" ? (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 10 venues</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Unlimited events</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Single event use</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 6 merchants allowed</span>
+                      </li>
+                    </>
+                  )}
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>Advanced analytics and reporting</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>Priority support</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>3.5% commission on transactions</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                {subscription_tier === 'premium' ? (
+                  <Button className="w-full bg-gray-200 text-gray-700 cursor-not-allowed" disabled>
+                    Current Plan
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full bg-venu-orange hover:bg-venu-orange/90"
+                    onClick={() => handlePlanSelect(
+                      "Premium", 
+                      "Premium"
+                    )}
+                    disabled={isSubmitting}
+                  >
+                    {subscription_tier ? "Switch to Premium" : "Select Premium"}
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+
+            {/* Enterprise Plan */}
+            <Card className={`flex flex-col ${subscription_tier === 'enterprise' ? 'border-venu-orange shadow-lg' : ''}`}>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Enterprise</CardTitle>
+                  {subscription_tier === 'enterprise' && (
+                    <Badge className="bg-venu-orange">Current Plan</Badge>
+                  )}
+                </div>
+                <CardDescription>For large organizations</CardDescription>
+                <div className="mt-4">
+                  <span className="text-3xl font-bold">
+                    {selectedPlanType === "venue" ? "R2499" : "R1070"}
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    /{selectedPlanType === "venue" ? "month" : "event"}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <ul className="space-y-3">
+                  {selectedPlanType === "venue" ? (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Unlimited venues</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Unlimited events with premium features</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Single event use</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                        <span>Up to 10 merchants allowed</span>
+                      </li>
+                    </>
+                  )}
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>Enterprise analytics with custom reports</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>Dedicated account manager</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
+                    <span>2% commission on transactions</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                {subscription_tier === 'enterprise' ? (
+                  <Button className="w-full bg-gray-200 text-gray-700 cursor-not-allowed" disabled>
+                    Current Plan
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full" 
+                    variant={subscription_tier ? "outline" : "default"} 
+                    onClick={() => handlePlanSelect(
+                      "Enterprise", 
+                      "Enterprise"
+                    )}
+                    disabled={isSubmitting}
+                  >
+                    {subscription_tier ? "Switch to Enterprise" : "Select Enterprise"}
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          </div>
+        )}
+
+        {subscription_tier && (
+          <div className="mt-12 text-center">
+            <div className="bg-blue-50 text-blue-800 p-4 rounded-md inline-block max-w-2xl">
+              <div className="flex items-center">
+                <Info className="h-5 w-5 mr-2" />
+                <span className="font-medium">Current Subscription</span>
+              </div>
+              <p className="mt-2">
+                You are currently on the <span className="font-medium">{subscription_tier}</span> plan.
+                {subscription_end && (
+                  <span> Your subscription renews on {new Date(subscription_end).toLocaleDateString()}.</span>
+                )}
+              </p>
+              {subscription_status && subscription_status !== "none" && (
+                <p className="mt-1">
+                  Status: <span className="font-medium capitalize">{subscription_status}</span>
+                </p>
+              )}
+              
+              <Button 
+                variant="link" 
+                className="mt-2"
+                onClick={() => navigate("/host/subscription")}
+              >
+                Manage your subscription
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
+  const renderPlanCTASection = () => (
+    <section className="py-16 bg-gradient-to-r from-venu-orange/5 to-amber-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6">
+          Launch Your <span className="text-venu-orange">Venue</span> with Venuapp
+        </h2>
+        <p className="text-gray-600 text-lg max-w-3xl mx-auto mb-8">
+          Give your guests the best experience by using our digital platform for your venues.
+          Easy management, reduced queues, and increased sales.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+          {[
+            "Ticket Management",
+            "Menu Ordering",
+            "In-seat Delivery",
+            "Vendor Management",
+            "Real-time Analytics",
+            "Customer Data",
+            "Integrated Payments",
+            "Marketing Tools"
+          ].map((feature, index) => (
+            <div key={index} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <span className="font-medium">{feature}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-12">
+          {!isHost && (
+            <Button onClick={() => navigate("/auth")} size="lg" className="bg-venu-orange hover:bg-venu-orange/90">
+              Register as a Host
+            </Button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-grow pt-20">
+        {isHost ? (
+          <>
+            {renderPricingPlans()}
+            <section className="py-12 bg-white">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+                <div className="max-w-3xl mx-auto space-y-6">
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h3 className="font-medium mb-2">What's the difference between venue and event plans?</h3>
+                    <p className="text-gray-600">Venue plans are monthly subscriptions ideal for venues that host multiple events regularly. Event plans are one-time payments perfect for individual events.</p>
+                  </div>
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h3 className="font-medium mb-2">Can I pause my subscription?</h3>
+                    <p className="text-gray-600">Yes, you can pause your subscription once per quarter for up to 14 days. Visit the subscription management page to use this feature.</p>
+                  </div>
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h3 className="font-medium mb-2">How do commissions work?</h3>
+                    <p className="text-gray-600">Commissions are calculated on transaction volume processed through the platform. Higher tier plans offer lower commission rates.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </>
+        ) : (
+          <>
+            {renderGuestSubscribeForm()}
+            {renderPlanCTASection()}
+          </>
+        )}
+      </main>
+      <Footer />
+    </div>
   );
 };
 
-export default GuestAnalyticsPage;
+export default GuestPage;

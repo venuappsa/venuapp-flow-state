@@ -2,11 +2,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Building, CalendarDays } from "lucide-react";
-import { PlanType } from "@/utils/pricingUtils";
 
 interface PlanTypeSelectorProps {
-  selectedPlanType: PlanType;
-  onChange: (planType: PlanType) => void;
+  selectedPlanType: string;
+  onChange: (planType: string) => void;
   className?: string;
 }
 
@@ -15,7 +14,7 @@ export default function PlanTypeSelector({
   onChange,
   className = ""
 }: PlanTypeSelectorProps) {
-  const [hoveredOption, setHoveredOption] = useState<PlanType | null>(null);
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
 
   return (
     <div className={`flex flex-col space-y-3 ${className}`}>

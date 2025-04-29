@@ -1,9 +1,7 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useSubscription } from "@/hooks/useSubscription";
-import { PlanType } from "@/utils/pricingUtils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,15 +14,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Check, AlertCircle } from "lucide-react";
 import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
-
-// Import pricing plans with correct casing
-import { VenuePricingPlans } from "@/data/venuePricingPlans";
-import { EventPricingPlans } from "@/data/eventPricingPlans";
+import { UnifiedPricingPlans } from "@/data/unifiedPricingPlans";
 
 interface SubscriptionPlanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultPlanType?: PlanType;
+  defaultPlanType?: string;
 }
 
 export default function SubscriptionPlanDialog({
@@ -35,9 +30,9 @@ export default function SubscriptionPlanDialog({
   const navigate = useNavigate();
   const { user } = useUser();
   const { subscribed, subscription_tier, createCheckout } = useSubscription();
-  const [selectedPlanType, setSelectedPlanType] = useState<PlanType>(defaultPlanType);
+  const [selectedPlanType, setSelectedPlanType] = useState<string>(defaultPlanType);
 
-  const plans = selectedPlanType === "venue" ? VenuePricingPlans : EventPricingPlans;
+  const plans = UnifiedPricingPlans;
 
   const handleSubscribe = (planName: string) => {
     if (!user) {
@@ -46,7 +41,7 @@ export default function SubscriptionPlanDialog({
       return;
     }
 
-    createCheckout(planName, planName, selectedPlanType);
+    createCheckout(planName, planName);
     onOpenChange(false);
   };
 

@@ -6,14 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
-import { PlanType } from "@/utils/pricingUtils";
 import { Building, CalendarPlus } from "lucide-react";
 import SubscriptionPlanDialog from "@/components/subscription/SubscriptionPlanDialog";
 
 export default function SubscriptionStatusDisplay() {
   const navigate = useNavigate();
   const { subscribed, subscription_tier, subscription_status } = useSubscription();
-  const [selectedPlanType, setSelectedPlanType] = useState<PlanType>("venue");
+  const [selectedPlanType, setSelectedPlanType] = useState<string>("venue");
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
 
   const getStatusColor = (status: string | undefined) => {

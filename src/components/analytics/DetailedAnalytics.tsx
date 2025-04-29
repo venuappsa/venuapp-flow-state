@@ -7,14 +7,13 @@ import { generateDetailedAnalyticsData } from "@/data/analyticsData";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { PlanType, getTierLevel } from "@/utils/pricingUtils";
+import { getTierLevel } from "@/utils/pricingUtils";
 
 interface DetailedAnalyticsProps {
   subscriptionTier?: string;
-  planType?: PlanType;
 }
 
-export default function DetailedAnalytics({ subscriptionTier = "Free Plan", planType = "venue" }: DetailedAnalyticsProps) {
+export default function DetailedAnalytics({ subscriptionTier = "Free Plan" }: DetailedAnalyticsProps) {
   const [selectedTab, setSelectedTab] = useState<string>("salesByTime");
   const data = generateDetailedAnalyticsData(subscriptionTier);
   const currentTierLevel = getTierLevel(subscriptionTier);
@@ -23,15 +22,9 @@ export default function DetailedAnalytics({ subscriptionTier = "Free Plan", plan
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Detailed Analytics</h3>
-        {planType === "venue" ? (
-          <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-            Venue Plan: {subscriptionTier}
-          </div>
-        ) : (
-          <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-            Event Plan: {subscriptionTier}
-          </div>
-        )}
+        <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+          Venue Plan: {subscriptionTier}
+        </div>
       </div>
       
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">

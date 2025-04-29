@@ -14,7 +14,10 @@ export default function AnalyticsPage() {
   const [analyticsType, setAnalyticsType] = useState("revenue");
   const { subscription_tier = "Free", subscribed } = useSubscription();
   
-  const availableFeatures = getAnalyticsFeaturesForTier(subscription_tier, "venue");
+  // Update this line to only pass one parameter
+  const features = getAnalyticsFeaturesForTier(subscription_tier || "Free Plan");
+  
+  const availableFeatures = features;
   
   const premiumNote = (
     <Alert className="bg-amber-50 mb-6">

@@ -47,7 +47,8 @@ const UsageItem = ({ label, current, limit, icon }: UsageItemProps) => {
         <Progress 
           value={usagePercent} 
           className="h-2" 
-          indicatorClassName={getUsageBgClass(usagePercent)}
+          // Replace indicatorClassName with inline className for the indicator
+          // We'll style this in the progress.tsx file instead
         />
       )}
     </div>
@@ -107,7 +108,7 @@ const SubscriptionUsage = ({
         )}
         
         {!isAnyLimitExceeded && isAnyLimitApproaching && (
-          <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
+          <Alert variant="default" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Approaching Usage Limits</AlertTitle>
             <AlertDescription>

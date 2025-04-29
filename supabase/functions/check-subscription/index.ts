@@ -88,7 +88,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: false, 
         subscription_status: "none", 
-        subscription_end: null 
+        subscription_end: null,
+        subscription_plan_type: "venue" 
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -114,6 +115,7 @@ serve(async (req) => {
         subscription_tier: hostProfile.subscription_tier || "basic",
         subscription_end: hostProfile.subscription_renewal,
         subscription_status: "paused",
+        subscription_plan_type: hostProfile.subscription_plan_type || "venue",
         pause_ends_at: activePause.end_date
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -141,7 +143,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: false, 
         subscription_status: "none", 
-        subscription_end: null 
+        subscription_end: null,
+        subscription_plan_type: hostProfile.subscription_plan_type || "venue" 
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -159,7 +162,7 @@ serve(async (req) => {
     
     const hasActiveSub = subscriptions.data.length > 0;
     let subscriptionTier = "none";
-    let subscriptionPlanType = "venue";
+    let subscriptionPlanType = hostProfile.subscription_plan_type || "venue";
     let subscriptionEnd = null;
 
     if (hasActiveSub) {

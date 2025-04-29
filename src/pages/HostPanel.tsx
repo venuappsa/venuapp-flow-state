@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import UnifiedDashboard from "@/components/host/UnifiedDashboard";
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
+import SubscriptionStatusBar from "@/components/subscription/SubscriptionStatusBar";
 
 export default function HostPanel() {
   const { user } = useUser();
@@ -27,10 +28,11 @@ export default function HostPanel() {
         </div>
       ) : (
         <div className="max-w-7xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-venu-purple to-venu-dark-purple">
+          <div className="mb-4">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-venu-purple to-venu-dark-purple mb-4">
               Welcome to your Dashboard
             </h1>
+            <SubscriptionStatusBar />
           </div>
           
           <UnifiedDashboard />

@@ -10,6 +10,7 @@ export interface SubscriptionData {
   subscription_tier?: string;
   subscription_end?: string;
   subscription_status?: "active" | "paused" | "expired" | "trial" | "none";
+  subscription_plan_type?: PlanType;
   isLoading: boolean;
   error: string | null;
 }
@@ -21,6 +22,7 @@ export function useSubscription() {
     subscription_tier: undefined,
     subscription_end: undefined,
     subscription_status: undefined,
+    subscription_plan_type: undefined,
     isLoading: true,
     error: null,
   });
@@ -55,6 +57,7 @@ export function useSubscription() {
         subscription_tier: data.subscription_tier,
         subscription_end: data.subscription_end,
         subscription_status: data.subscription_status,
+        subscription_plan_type: data.subscription_plan_type,
         isLoading: false,
         error: null,
       });

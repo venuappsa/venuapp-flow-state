@@ -14,13 +14,16 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlanType } from "@/utils/pricingUtils";
 import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
+import PlanFeatureComparison from "@/components/subscription/PlanFeatureComparison";
+import SubscriptionUsage from "@/components/subscription/SubscriptionUsage";
 
 export function SubscriptionManagement() {
   const { 
     subscribed, 
     subscription_tier, 
     subscription_end, 
-    subscription_status, 
+    subscription_status,
+    subscription_plan_type,
     isLoading,
     checkSubscription,
     createCheckout
@@ -30,13 +33,22 @@ export function SubscriptionManagement() {
   const [isPauseLoading, setIsPauseLoading] = useState(false);
   const [isPausing, setIsPausing] = useState(false);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
-  const [selectedPlanType, setSelectedPlanType] = useState<PlanType>("venue");
+  const [selectedPlanType, setSelectedPlanType] = useState<PlanType>(subscription_plan_type || "venue");
   const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({});
   
   // For this quarter's pause metrics
   const [currentQuarterUsed, setCurrentQuarterUsed] = useState(0);
   const [canPause, setCanPause] = useState(false);
   const [remainingPauseDays, setRemainingPauseDays] = useState(0);
+  
+  // Mock usage data - in a real application, these would come from the database
+  const [usageData, setUsageData] = useState({
+    eventsUsed: 1,
+    merchantsUsed: 2,
+    adminsUsed: 1,
+    fetchmenUsed: 3,
+    productsUsed: 15
+  });
   
   // Since the subscription_pauses table doesn't exist yet, we'll just show a temporary placeholder
   // This would normally be filled with data from the database
@@ -124,179 +136,18 @@ export function SubscriptionManagement() {
     }));
   };
 
-  // Create plan feature lists
-  const venuePlans = [
-    {
-      name: "Standard",
-      price: "R499",
-      period: "/month",
-      description: "For smaller venues",
-      features: [
-        "Up to 3 venues",
-        "Up to 5 events per venue monthly",
-        "Basic analytics",
-        "Standard support",
-        "5% commission on transactions",
-        "0.4% marketing rebate",
-        "Up to 3 merchants allowed"
-      ],
-      priceId: "price_1OT7NbGVnlGQn0rKkm5MNuMp"
-    },
-    {
-      name: "Pro",
-      price: "R999",
-      period: "/month",
-      description: "For growing businesses",
-      features: [
-        "Up to 10 venues",
-        "Unlimited events",
-        "Advanced analytics and reporting",
-        "Priority support",
-        "3.5% commission on transactions",
-        "0.4% marketing rebate",
-        "Up to 6 merchants allowed",
-        "Fetchman access"
-      ],
-      popular: true,
-      priceId: "price_1OT7NuGVnlGQn0rKYTeHQsrE"
-    },
-    {
-      name: "Enterprise",
-      price: "R2499",
-      period: "/month",
-      description: "For large organizations",
-      features: [
-        "Unlimited venues",
-        "Unlimited events with premium features",
-        "Enterprise analytics with custom reports",
-        "Dedicated account manager",
-        "2% commission on transactions",
-        "0.4% marketing rebate",
-        "Unlimited merchants allowed",
-        "Priority fetchman access"
-      ],
-      priceId: "price_1OT7OPGVnlGQn0rKqTNCYLhc"
-    },
-    {
-      name: "Pay-As-You-Go",
-      price: "R199",
-      period: "/venue/month",
-      description: "For occasional venue usage",
-      features: [
-        "Pay only for venues you use",
-        "Basic event features",
-        "Standard analytics",
-        "Email support",
-        "6% commission on transactions",
-        "0.4% marketing rebate",
-        "Up to 2 merchants allowed"
-      ],
-      priceId: "price_venue_payg"
-    },
-    {
-      name: "Free",
-      price: "R0",
-      period: "",
-      description: "Limited trial access",
-      features: [
-        "1 venue only",
-        "Up to 2 events",
-        "Basic analytics",
-        "Email support only",
-        "8% commission on transactions",
-        "0.4% marketing rebate",
-        "1 merchant allowed"
-      ],
-      priceId: "price_free_tier"
-    }
-  ];
-
-  const eventPlans = [
-    {
-      name: "Standard",
-      price: "R250",
-      period: "/event",
-      description: "For smaller events",
-      features: [
-        "Single event use",
-        "Up to 3 merchants allowed",
-        "Basic analytics",
-        "Standard support",
-        "5% commission on transactions",
-        "0.7% marketing rebate"
-      ],
-      priceId: "price_1OT7NbGVnlGQn0rKkm5MNuMq"
-    },
-    {
-      name: "Pro",
-      price: "R650",
-      period: "/event",
-      description: "For medium-sized events",
-      features: [
-        "Single event use",
-        "Up to 6 merchants allowed",
-        "Advanced analytics and reporting",
-        "Priority support",
-        "3.5% commission on transactions",
-        "0.7% marketing rebate",
-        "Fetchman access"
-      ],
-      popular: true,
-      priceId: "price_1OT7NuGVnlGQn0rKYTeHQsrF"
-    },
-    {
-      name: "Enterprise",
-      price: "R1070",
-      period: "/event",
-      description: "For large-scale events",
-      features: [
-        "Single event use",
-        "Up to 10 merchants allowed",
-        "Enterprise analytics with custom reports",
-        "Dedicated event manager",
-        "2% commission on transactions",
-        "0.7% marketing rebate",
-        "Priority fetchman access"
-      ],
-      priceId: "price_1OT7OPGVnlGQn0rKqTNCYLhd"
-    },
-    {
-      name: "Pay-As-You-Go",
-      price: "R75",
-      period: "/merchant/day",
-      description: "For small single-merchant events",
-      features: [
-        "Pay only for merchants used",
-        "Basic event features",
-        "Standard analytics",
-        "Email support",
-        "6% commission on transactions",
-        "0.7% marketing rebate"
-      ],
-      priceId: "price_event_payg"
-    },
-    {
-      name: "Free",
-      price: "R0",
-      period: "",
-      description: "Limited trial access",
-      features: [
-        "1 event only",
-        "Up to 2 merchants",
-        "Basic analytics",
-        "Email support only",
-        "8% commission on transactions",
-        "0.7% marketing rebate"
-      ],
-      priceId: "price_free_tier_event"
-    }
-  ];
-
   useEffect(() => {
     if (subscription_status === 'active') {
       fetchPauseHistory();
     }
   }, [subscription_status]);
+  
+  // Update selected plan type based on current subscription when component mounts
+  useEffect(() => {
+    if (subscription_plan_type) {
+      setSelectedPlanType(subscription_plan_type);
+    }
+  }, [subscription_plan_type]);
 
   if (isLoading) {
     return (
@@ -316,13 +167,19 @@ export function SubscriptionManagement() {
           <CardDescription>You don't have an active subscription</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-6">
             To access subscription management features, you need to subscribe to a plan first.
           </p>
+          
+          {/* Show plan comparison for non-subscribers */}
+          <PlanFeatureComparison 
+            planType={selectedPlanType} 
+            onPlanSelect={createCheckout}
+          />
         </CardContent>
         <CardFooter>
           <Button asChild>
-            <a href="/subscribe">View Plans</a>
+            <a href="/subscribe">View All Plans</a>
           </Button>
         </CardFooter>
       </Card>
@@ -343,6 +200,13 @@ export function SubscriptionManagement() {
                 <span className="font-medium">Plan</span>
                 <Badge className="bg-green-100 text-green-800">
                   {subscription_tier || "Standard"} Plan
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Plan Type</span>
+                <Badge variant="outline">
+                  {subscription_plan_type === "venue" ? "Monthly Venue" : "Event-based"}
                 </Badge>
               </div>
               
@@ -393,61 +257,63 @@ export function SubscriptionManagement() {
           </CardFooter>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Subscription Pause</CardTitle>
-            <CardDescription>Temporarily pause your subscription</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isPauseLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-2 flex justify-between items-center">
-                    <span className="font-medium text-sm">Pause Days Used This Quarter</span>
-                    <span className="text-sm">0/14 days</span>
-                  </div>
-                  <Progress value={0} className="h-2" />
-                </div>
-                
-                <Alert>
-                  <Clock className="h-4 w-4" />
-                  <AlertTitle>Coming Soon</AlertTitle>
-                  <AlertDescription>
-                    Subscription pausing will be available in a future update.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-          </CardContent>
-          <CardFooter>
-            <div className="w-full flex gap-2">
-              <Button 
-                variant="outline"
-                className="flex-1"
-                onClick={() => handlePauseSubscription(7)}
-                disabled={true}
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                <span>Pause 7 Days</span>
-              </Button>
-              
-              <Button 
-                className="flex-1"
-                onClick={() => handlePauseSubscription(14)}
-                disabled={true}
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                <span>Pause 14 Days</span>
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
+        <SubscriptionUsage {...usageData} />
       </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription Pause</CardTitle>
+          <CardDescription>Temporarily pause your subscription</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isPauseLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <div className="mb-2 flex justify-between items-center">
+                  <span className="font-medium text-sm">Pause Days Used This Quarter</span>
+                  <span className="text-sm">0/14 days</span>
+                </div>
+                <Progress value={0} className="h-2" />
+              </div>
+              
+              <Alert>
+                <Clock className="h-4 w-4" />
+                <AlertTitle>Coming Soon</AlertTitle>
+                <AlertDescription>
+                  Subscription pausing will be available in a future update.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter>
+          <div className="w-full flex gap-2">
+            <Button 
+              variant="outline"
+              className="flex-1"
+              onClick={() => handlePauseSubscription(7)}
+              disabled={true}
+            >
+              <Pause className="h-4 w-4 mr-2" />
+              <span>Pause 7 Days</span>
+            </Button>
+            
+            <Button 
+              className="flex-1"
+              onClick={() => handlePauseSubscription(14)}
+              disabled={true}
+            >
+              <Pause className="h-4 w-4 mr-2" />
+              <span>Pause 14 Days</span>
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -472,140 +338,13 @@ export function SubscriptionManagement() {
         <PlanTypeSelector
           selectedPlanType={selectedPlanType}
           onChange={setSelectedPlanType}
-          className="mb-8"
+          className="mb-4"
         />
 
-        <Tabs value={selectedPlanType} onValueChange={(v) => setSelectedPlanType(v as PlanType)}>
-          <TabsContent value="venue" className="mt-6 space-y-8">
-            <div>
-              <div className="flex items-center mb-6">
-                <h3 className="text-lg font-semibold">Venue-Based Packages</h3>
-                <Separator className="flex-grow ml-4" />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {venuePlans.map((plan, index) => (
-                  <Card key={index} className={`flex flex-col ${plan.popular ? 'border-venu-orange shadow-lg' : ''}`}>
-                    <CardHeader className="pb-4">
-                      <div className="flex justify-between items-center">
-                        <CardTitle>{plan.name}</CardTitle>
-                        {plan.popular && (
-                          <Badge variant="outline" className="border-venu-orange text-venu-orange">Popular</Badge>
-                        )}
-                        {subscription_tier === plan.name.toLowerCase() && (
-                          <Badge className="bg-venu-orange">Current</Badge>
-                        )}
-                      </div>
-                      <CardDescription>{plan.description}</CardDescription>
-                      <div className="mt-4">
-                        <span className="text-3xl font-bold">{plan.price}</span>
-                        <span className="text-gray-500 ml-2">{plan.period}</span>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <div className="mb-4">
-                        <h4 className="font-medium flex items-center justify-between cursor-pointer" 
-                            onClick={() => toggleFeatures(`venue-${plan.name}`)}>
-                          Features
-                          {expandedFeatures[`venue-${plan.name}`] ? 
-                            <ChevronUp className="h-4 w-4" /> : 
-                            <ChevronDown className="h-4 w-4" />
-                          }
-                        </h4>
-                      </div>
-                      
-                      {expandedFeatures[`venue-${plan.name}`] && (
-                        <ul className="space-y-3 mt-3">
-                          {plan.features.map((feature, i) => (
-                            <li key={i} className="flex items-start">
-                              <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className={`w-full ${plan.popular && !subscription_tier ? 'bg-venu-orange hover:bg-venu-orange/90' : ''}`}
-                        variant={subscription_tier === plan.name.toLowerCase() ? "outline" : "default"}
-                        disabled={subscription_tier === plan.name.toLowerCase()}
-                        onClick={() => createCheckout(plan.priceId, plan.name, "venue")}
-                      >
-                        {subscription_tier === plan.name.toLowerCase() ? "Current Plan" : "Select Plan"}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="event" className="mt-6 space-y-8">
-            <div>
-              <div className="flex items-center mb-6">
-                <h3 className="text-lg font-semibold">Event-Based Packages</h3>
-                <Separator className="flex-grow ml-4" />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {eventPlans.map((plan, index) => (
-                  <Card key={index} className={`flex flex-col ${plan.popular ? 'border-venu-orange shadow-lg' : ''}`}>
-                    <CardHeader className="pb-4">
-                      <div className="flex justify-between items-center">
-                        <CardTitle>{plan.name}</CardTitle>
-                        {plan.popular && (
-                          <Badge variant="outline" className="border-venu-orange text-venu-orange">Popular</Badge>
-                        )}
-                        {subscription_tier === plan.name.toLowerCase() && (
-                          <Badge className="bg-venu-orange">Current</Badge>
-                        )}
-                      </div>
-                      <CardDescription>{plan.description}</CardDescription>
-                      <div className="mt-4">
-                        <span className="text-3xl font-bold">{plan.price}</span>
-                        <span className="text-gray-500 ml-2">{plan.period}</span>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <div className="mb-4">
-                        <h4 className="font-medium flex items-center justify-between cursor-pointer" 
-                            onClick={() => toggleFeatures(`event-${plan.name}`)}>
-                          Features
-                          {expandedFeatures[`event-${plan.name}`] ? 
-                            <ChevronUp className="h-4 w-4" /> : 
-                            <ChevronDown className="h-4 w-4" />
-                          }
-                        </h4>
-                      </div>
-                      
-                      {expandedFeatures[`event-${plan.name}`] && (
-                        <ul className="space-y-3 mt-3">
-                          {plan.features.map((feature, i) => (
-                            <li key={i} className="flex items-start">
-                              <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        className={`w-full ${plan.popular && !subscription_tier ? 'bg-venu-orange hover:bg-venu-orange/90' : ''}`}
-                        variant={subscription_tier === plan.name.toLowerCase() ? "outline" : "default"}
-                        disabled={subscription_tier === plan.name.toLowerCase()}
-                        onClick={() => createCheckout(plan.priceId, plan.name, "event")}
-                      >
-                        {subscription_tier === plan.name.toLowerCase() ? "Current Plan" : "Select Plan"}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+        <PlanFeatureComparison 
+          planType={selectedPlanType}
+          onPlanSelect={createCheckout}
+        />
       </div>
     </div>
   );

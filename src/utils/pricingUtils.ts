@@ -10,6 +10,15 @@ export interface PricingFeature {
   description: string;
 }
 
+export interface SubscriptionLimits {
+  eventsPerMonth: number;
+  merchantsPerEvent: number;
+  adminUsers: number;
+  fetchmenPerEvent: number;
+  productsPerEvent: number;
+  dataRetentionDays: number;
+}
+
 export const tierLevels = {
   "Free Plan": 0,
   "Starter": 1,
@@ -19,8 +28,70 @@ export const tierLevels = {
   "Custom": 4
 };
 
+export const tierColors = {
+  "Free Plan": "gray",
+  "Starter": "green",
+  "Growth": "blue", 
+  "Pro": "purple",
+  "Enterprise": "amber"
+};
+
+export const subscriptionLimits: Record<string, SubscriptionLimits> = {
+  "Free Plan": {
+    eventsPerMonth: 2,
+    merchantsPerEvent: 1,
+    adminUsers: 1,
+    fetchmenPerEvent: 2,
+    productsPerEvent: 10,
+    dataRetentionDays: 7
+  },
+  "Starter": {
+    eventsPerMonth: 5,
+    merchantsPerEvent: 3,
+    adminUsers: 3,
+    fetchmenPerEvent: 6,
+    productsPerEvent: 60,
+    dataRetentionDays: 30
+  },
+  "Growth": {
+    eventsPerMonth: 15,
+    merchantsPerEvent: 7,
+    adminUsers: 10,
+    fetchmenPerEvent: 20,
+    productsPerEvent: 200,
+    dataRetentionDays: 90
+  },
+  "Pro": {
+    eventsPerMonth: 30,
+    merchantsPerEvent: 15,
+    adminUsers: 20, 
+    fetchmenPerEvent: 40,
+    productsPerEvent: 500,
+    dataRetentionDays: 180
+  },
+  "Enterprise": {
+    eventsPerMonth: -1, // Unlimited
+    merchantsPerEvent: -1, // Unlimited
+    adminUsers: -1, // Unlimited
+    fetchmenPerEvent: -1, // Unlimited
+    productsPerEvent: -1, // Unlimited
+    dataRetentionDays: 365
+  }
+};
+
 export const getTierLevel = (subscriptionTier: string): number => {
   return tierLevels[subscriptionTier as keyof typeof tierLevels] || 0;
+};
+
+export const getTierLimit = (tier: string, limitKey: keyof SubscriptionLimits): number => {
+  const limits = subscriptionLimits[tier] || subscriptionLimits["Free Plan"];
+  return limits[limitKey];
+};
+
+export const isLimitExceeded = (tier: string, limitKey: keyof SubscriptionLimits, currentUsage: number): boolean => {
+  const limit = getTierLimit(tier, limitKey);
+  // -1 indicates unlimited
+  return limit !== -1 && currentUsage >= limit;
 };
 
 export const getAnalyticsFeaturesForTier = (tier: string, planType: PlanType): PricingFeature[] => {
@@ -122,16 +193,7 @@ export const getAnalyticsFeaturesForTier = (tier: string, planType: PlanType): P
 };
 
 export const getDataWindowForTier = (tier: string): number => {
-  const tierLevel = getTierLevel(tier);
-  
-  switch(tierLevel) {
-    case 0: return 7; // 7 days for Free tier
-    case 1: return 30; // 30 days for Starter
-    case 2: return 90; // 90 days for Growth
-    case 3:
-    case 4: return 365; // 365 days for Pro/Enterprise
-    default: return 7;
-  }
+  return subscriptionLimits[tier]?.dataRetentionDays || 7;
 };
 
 export const getPricingPlans = (planType: PlanType) => {
@@ -161,3 +223,53 @@ export const isPremiumFeature = (featureName: string, tier: string): boolean => 
   
   return getTierLevel(tier) < feature.minTier;
 };
+
+// Format numeric values to display unlimited when value is -1
+export const formatLimit = (value: number): string => {
+  return value === -1 ? "Unlimited" : value.toString();
+};
+
+// Get percentage of usage for a specific limit
+export const getUsagePercent = (current: number, limit: number): number => {
+  if (limit === -1) return 0; // Unlimited
+  return Math.min(100, Math.round((current / limit) * 100));
+};
+
+// Check if usage is approaching the limit (80% or more)
+export const isApproachingLimit = (current: number, limit: number): boolean => {
+  if (limit === -1) return false; // Unlimited
+  return (current / limit) >= 0.8;
+};
+
+// Get text color class based on usage percentage
+export const getUsageColorClass = (usagePercent: number): string => {
+  if (usagePercent >= 90) return 'text-red-500';
+  if (usagePercent >= 80) return 'text-amber-500';
+  return 'text-green-500';
+};
+
+// Get background color class based on usage percentage
+export const getUsageBgClass = (usagePercent: number): string => {
+  if (usagePercent >= 90) return 'bg-red-500';
+  if (usagePercent >= 80) return 'bg-amber-500';
+  return 'bg-green-500';
+};
+
+// Get border color class based on tier
+export const getTierBorderClass = (tier: string): string => {
+  const color = tierColors[tier as keyof typeof tierColors] || 'gray';
+  return `border-${color}-500`;
+};
+
+// Get text color class based on tier
+export const getTierTextClass = (tier: string): string => {
+  const color = tierColors[tier as keyof typeof tierColors] || 'gray';
+  return `text-${color}-600`;
+};
+
+// Get background color class based on tier
+export const getTierBgClass = (tier: string): string => {
+  const color = tierColors[tier as keyof typeof tierColors] || 'gray';
+  return `bg-${color}-100 text-${color}-800`;
+};
+

@@ -100,6 +100,13 @@ serve(async (req) => {
         plan_name: planName,
         plan_type: planType,
       },
+      subscription_data: {
+        metadata: {
+          user_id: user.id,
+          plan_name: planName,
+          plan_type: planType
+        }
+      }
     });
 
     logStep("Checkout session created", { sessionId: session.id });

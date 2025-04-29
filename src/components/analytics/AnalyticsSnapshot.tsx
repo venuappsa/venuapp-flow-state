@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +26,6 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { generateMockAnalyticsData } from "@/data/analyticsData";
 import DetailedAnalytics from "./DetailedAnalytics";
-import PlanTypeSelector from "./PlanTypeSelector";
 import AnalyticsFeaturesList from "./AnalyticsFeaturesList";
 import { getTierLevel, isPremiumFeature, getPricingPlans } from "@/utils/pricingUtils";
 
@@ -39,7 +37,6 @@ interface AnalyticsSnapshotProps {
 
 export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subscriptionStatus = "active", className = "" }: AnalyticsSnapshotProps) {
   const [selectedTab, setSelectedTab] = useState<string>("revenue");
-  const [planType, setPlanType] = useState<string>("venue");
   const navigate = useNavigate();
   const data = generateMockAnalyticsData(subscriptionTier);
   
@@ -89,39 +86,24 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
   };
 
   const getDataWindowLabel = () => {
-    if (planType === "venue") {
-      switch (currentTierLevel) {
-        case 0: return "Last 7 days";
-        case 1: return "Last 30 days";
-        case 2: return "Last 90 days";
-        case 3:
-        case 4: return "Last 12 months";
-        default: return "Last 7 days";
-      }
-    } else {
-      return currentTierLevel === 0 ? "Current event only" : "All events";
+    switch (currentTierLevel) {
+      case 0: return "Last 7 days";
+      case 1: return "Last 30 days";
+      case 2: return "Last 90 days";
+      case 3:
+      case 4: return "Last 12 months";
+      default: return "Last 7 days";
     }
   };
 
   const getPlanDescription = () => {
-    if (planType === "venue") {
-      switch (subscriptionTier) {
-        case "Free Plan": return "Basic metrics available on free plan";
-        case "Starter": return "30-day data window with basic metrics";
-        case "Growth": return "90-day data window with standard analytics";
-        case "Pro": return "1-year data window with advanced metrics";
-        case "Enterprise": return "Full analytics suite with unlimited history";
-        default: return "Basic analytics package";
-      }
-    } else {
-      switch (subscriptionTier) {
-        case "Free Plan": return "Basic metrics for single events";
-        case "Starter": return "Standard metrics for events";
-        case "Growth": return "Enhanced analytics for events";
-        case "Pro": return "Advanced analytics for major events";
-        case "Enterprise": return "Full analytics suite for large-scale events";
-        default: return "Basic event analytics";
-      }
+    switch (subscriptionTier) {
+      case "Free Plan": return "Basic metrics available on free plan";
+      case "Starter": return "30-day data window with basic metrics";
+      case "Growth": return "90-day data window with standard analytics";
+      case "Pro": return "1-year data window with advanced metrics";
+      case "Enterprise": return "Full analytics suite with unlimited history";
+      default: return "Basic analytics package";
     }
   };
 
@@ -143,11 +125,6 @@ export default function AnalyticsSnapshot({ subscriptionTier = "Free Plan", subs
           </Link>
         )}
       </div>
-      
-      <PlanTypeSelector
-        selectedPlanType={planType}
-        onChange={(newPlanType: string) => setPlanType(newPlanType)}
-      />
       
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="w-full bg-white border border-gray-100 p-1 rounded-lg">

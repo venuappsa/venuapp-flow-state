@@ -9,7 +9,7 @@ import { useState } from "react";
 type PricingPlan = {
   name: string;
   price: string;
-  eventPrice: string;
+  eventPrice: string; // Required property
   description: string;
   features: Record<string, string>;
   highlighted: boolean;
@@ -37,9 +37,7 @@ const ComparisonTable = ({ plans, billingType }: { plans: PricingPlan[]; billing
               >
                 <span className="font-bold text-lg">{plan.name}</span>
                 <div className="text-sm text-gray-600 font-normal">
-                  {plan.price === "Custom" ? "Custom" : 
-                    billingType === "event" ? `${plan.eventPrice}/event` : `${plan.price}/month`
-                  }
+                  {plan.price === "Custom" ? "Custom" : `${plan.price}/month`}
                 </div>
               </th>
             ))}
@@ -97,11 +95,11 @@ const PricingCard = ({ plan, isHighlighted, billingType }: {
         <CardDescription className="text-sm">{plan.description}</CardDescription>
         <div className="mt-2">
           <span className="text-3xl font-bold">
-            {billingType === "monthly" ? plan.price : plan.eventPrice}
+            {plan.price}
           </span>
           {plan.price !== "Custom" && plan.name !== "Free Plan" && (
             <span className="text-sm text-muted-foreground">
-              /{billingType === "monthly" ? "month" : "event"}
+              /month
             </span>
           )}
         </div>
@@ -148,7 +146,12 @@ const PricingCard = ({ plan, isHighlighted, billingType }: {
 const Pricing = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [billingType, setBillingType] = useState<"monthly" | "event">("monthly");
-  const plans = UnifiedPricingPlans;
+  
+  // Add eventPrice to each plan for type compatibility
+  const plans = UnifiedPricingPlans.map(plan => ({
+    ...plan,
+    eventPrice: plan.price // Set event price to be the same as regular price for now
+  }));
 
   return (
     <section id="pricing" className="py-16 bg-white">

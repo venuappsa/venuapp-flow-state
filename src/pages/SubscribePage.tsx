@@ -16,20 +16,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useBreakpoint } from "@/hooks/useResponsive";
 import { Badge } from "@/components/ui/badge";
 import { getPricingPlans } from "@/utils/pricingUtils";
-import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
 import { Separator } from "@/components/ui/separator";
 
 const PRICE_IDS = {
-  venue: {
-    basic: "price_1OT7NbGVnlGQn0rKkm5MNuMp",
-    premium: "price_1OT7NuGVnlGQn0rKYTeHQsrE",
-    enterprise: "price_1OT7OPGVnlGQn0rKqTNCYLhc",
-  },
-  event: {
-    basic: "price_1OT7NbGVnlGQn0rKkm5MNuMq",
-    premium: "price_1OT7NuGVnlGQn0rKYTeHQsrF",
-    enterprise: "price_1OT7OPGVnlGQn0rKqTNCYLhd",
-  }
+  basic: "price_1OT7NbGVnlGQn0rKkm5MNuMp",
+  premium: "price_1OT7NuGVnlGQn0rKYTeHQsrE",
+  enterprise: "price_1OT7OPGVnlGQn0rKqTNCYLhc",
 };
 
 const SubscribePage = () => {
@@ -49,7 +41,6 @@ const SubscribePage = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedPlanType, setSelectedPlanType] = useState<string>("venue");
   const navigate = useNavigate();
   const location = useLocation();
   const breakpoint = useBreakpoint();

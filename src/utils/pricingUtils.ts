@@ -77,7 +77,7 @@ export const getAnalyticsFeaturesForTier = (tier: string, planType: PlanType): P
       includedInTiers: ["Pro", "Enterprise"],
       description: "Compare performance across events or time periods"
     },
-    // New Food Delivery specific features
+    // Food Delivery specific features
     {
       name: "Food Delivery Metrics",
       includedInTiers: ["Free Plan", "Starter", "Growth", "Pro", "Enterprise"],

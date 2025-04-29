@@ -258,6 +258,113 @@ export function generateMockAnalyticsData(subscriptionTier: string = "Free") {
     return Math.round(((lastForecast - lastActual) / lastActual) * 100);
   };
   
+  // Generate food delivery data
+  const generateFoodDeliveryData = () => {
+    // Order fulfillment data
+    const orderFulfillment = {
+      averageDeliveryTime: Math.floor(Math.random() * 5) + 15, // 15-20 minutes
+      averagePreparationTime: Math.floor(Math.random() * 5) + 10, // 10-15 minutes
+      averageTotalTime: Math.floor(Math.random() * 5) + 25, // 25-30 minutes
+      onTimeDeliveryRate: Math.floor(Math.random() * 10) + 85, // 85-95%
+    };
+    
+    // Popular items
+    const popularItems = [
+      { name: "Classic Burger", sales: Math.floor(Math.random() * 100) + 300, avgPreparationTime: Math.floor(Math.random() * 3) + 8 },
+      { name: "Margherita Pizza", sales: Math.floor(Math.random() * 80) + 250, avgPreparationTime: Math.floor(Math.random() * 4) + 10 },
+      { name: "Chicken Wings", sales: Math.floor(Math.random() * 70) + 200, avgPreparationTime: Math.floor(Math.random() * 3) + 9 },
+      { name: "Caesar Salad", sales: Math.floor(Math.random() * 50) + 150, avgPreparationTime: Math.floor(Math.random() * 2) + 5 },
+      { name: "Chocolate Brownie", sales: Math.floor(Math.random() * 40) + 100, avgPreparationTime: Math.floor(Math.random() * 2) + 3 }
+    ];
+    
+    // Delivery zones
+    const deliveryZones = [
+      { name: "Central", orders: Math.floor(Math.random() * 100) + 400, avgDeliveryTime: Math.floor(Math.random() * 3) + 12 },
+      { name: "North", orders: Math.floor(Math.random() * 80) + 300, avgDeliveryTime: Math.floor(Math.random() * 4) + 15 },
+      { name: "East", orders: Math.floor(Math.random() * 70) + 250, avgDeliveryTime: Math.floor(Math.random() * 5) + 18 },
+      { name: "South", orders: Math.floor(Math.random() * 60) + 200, avgDeliveryTime: Math.floor(Math.random() * 6) + 20 },
+      { name: "West", orders: Math.floor(Math.random() * 50) + 150, avgDeliveryTime: Math.floor(Math.random() * 4) + 17 }
+    ];
+    
+    // Orders by hour
+    const ordersByHour = Array.from({ length: 24 }, (_, i) => {
+      // Create pattern with lunch and dinner peaks
+      let multiplier = 1;
+      if (i >= 11 && i <= 13) multiplier = 2.5; // lunch peak
+      if (i >= 18 && i <= 20) multiplier = 3; // dinner peak
+      
+      return {
+        hour: i < 10 ? `0${i}:00` : `${i}:00`,
+        orders: Math.floor((Math.random() * 20 + 10) * multiplier),
+        avgDeliveryTime: Math.floor(Math.random() * 8) + 22, // 22-30 minutes
+      };
+    });
+    
+    // Food categories
+    const foodCategories = [
+      { name: "Burgers", sales: Math.floor(Math.random() * 2000) + 5000, preference: Math.floor(Math.random() * 20) + 60 },
+      { name: "Pizza", sales: Math.floor(Math.random() * 1800) + 4500, preference: Math.floor(Math.random() * 15) + 55 },
+      { name: "Asian", sales: Math.floor(Math.random() * 1500) + 4000, preference: Math.floor(Math.random() * 10) + 50 },
+      { name: "Salads", sales: Math.floor(Math.random() * 1200) + 3000, preference: Math.floor(Math.random() * 10) + 40 },
+      { name: "Desserts", sales: Math.floor(Math.random() * 1000) + 2000, preference: Math.floor(Math.random() * 10) + 30 }
+    ];
+    
+    // Product time efficiency
+    const productTimeEfficiency = popularItems.map(item => ({
+      name: item.name,
+      avgTimeToSell: Math.floor(Math.random() * 10) + 10, // 10-20 minutes between sales
+      peakHourTimeToSell: Math.floor(Math.random() * 5) + 3, // 3-8 minutes between sales during peak
+    }));
+    
+    // Reorder rates
+    const reorderRates = popularItems.map(item => ({
+      name: item.name,
+      reorderRate: Math.floor(Math.random() * 30) + 40, // 40-70% reorder rate
+    }));
+    
+    // Order completion by day
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const orderCompletionByDay = days.map(day => {
+      const isWeekend = day === 'Saturday' || day === 'Sunday';
+      const baseOrders = isWeekend ? 200 : 150;
+      const completed = Math.floor(Math.random() * 50) + baseOrders;
+      const cancelled = Math.floor(Math.random() * 20) + 10;
+      
+      return {
+        day,
+        completed,
+        cancelled,
+        total: completed + cancelled
+      };
+    });
+    
+    // Menu item trends (last 6 months)
+    const menuItemTrends = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthIndex = (today.getMonth() - i + 12) % 12;
+      
+      menuItemTrends.push({
+        month: months[monthIndex],
+        burgers: Math.floor(Math.random() * 500) + 1500,
+        pizza: Math.floor(Math.random() * 400) + 1300,
+        salads: Math.floor(Math.random() * 300) + 800,
+        desserts: Math.floor(Math.random() * 200) + 600
+      });
+    }
+    
+    return {
+      orderFulfillment,
+      popularItems,
+      deliveryZones,
+      ordersByHour,
+      foodCategories,
+      productTimeEfficiency,
+      reorderRates,
+      orderCompletionByDay,
+      menuItemTrends
+    };
+  };
+  
   // Generate all data sets
   const revenueData = generateRevenueData();
   const revenueBySourceData = generateRevenueBySourceData();
@@ -269,6 +376,7 @@ export function generateMockAnalyticsData(subscriptionTier: string = "Free") {
   const opportunities = generateOpportunities();
   const recentTransactions = generateRecentTransactions();
   const forecastGrowth = calculateForecastGrowth(forecastData);
+  const foodDeliveryData = generateFoodDeliveryData();
   
   return {
     revenueData,
@@ -280,7 +388,8 @@ export function generateMockAnalyticsData(subscriptionTier: string = "Free") {
     forecastData,
     opportunities,
     recentTransactions,
-    forecastGrowth
+    forecastGrowth,
+    foodDeliveryData
   };
 }
 

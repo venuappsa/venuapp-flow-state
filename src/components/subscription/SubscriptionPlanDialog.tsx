@@ -39,14 +39,14 @@ export default function SubscriptionPlanDialog({
 
   const plans = selectedPlanType === "venue" ? VenuePricingPlans : EventPricingPlans;
 
-  const handleSubscribe = (planId: string, planName: string) => {
+  const handleSubscribe = (planName: string) => {
     if (!user) {
       navigate("/auth?redirect=/subscription-management");
       onOpenChange(false);
       return;
     }
 
-    createCheckout(planId, planName, selectedPlanType);
+    createCheckout(planName, planName, selectedPlanType);
     onOpenChange(false);
   };
 
@@ -54,15 +54,21 @@ export default function SubscriptionPlanDialog({
     return plans.find(plan => plan.highlighted);
   };
 
-  const getPlanFeatures = (planId: string) => {
-    const plan = plans.find(p => p.id === planId);
-    return plan ? plan.features : [];
+  const getPlanFeatures = (planName: string) => {
+    const plan = plans.find(p => p.name === planName);
+    return plan ? plan.features : {};
   };
 
-  const isPlanCurrent = (planId: string) => {
+  const isPlanCurrent = (planName: string) => {
     if (!subscribed) return false;
-    const plan = plans.find(p => p.id === planId);
-    return plan && plan.name === subscription_tier;
+    return planName === subscription_tier;
+  };
+
+  // Helper function to convert features object to array for rendering
+  const getFeatureItems = (features: Record<string, string>) => {
+    return Object.entries(features).map(([key, value]) => {
+      return `${key}: ${value}`;
+    });
   };
 
   return (
@@ -84,10 +90,10 @@ export default function SubscriptionPlanDialog({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => {
-              const isCurrent = isPlanCurrent(plan.id);
+              const isCurrent = isPlanCurrent(plan.name);
               return (
                 <div
-                  key={plan.id}
+                  key={plan.name}
                   className={`border rounded-xl overflow-hidden ${
                     plan.highlighted ? "border-venu-orange shadow-lg" : ""
                   } ${isCurrent ? "border-green-500 ring-2 ring-green-200" : ""}`}
@@ -105,14 +111,14 @@ export default function SubscriptionPlanDialog({
 
                     <div className="mt-4">
                       <span className="text-3xl font-bold">
-                        R{plan.price}
+                        {plan.price}
                       </span>
                       <span className="text-gray-500">/month</span>
                     </div>
 
                     <div className="mt-6">
                       <ul className="space-y-3">
-                        {getPlanFeatures(plan.id).map((feature, index) => (
+                        {getFeatureItems(plan.features).map((feature, index) => (
                           <li key={index} className="flex items-start">
                             <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
                             <span>{feature}</span>
@@ -124,18 +130,18 @@ export default function SubscriptionPlanDialog({
                     <Button
                       className="w-full mt-6"
                       variant={plan.highlighted ? "default" : "outline"}
-                      onClick={() => handleSubscribe(plan.id, plan.name)}
+                      onClick={() => handleSubscribe(plan.name)}
                       disabled={isCurrent}
                     >
                       {isCurrent ? "Current Plan" : subscribed ? "Switch Plan" : "Subscribe"}
                     </Button>
 
-                    {plan.footnote && (
-                      <p className="text-xs text-gray-500 mt-4 flex items-center">
+                    <div className="text-xs text-gray-500 mt-4">
+                      <p className="flex items-center">
                         <AlertCircle className="h-3 w-3 mr-1" />
-                        {plan.footnote}
+                        {plan.description}
                       </p>
-                    )}
+                    </div>
                   </div>
                 </div>
               );

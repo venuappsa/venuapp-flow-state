@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +29,7 @@ import { generateEventSalesData } from "@/data/salesData";
 import AnalyticsSnapshot from "@/components/analytics/AnalyticsSnapshot";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { cn } from "@/lib/utils";
 
 export default function UnifiedDashboard() {
   const navigate = useNavigate();

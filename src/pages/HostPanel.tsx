@@ -30,15 +30,6 @@ export default function HostPanel() {
         <div className="max-w-7xl mx-auto py-8">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">Host Dashboard</h1>
-            <div className="flex justify-between items-center mt-4">
-              {!subscribed && breakpoint !== "xs" && (
-                <Link to="/#pricing">
-                  <Button variant="outline" className="border-venu-orange text-venu-orange hover:bg-venu-orange/10">
-                    Upgrade to Premium
-                  </Button>
-                </Link>
-              )}
-            </div>
           </div>
           
           <UnifiedDashboard />

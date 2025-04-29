@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import FoodDeliveryAnalytics from "@/components/analytics/FoodDeliveryAnalytics"
 
 export default function AnalyticsPage() {
   const [analyticsType, setAnalyticsType] = useState("revenue");
-  const { subscription_tier = "Free", subscribed } = useSubscription();
+  const { subscription_tier = "Free", subscribed, subscription_status } = useSubscription();
   
   // Update this line to only pass one parameter
   const features = getAnalyticsFeaturesForTier(subscription_tier || "Free Plan");
@@ -44,6 +45,7 @@ export default function AnalyticsPage() {
         
         <AnalyticsSnapshot 
           subscriptionTier={subscription_tier} 
+          subscriptionStatus={subscription_status}
           className="mb-8" 
         />
         

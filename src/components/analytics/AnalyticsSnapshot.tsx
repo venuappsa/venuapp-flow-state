@@ -8,22 +8,36 @@ import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export const AnalyticsSnapshot = () => {
+interface AnalyticsSnapshotProps {
+  subscriptionTier?: string;
+  subscriptionStatus?: "active" | "expired" | "trial" | "none" | "paused";
+  className?: string;
+}
+
+export const AnalyticsSnapshot = ({ 
+  subscriptionTier, 
+  subscriptionStatus,
+  className = ""
+}: AnalyticsSnapshotProps) => {
   const { user } = useUser();
-  const { subscribed, subscription_tier } = useSubscription();
+  const { subscribed, subscription_tier = "Free Plan", subscription_status } = useSubscription();
   const navigate = useNavigate();
+  
+  // Use provided values or fallback to the ones from the hook
+  const activeTier = subscriptionTier || subscription_tier;
+  const activeStatus = subscriptionStatus || subscription_status;
   
   // Calculate available analytics features based on subscription tier
   const analyticsFeatures = {
     sales: true, // Available in all tiers
-    customers: subscription_tier !== "Free Plan",
-    products: subscription_tier !== "Free Plan",
-    advanced: subscription_tier === "premium" || subscription_tier === "enterprise",
-    predictive: subscription_tier === "enterprise"
+    customers: activeTier !== "Free Plan",
+    products: activeTier !== "Free Plan",
+    advanced: activeTier === "premium" || activeTier === "enterprise",
+    predictive: activeTier === "enterprise"
   };
   
   return (
-    <div className="space-y-8">
+    <div className={`space-y-8 ${className}`}>
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold">Analytics</h1>
@@ -32,7 +46,7 @@ export const AnalyticsSnapshot = () => {
           </p>
         </div>
         
-        {!subscribed && (
+        {(!subscribed && activeStatus !== "active") && (
           <Card className="w-full max-w-md bg-amber-50 border-amber-200">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-amber-800">
@@ -160,7 +174,7 @@ export const AnalyticsSnapshot = () => {
           </Card>
         )}
         
-        {!subscribed && (
+        {(!subscribed && activeStatus !== "active") && (
           <Card className="bg-gray-50 hover:shadow-md transition-shadow border-dashed border-gray-300">
             <CardHeader>
               <CardTitle className="text-lg">Upgrade for More</CardTitle>

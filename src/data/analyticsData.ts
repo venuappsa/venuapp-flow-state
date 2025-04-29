@@ -496,3 +496,169 @@ export function generateDetailedAnalyticsData(subscriptionTier: string = "Free")
     feedbackAnalysisData: generateFeedbackAnalysisData()
   };
 }
+
+// New function to generate detailed food delivery analytics
+export function generateDetailedFoodDeliveryData() {
+  // Hourly sales by food type
+  const generateHourlySalesByType = () => {
+    const data = [];
+    for (let i = 0; i < 24; i++) {
+      const hour = i < 10 ? `0${i}:00` : `${i}:00`;
+      
+      // Create pattern with lunch and dinner peaks
+      let multiplier = 1;
+      if (i >= 11 && i <= 13) multiplier = 2.5; // lunch peak
+      if (i >= 18 && i <= 20) multiplier = 3; // dinner peak
+      
+      data.push({
+        hour,
+        burgers: Math.floor((Math.random() * 15 + 5) * multiplier),
+        pizza: Math.floor((Math.random() * 12 + 4) * multiplier),
+        salads: Math.floor((Math.random() * 8 + 3) * multiplier),
+        desserts: Math.floor((Math.random() * 5 + 2) * multiplier),
+        drinks: Math.floor((Math.random() * 20 + 10) * multiplier),
+      });
+    }
+    return data;
+  };
+  
+  // Delivery time breakdown
+  const generateDeliveryTimeBreakdown = () => {
+    return [
+      { stage: "Order Received", time: 0 },
+      { stage: "Order Accepted", time: Math.floor(Math.random() * 2) + 1 },
+      { stage: "Preparation Started", time: Math.floor(Math.random() * 2) + 2 },
+      { stage: "Preparation Completed", time: Math.floor(Math.random() * 5) + 10 },
+      { stage: "Pickup by Driver", time: Math.floor(Math.random() * 3) + 15 },
+      { stage: "Delivery Completed", time: Math.floor(Math.random() * 10) + 25 }
+    ];
+  };
+  
+  // Driver performance comparison
+  const generateDriverPerformance = () => {
+    const drivers = ["Driver A", "Driver B", "Driver C", "Driver D", "Driver E"];
+    return drivers.map(name => ({
+      name,
+      deliveries: Math.floor(Math.random() * 20) + 30,
+      avgTime: Math.floor(Math.random() * 10) + 15,
+      rating: parseFloat((Math.random() * 1 + 4).toFixed(1)),
+      onTimeRate: Math.floor(Math.random() * 15) + 80
+    }));
+  };
+  
+  // Item preparation time by time of day
+  const generatePreparationTimeByHour = () => {
+    const data = [];
+    for (let i = 0; i < 24; i++) {
+      const hour = i < 10 ? `0${i}:00` : `${i}:00`;
+      
+      // Preparation times might be longer during peak hours
+      let rushFactor = 1;
+      if (i >= 11 && i <= 13) rushFactor = 1.3; // lunch rush
+      if (i >= 18 && i <= 20) rushFactor = 1.4; // dinner rush
+      
+      data.push({
+        hour,
+        burgers: Math.floor((Math.random() * 3 + 8) * rushFactor),
+        pizza: Math.floor((Math.random() * 4 + 10) * rushFactor),
+        salads: Math.floor((Math.random() * 2 + 5) * rushFactor),
+        desserts: Math.floor((Math.random() * 1 + 3) * rushFactor),
+      });
+    }
+    return data;
+  };
+  
+  // Customer preferences heat map data (time of day x food category)
+  const generatePreferenceHeatMap = () => {
+    const timeSlots = ["Morning", "Lunch", "Afternoon", "Dinner", "Late Night"];
+    const categories = ["Burgers", "Pizza", "Asian", "Salads", "Desserts", "Drinks"];
+    
+    const heatMapData = [];
+    for (const slot of timeSlots) {
+      const row: Record<string, any> = { timeSlot: slot };
+      
+      for (const category of categories) {
+        // Different food categories are more popular at different times
+        let baseValue = 0;
+        
+        switch (slot) {
+          case "Morning":
+            baseValue = category === "Drinks" ? 80 : category === "Desserts" ? 60 : 30;
+            break;
+          case "Lunch":
+            baseValue = category === "Burgers" || category === "Salads" ? 90 : 60;
+            break;
+          case "Afternoon":
+            baseValue = category === "Desserts" || category === "Drinks" ? 75 : 40;
+            break;
+          case "Dinner":
+            baseValue = category === "Pizza" || category === "Asian" ? 95 : 70;
+            break;
+          case "Late Night":
+            baseValue = category === "Pizza" || category === "Burgers" ? 85 : 50;
+            break;
+        }
+        
+        row[category] = Math.floor(Math.random() * 20) + baseValue;
+      }
+      
+      heatMapData.push(row);
+    }
+    
+    return heatMapData;
+  };
+  
+  // Sales by location
+  const generateSalesByLocation = () => {
+    return [
+      { city: "Johannesburg", sales: Math.floor(Math.random() * 5000) + 8000 },
+      { city: "Cape Town", sales: Math.floor(Math.random() * 4000) + 7000 },
+      { city: "Durban", sales: Math.floor(Math.random() * 3000) + 5000 },
+      { city: "Pretoria", sales: Math.floor(Math.random() * 2500) + 4000 },
+      { city: "Port Elizabeth", sales: Math.floor(Math.random() * 2000) + 3000 },
+      { city: "Bloemfontein", sales: Math.floor(Math.random() * 1500) + 2000 },
+    ];
+  };
+  
+  // Order value distribution
+  const generateOrderValueDistribution = () => {
+    return [
+      { range: "R0-R50", count: Math.floor(Math.random() * 100) + 200 },
+      { range: "R50-R100", count: Math.floor(Math.random() * 150) + 350 },
+      { range: "R100-R150", count: Math.floor(Math.random() * 200) + 450 },
+      { range: "R150-R200", count: Math.floor(Math.random() * 150) + 300 },
+      { range: "R200-R250", count: Math.floor(Math.random() * 100) + 200 },
+      { range: "R250+", count: Math.floor(Math.random() * 80) + 150 },
+    ];
+  };
+  
+  // Weekly sales trends 
+  const generateWeeklySalesTrends = () => {
+    const data = [];
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    
+    for (const day of days) {
+      const isWeekend = day === "Saturday" || day === "Sunday";
+      
+      data.push({
+        day,
+        sales: Math.floor((Math.random() * 5000) + (isWeekend ? 15000 : 10000)),
+        orders: Math.floor((Math.random() * 50) + (isWeekend ? 150 : 100)),
+        averageOrderValue: Math.floor((Math.random() * 50) + 100)
+      });
+    }
+    
+    return data;
+  };
+  
+  return {
+    hourlySalesByType: generateHourlySalesByType(),
+    deliveryTimeBreakdown: generateDeliveryTimeBreakdown(),
+    driverPerformance: generateDriverPerformance(),
+    preparationTimeByHour: generatePreparationTimeByHour(),
+    preferenceHeatMap: generatePreferenceHeatMap(),
+    salesByLocation: generateSalesByLocation(),
+    orderValueDistribution: generateOrderValueDistribution(),
+    weeklySalesTrends: generateWeeklySalesTrends()
+  };
+}

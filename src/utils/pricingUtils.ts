@@ -76,6 +76,42 @@ export const getAnalyticsFeaturesForTier = (tier: string, planType: PlanType): P
       name: "Comparative Analytics",
       includedInTiers: ["Pro", "Enterprise"],
       description: "Compare performance across events or time periods"
+    },
+    // New Food Delivery specific features
+    {
+      name: "Food Delivery Metrics",
+      includedInTiers: ["Free Plan", "Starter", "Growth", "Pro", "Enterprise"],
+      description: "Basic food delivery performance metrics"
+    },
+    {
+      name: "Delivery Time Analytics",
+      includedInTiers: ["Starter", "Growth", "Pro", "Enterprise"],
+      description: "Track and analyze delivery times"
+    },
+    {
+      name: "Item Performance Tracking",
+      includedInTiers: ["Starter", "Growth", "Pro", "Enterprise"],
+      description: "Analyze performance of menu items"
+    },
+    {
+      name: "Customer Preference Analysis",
+      includedInTiers: ["Growth", "Pro", "Enterprise"],
+      description: "Track customer food preferences and trends"
+    },
+    {
+      name: "Preparation Time Analytics",
+      includedInTiers: ["Growth", "Pro", "Enterprise"],
+      description: "Analyze time to prepare and deliver items"
+    },
+    {
+      name: "Driver Performance Metrics",
+      includedInTiers: ["Pro", "Enterprise"],
+      description: "Detailed delivery driver performance analytics"
+    },
+    {
+      name: "Food Preference Heatmap",
+      includedInTiers: ["Pro", "Enterprise"],
+      description: "Visual analytics of customer preferences by time"
     }
   ];
   
@@ -112,6 +148,12 @@ export const isPremiumFeature = (featureName: string, tier: string): boolean => 
     { name: "Attendance Patterns", minTier: 1 },
     { name: "Guest Satisfaction", minTier: 2 },
     { name: "Guest Retention", minTier: 3 },
+    // Food delivery features
+    { name: "Food Delivery Analytics", minTier: 0 },
+    { name: "Item Performance", minTier: 1 },
+    { name: "Delivery Metrics", minTier: 1 },
+    { name: "Customer Preferences", minTier: 2 },
+    { name: "Driver Performance", minTier: 2 }
   ];
   
   const feature = allFeatures.find(f => f.name === featureName);

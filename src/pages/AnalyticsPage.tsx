@@ -1,14 +1,14 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, TrendingUp, Users, ShoppingBag, Calendar, PieChart, BarChart3 } from "lucide-react";
+import { AlertCircle, TrendingUp, Users, ShoppingBag, Calendar, PieChart, BarChart3, UtensilsCrossed } from "lucide-react";
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
 import { useSubscription } from "@/hooks/useSubscription";
 import { isPremiumFeature, getAnalyticsFeaturesForTier } from "@/utils/pricingUtils";
 import AnalyticsSnapshot from "@/components/analytics/AnalyticsSnapshot";
+import FoodDeliveryAnalytics from "@/components/analytics/FoodDeliveryAnalytics";
 
 export default function AnalyticsPage() {
   const [analyticsType, setAnalyticsType] = useState("revenue");
@@ -61,6 +61,10 @@ export default function AnalyticsPage() {
             <TabsTrigger value="forecast" disabled={isPremiumFeature("Forecast Analytics", subscription_tier)}>
               <Calendar className="h-4 w-4 mr-2" />
               Forecast
+            </TabsTrigger>
+            <TabsTrigger value="foodDelivery" disabled={isPremiumFeature("Food Delivery Analytics", subscription_tier)}>
+              <UtensilsCrossed className="h-4 w-4 mr-2" />
+              Food Delivery
             </TabsTrigger>
           </TabsList>
           
@@ -239,6 +243,14 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="foodDelivery" className="space-y-8">
+            {isPremiumFeature("Food Delivery Analytics", subscription_tier) ? (
+              premiumNote
+            ) : (
+              <FoodDeliveryAnalytics subscriptionTier={subscription_tier} />
             )}
           </TabsContent>
         </Tabs>

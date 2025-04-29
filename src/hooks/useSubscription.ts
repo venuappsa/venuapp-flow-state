@@ -67,7 +67,6 @@ export function useSubscription() {
     }
   };
 
-  // Updated to handle only planId and planName
   const createCheckout = async (planId: string, planName: string) => {
     if (!user) {
       toast({
@@ -107,7 +106,7 @@ export function useSubscription() {
   };
 
   // Redirect to main site pricing page instead of checkout
-  const redirectToPricing = (planId: string, planName: string) => {
+  const redirectToPricing = () => {
     // Navigate to homepage pricing section
     window.location.href = "/#pricing";
   };
@@ -121,6 +120,6 @@ export function useSubscription() {
   return {
     ...subscriptionData,
     checkSubscription,
-    createCheckout: createCheckout,
+    createCheckout
   };
 }

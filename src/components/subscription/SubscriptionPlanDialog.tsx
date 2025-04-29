@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -11,27 +11,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Check, AlertCircle } from "lucide-react";
-import PlanTypeSelector from "@/components/analytics/PlanTypeSelector";
 import { UnifiedPricingPlans } from "@/data/unifiedPricingPlans";
 
 interface SubscriptionPlanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultPlanType?: string;
 }
 
 export default function SubscriptionPlanDialog({
   open,
-  onOpenChange,
-  defaultPlanType = "venue"
+  onOpenChange
 }: SubscriptionPlanDialogProps) {
   const navigate = useNavigate();
   const { user } = useUser();
   const { subscribed, subscription_tier, createCheckout } = useSubscription();
-  const [selectedPlanType, setSelectedPlanType] = useState<string>(defaultPlanType);
 
   const plans = UnifiedPricingPlans;
 
@@ -78,12 +73,6 @@ export default function SubscriptionPlanDialog({
         </DialogHeader>
 
         <div className="py-6">
-          <PlanTypeSelector 
-            selectedPlanType={selectedPlanType} 
-            onChange={(planType: string) => setSelectedPlanType(planType)} 
-            className="mb-6"
-          />
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => {
               const isCurrent = isPlanCurrent(plan.name);

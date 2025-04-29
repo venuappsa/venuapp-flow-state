@@ -3,8 +3,7 @@ export const UnifiedPricingPlans = [
   {
     name: "Free Plan",
     price: "R0",
-    eventPrice: "R0",
-    billingType: "both", // can be "monthly", "per-event", or "both"
+    billingType: "monthly",
     description: "Perfect for trying out the platform",
     features: {
       "Events Per Month": "2",
@@ -25,8 +24,7 @@ export const UnifiedPricingPlans = [
   {
     name: "Starter",
     price: "R950",
-    eventPrice: "R650",
-    billingType: "both",
+    billingType: "monthly",
     description: "For small venues and one-time events",
     features: {
       "Events Per Month": "5",
@@ -47,8 +45,7 @@ export const UnifiedPricingPlans = [
   {
     name: "Growth",
     price: "R1,850",
-    eventPrice: "R1,070",
-    billingType: "both",
+    billingType: "monthly",
     description: "For growing venues with regular events",
     features: {
       "Events Per Month": "15",
@@ -69,8 +66,7 @@ export const UnifiedPricingPlans = [
   {
     name: "Pro",
     price: "R3,000",
-    eventPrice: "R2,160",
-    billingType: "both",
+    billingType: "monthly",
     description: "For established venues with high traffic",
     features: {
       "Events Per Month": "30",
@@ -91,8 +87,7 @@ export const UnifiedPricingPlans = [
   {
     name: "Enterprise",
     price: "Custom",
-    eventPrice: "Custom",
-    billingType: "both",
+    billingType: "monthly",
     description: "For large-scale venues and events with unique needs",
     features: {
       "Events Per Month": "Unlimited",

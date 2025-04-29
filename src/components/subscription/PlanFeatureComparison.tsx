@@ -30,7 +30,6 @@ const PlanFeatureComparison = ({
   onPlanSelect 
 }: PlanFeatureComparisonProps) => {
   const { subscription_tier } = useSubscription();
-  const [billingType, setBillingType] = useState<"monthly" | "per-event" | "annual">("monthly");
   const [displayType, setDisplayType] = useState<"monthly" | "annual">("monthly");
 
   // Price multipliers and discount text
@@ -42,7 +41,6 @@ const PlanFeatureComparison = ({
     name: plan.name,
     description: plan.description,
     monthlyPrice: plan.price === "Custom" ? "Custom" : plan.price,
-    eventPrice: plan.eventPrice === "Custom" ? "Custom" : plan.eventPrice,
     limits: subscriptionLimits[plan.name],
     highlighted: plan.highlighted
   }));
@@ -95,12 +93,8 @@ const PlanFeatureComparison = ({
     if (plan.name === "Free Plan") return "Free";
     if (plan.monthlyPrice === "Custom") return "Custom";
     
-    if (billingType === "monthly" || billingType === "annual") {
-      const price = formatCurrency(plan.monthlyPrice as string);
-      return `${price}${billingType === "monthly" ? "/mo" : "/year"}`;
-    } else {
-      return `${plan.eventPrice}/event`;
-    }
+    const price = formatCurrency(plan.monthlyPrice as string);
+    return `${price}${displayType === "monthly" ? "/mo" : "/year"}`;
   };
 
   const handlePlanSelection = (planId: string, planName: string) => {
@@ -115,10 +109,9 @@ const PlanFeatureComparison = ({
         <div className="flex justify-between items-center">
           <CardTitle>Plan Comparison</CardTitle>
           <div>
-            <Tabs value={billingType} onValueChange={(v) => setBillingType(v as "monthly" | "per-event" | "annual")}>
+            <Tabs value={displayType} onValueChange={(v) => setDisplayType(v as "monthly" | "annual")}>
               <TabsList>
                 <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                <TabsTrigger value="per-event">Per Event</TabsTrigger>
                 <TabsTrigger value="annual">Annual <span className="ml-1 text-xs text-emerald-600">{annualDiscountText}</span></TabsTrigger>
               </TabsList>
             </Tabs>

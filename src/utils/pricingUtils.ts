@@ -1,7 +1,5 @@
-import { UnifiedPricingPlans } from "@/data/unifiedPricingPlans";
 
-// Keep for backward compatibility during transition
-export type PlanType = "venue" | "event";
+import { UnifiedPricingPlans } from "@/data/unifiedPricingPlans";
 
 export interface PricingFeature {
   name: string;

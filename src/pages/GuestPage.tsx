@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -11,7 +12,6 @@ import { getTierLevel } from "@/utils/pricingUtils";
 export default function GuestPage() {
   const { user } = useUser();
   const { subscription_tier } = useSubscription();
-  const [planType, setPlanType] = useState<string>("venue");
   const currentTierLevel = getTierLevel(subscription_tier || "Free Plan");
   
   const hasGuestAnalyticsAccess = currentTierLevel >= 1;

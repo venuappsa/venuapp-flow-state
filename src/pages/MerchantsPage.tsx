@@ -58,10 +58,10 @@ export default function MerchantsPage() {
 
       if (error) throw error;
       
-      setPricingPlans(data);
+      setPricingPlans(data || []);
       
       // Set default selection to first plan if available
-      if (data.length > 0 && !selectedPriceId) {
+      if (data && data.length > 0 && !selectedPriceId) {
         setSelectedPriceId(data[0].id);
         setSelectedPriceName(data[0].name);
       }
@@ -165,12 +165,16 @@ export default function MerchantsPage() {
                   <SelectValue placeholder="Select a price plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  {pricingPlans.map((plan) => (
-                    <SelectItem key={plan.id} value={plan.id}>
-                      <span className="font-medium">{plan.name}</span>
-                      <span className="text-gray-500 ml-2">- R{plan.price} {plan.price_unit}</span>
-                    </SelectItem>
-                  ))}
+                  {pricingPlans && pricingPlans.length > 0 ? (
+                    pricingPlans.map((plan) => (
+                      <SelectItem key={plan.id} value={plan.id || `plan-${plan.name}`}>
+                        <span className="font-medium">{plan.name}</span>
+                        <span className="text-gray-500 ml-2">- R{plan.price} {plan.price_unit}</span>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-plans">No pricing plans available</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
               {pricingPlans.length === 0 && (

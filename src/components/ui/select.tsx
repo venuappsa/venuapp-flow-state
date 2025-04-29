@@ -110,14 +110,16 @@ const SelectLabel = React.forwardRef<
 ))
 SelectLabel.displayName = SelectPrimitive.Label.displayName
 
+// Update the SelectItem component to validate value prop
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & { value: string }
 >(({ className, children, value, ...props }, ref) => {
-  // Add validation to ensure value is not an empty string
-  if (value === "") {
-    console.error("SelectItem must have a non-empty value prop");
-    return null;
+  // Add validation to ensure value is not an empty string or undefined
+  if (!value || value === "") {
+    console.warn("SelectItem must have a non-empty value prop");
+    // Provide a fallback value if none exists
+    value = value || `item-${Math.random().toString(36).substring(2, 9)}`;
   }
   
   return (

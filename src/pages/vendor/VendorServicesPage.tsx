@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@/hooks/useUser";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -23,508 +22,287 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { 
-  AlertCircle, 
-  Plus, 
-  Trash2,
-  ChevronLeft,
-  ChevronRight
-} from "lucide-react";
-import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { useUser } from "@/hooks/useUser";
 import { VendorService } from "@/types/vendor";
+import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
+import { Plus, Trash2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
 
-// Service categories for dropdown
-const SERVICE_CATEGORIES = [
-  "Catering",
-  "Beverage Service",
-  "Decor",
-  "Lighting",
-  "Audio Equipment",
-  "Video Services",
-  "Photography",
-  "Entertainment",
-  "Furniture Rental",
-  "Floral Arrangements",
-  "Event Planning",
-  "Transportation",
-  "Venue Services",
-  "Staffing",
-  "Other"
-];
-
-// Schema for a single service
-const serviceSchema = z.object({
-  id: z.string().optional(),
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  category: z.string().min(1, "Category is required"),
-  duration: z.string().optional(),
-  price: z.number({
-    required_error: "Price is required",
-    invalid_type_error: "Price must be a number",
-  }).min(0, "Price must be a positive number"),
-  priceUnit: z.string().default("fixed"),
-});
-
-// Schema for the entire form
-const servicesFormSchema = z.object({
-  services: z.array(serviceSchema).min(1, "Add at least one service"),
+const formSchema = z.object({
+  services: z.array(
+    z.object({
+      title: z.string().min(2, {
+        message: "Service title must be at least 2 characters.",
+      }),
+      description: z.string().optional(),
+      category: z.string().optional(),
+      duration: z.string().optional(),
+      price: z.number().min(0, {
+        message: "Price must be a positive number.",
+      }),
+      price_unit: z.string().default("per_event"),
+    })
+  ),
 });
 
 export default function VendorServicesPage() {
+  const navigate = useNavigate();
   const { user } = useUser();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [vendorServices, setVendorServices] = useState<VendorService[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [services, setServices] = useState<VendorService[]>([]);
 
-  // Initialize react-hook-form with useFieldArray for dynamic form fields
-  const form = useForm<z.infer<typeof servicesFormSchema>>({
-    resolver: zodResolver(servicesFormSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       services: [
         {
-          id: "",
           title: "",
           description: "",
           category: "",
           duration: "",
           price: 0,
-          priceUnit: "fixed",
+          price_unit: "per_event",
         },
       ],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "services",
-  });
-
   useEffect(() => {
-    // Fetch vendor services when component mounts
-    const fetchVendorServices = async () => {
-      if (!user) return;
+    if (user) {
+      fetchServices();
+    }
+  }, [user]);
 
-      try {
-        setLoading(true);
-        
-        // Call our edge function to get services
-        const { data, error } = await supabase.functions
-          .invoke("get_vendor_services", {
-            body: { vendor_user_id: user.id }
-          });
-          
-        if (error) {
-          console.error("Error fetching services:", error);
-          toast({
-            title: "Error loading services",
-            description: "Please try again",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        if (data && Array.isArray(data) && data.length > 0) {
-          setVendorServices(data as VendorService[]);
-          
-          // Populate form with existing services
-          form.reset({
-            services: data.map((service: VendorService) => ({
-              id: service.id,
-              title: service.title,
-              description: service.description || "",
-              category: service.category || "",
-              duration: service.duration || "",
-              price: service.price,
-              priceUnit: service.price_unit || "fixed",
-            })),
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching services:", err);
-        toast({
-          title: "Error loading services",
-          description: "Please refresh the page to try again",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVendorServices();
-  }, [user, toast, form]);
-
-  // Add a new service field
-  const handleAddService = () => {
-    append({
-      id: "",
-      title: "",
-      description: "",
-      category: "",
-      duration: "",
-      price: 0,
-      priceUnit: "fixed",
-    });
-  };
-
-  // Form submission handler
-  const onSubmit = async (values: z.infer<typeof servicesFormSchema>) => {
+  const fetchServices = async () => {
     if (!user) return;
-    setLoading(true);
 
     try {
-      // For each service, either update existing or create new
-      for (const service of values.services) {
-        if (service.id) {
-          // Use edge function to update service
-          await supabase.functions.invoke("get_vendor_services", {
-            body: {
-              action: "update",
-              vendor_user_id: user.id,
-              service_id: service.id,
-              service_data: {
-                title: service.title,
-                description: service.description,
-                category: service.category,
-                duration: service.duration || null,
-                price: service.price,
-                price_unit: service.priceUnit,
-                updated_at: new Date().toISOString(),
-              }
-            }
-          });
-        } else {
-          // Use edge function to create service
-          await supabase.functions.invoke("get_vendor_services", {
-            body: {
-              action: "create",
-              vendor_user_id: user.id,
-              service_data: {
-                title: service.title,
-                description: service.description,
-                category: service.category,
-                duration: service.duration || null,
-                price: service.price,
-                price_unit: service.priceUnit,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              }
-            }
-          });
-        }
+      const { data, error } = await supabase
+        .from("vendor_services")
+        .select("*")
+        .eq("vendor_id", user.id);
+
+      if (error) {
+        throw error;
       }
 
-      // Update vendor profile to track onboarding progress
-      const { error } = await supabase
-        .from("vendor_profiles")
-        .update({
-          setup_stage: "pricing",
-          setup_progress: 50,
-          last_active: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
-        
-      if (error) {
-        console.error("Error updating profile progress:", error);
-        toast({
-          title: "Services saved, but couldn't update progress",
-          description: "You may continue to the next step",
-        });
-        return;
+      // Initialize form with existing services
+      if (data && data.length > 0) {
+        form.reset({ services: data as any });
+        setServices(data as VendorService[]);
       }
+    } catch (error) {
+      console.error("Error fetching services:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load services",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const addService = () => {
+    form.setValue("services", [
+      ...form.getValues().services,
+      {
+        title: "",
+        description: "",
+        category: "",
+        duration: "",
+        price: 0,
+        price_unit: "per_event",
+      },
+    ]);
+  };
+
+  const removeService = (index: number) => {
+    const updatedServices = [...form.getValues().services];
+    updatedServices.splice(index, 1);
+    form.setValue("services", updatedServices);
+  };
+
+  const handleSave = async (values: z.infer<typeof formSchema>) => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+
+      // Delete existing services
+      const { error: deleteError } = await supabase
+        .from("vendor_services")
+        .delete()
+        .eq("vendor_id", user.id);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      // Insert new services
+      const servicesToInsert = values.services.map((service) => ({
+        ...service,
+        vendor_id: user.id,
+      }));
+
+      const { error: insertError } = await supabase
+        .from("vendor_services")
+        .insert(servicesToInsert);
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      await updateSetupStage();
 
       toast({
         title: "Services saved",
-        description: `Successfully saved ${values.services.length} ${
-          values.services.length === 1 ? "service" : "services"
-        }`,
+        description: "Your services have been updated successfully",
       });
 
-      // Navigate to the next step after a short delay
-      setTimeout(() => {
-        navigate("/vendor/pricing");
-      }, 1000);
-    } catch (error) {
+      navigate("/vendor/pricing");
+    } catch (error: any) {
       console.error("Error saving services:", error);
       toast({
-        title: "Error saving services",
-        description: "Please try again",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to save services",
+        variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
+    }
+  };
+
+  const updateSetupStage = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("vendor_profiles")
+        .update({
+          setup_progress: 75,
+          setup_stage: "services"
+        })
+        .eq("user_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error("Error updating setup stage:", error);
     }
   };
 
   return (
     <VendorPanelLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Add Your Services</h1>
-            <p className="text-gray-600 mt-1">
-              Step 2 of 4: Define the services you offer
-            </p>
-          </div>
-
-          <div className="flex items-center">
-            <Progress
-              value={50}
-              className="h-2 w-40 mr-3"
-              indicatorClassName="bg-blue-500"
-            />
-            <span className="text-sm font-medium">50% Complete</span>
-          </div>
-        </div>
-
+      <div className="container max-w-4xl mx-auto py-10">
         <Card>
           <CardHeader>
-            <CardTitle>Service Offerings</CardTitle>
-            <CardDescription>
-              Add details about each service you provide to event hosts
-            </CardDescription>
+            <CardTitle className="text-2xl">List Your Services</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {fields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className={`p-6 rounded-lg border ${
-                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-medium">
-                        Service #{index + 1}
-                      </h3>
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 border-red-200 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => remove(index)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Remove
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name={`services.${index}.title`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Service Title</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g. Wedding Photography" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name={`services.${index}.category`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Service Category</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
+              <form
+                onSubmit={form.handleSubmit(handleSave)}
+                className="space-y-8"
+              >
+                <FormField
+                  control={form.control}
+                  name="services"
+                  render={({ field }) => (
+                    <div>
+                      {field.value.map((service, index) => (
+                        <div key={index} className="space-y-4 border p-4 rounded-md">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-semibold">Service #{index + 1}</h3>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => removeService(index)}
                             >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <Separator />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormItem>
+                              <FormLabel>Title</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a category" />
-                                </SelectTrigger>
+                                <Input
+                                  placeholder="Catering Service"
+                                  {...form.register(`services.${index}.title`)}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                {SERVICE_CATEGORIES.map((category) => (
-                                  <SelectItem
-                                    key={category}
-                                    value={category.toLowerCase()}
-                                  >
-                                    {category}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                              <FormMessage />
+                            </FormItem>
 
-                    <FormField
-                      control={form.control}
-                      name={`services.${index}.description`}
-                      render={({ field }) => (
-                        <FormItem className="mt-4">
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Describe what this service includes and its benefits..."
-                              className="resize-none min-h-[100px]"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Be specific about what's included in this service
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormItem>
+                              <FormLabel>Price</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="100"
+                                  {...form.register(`services.${index}.price`, {
+                                    valueAsNumber: true,
+                                  })}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-                      <FormField
-                        control={form.control}
-                        name={`services.${index}.duration`}
-                        render={({ field }) => (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormItem>
+                              <FormLabel>Category</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Food & Beverage"
+                                  {...form.register(`services.${index}.category`)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+
+                            <FormItem>
+                              <FormLabel>Duration</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="2 hours"
+                                  {...form.register(`services.${index}.duration`)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          </div>
+
                           <FormItem>
-                            <FormLabel>Duration (optional)</FormLabel>
+                            <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="e.g. 3 hours, Full day"
-                                {...field}
+                              <Textarea
+                                placeholder="Detailed description of the service"
+                                {...form.register(`services.${index}.description`)}
                               />
                             </FormControl>
-                            <FormDescription>
-                              How long this service typically takes
-                            </FormDescription>
                             <FormMessage />
                           </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name={`services.${index}.price`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Base Price</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                placeholder="0.00"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(
-                                    e.target.value === ""
-                                      ? 0
-                                      : parseFloat(e.target.value)
-                                  );
-                                }}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Starting price for this service
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name={`services.${index}.priceUnit`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Price Type</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select price type" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="fixed">Fixed Price</SelectItem>
-                                <SelectItem value="hourly">Per Hour</SelectItem>
-                                <SelectItem value="daily">Per Day</SelectItem>
-                                <SelectItem value="per_person">Per Person</SelectItem>
-                                <SelectItem value="starting_at">Starting At</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              How your price is calculated
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" onClick={addService}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Service
+                      </Button>
                     </div>
-                  </div>
-                ))}
+                  )}
+                />
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleAddService}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Another Service
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Saving..." : "Save Services"}
                 </Button>
-
-                <div className="p-4 border border-blue-200 bg-blue-50 rounded-lg flex gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-blue-800">Service Tips</h4>
-                    <p className="text-sm text-blue-700">
-                      Be clear and specific about what each service includes. Adding multiple 
-                      distinct services can increase your bookings and appeal to different 
-                      event types.
-                    </p>
-                  </div>
-                </div>
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex justify-between border-t pt-6">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/vendor/profile")}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back to Profile
-            </Button>
-            <Button
-              className="bg-venu-orange hover:bg-venu-dark-orange"
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={loading}
-            >
-              {loading ? (
-                "Saving..."
-              ) : (
-                <>
-                  Save and Continue
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </CardFooter>
         </Card>
       </div>
     </VendorPanelLayout>

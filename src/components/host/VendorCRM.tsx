@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,18 +19,10 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { VendorProfile } from "@/types/vendor";
+import { VendorProfile, VendorHostRelationship } from "@/types/vendor";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/hooks/useUser";
 import VendorDetailDrawer from "./VendorDetailDrawer";
-
-interface VendorHostRelationship {
-  vendor_id: string;
-  host_id: string;
-  status: string;
-  engagement_score: number;
-  last_interaction_date: string;
-}
 
 export default function VendorCRM() {
   const { user } = useUser();
@@ -77,8 +68,7 @@ export default function VendorCRM() {
     try {
       setLoading(true);
       
-      // For now, we'll just fetch some vendor profiles as a workaround
-      // since the vendor_host_relationships table might not be available yet
+      // Fetch vendor profiles
       const { data: vendorsData, error: vendorError } = await supabase
         .from("vendor_profiles")
         .select("*")
@@ -87,16 +77,21 @@ export default function VendorCRM() {
       if (vendorError) throw vendorError;
       
       // Create mock relationships for demo purposes
-      const mockRelationships = vendorsData.map((vendor) => ({
+      const mockRelationships: VendorHostRelationship[] = (vendorsData || []).map((vendor) => ({
+        id: `rel-${vendor.id}`,
         vendor_id: vendor.id,
         host_id: "hostid", // This will be replaced with actual host_id later
-        status: ["invited", "active", "paused", "rejected"][Math.floor(Math.random() * 4)],
+        status: ["invited", "active", "paused", "rejected"][Math.floor(Math.random() * 4)] as "invited" | "active" | "paused" | "rejected",
         engagement_score: Math.floor(Math.random() * 100),
+        first_contact_date: new Date().toISOString(),
         last_interaction_date: new Date().toISOString(),
+        invitation_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }));
       
       setVendors(vendorsData as VendorProfile[]);
-      setRelationships(mockRelationships as VendorHostRelationship[]);
+      setRelationships(mockRelationships);
     } catch (error) {
       console.error("Error fetching vendors:", error);
       toast({

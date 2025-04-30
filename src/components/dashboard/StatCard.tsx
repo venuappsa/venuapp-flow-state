@@ -9,6 +9,9 @@ interface StatCardProps {
   description?: string;
   icon?: React.ReactNode;
   loading?: boolean;
+  change?: string;
+  changeType?: "positive" | "negative" | "neutral";
+  gradient?: boolean;
 }
 
 export function StatCard({
@@ -17,9 +20,12 @@ export function StatCard({
   description,
   icon,
   loading = false,
+  change,
+  changeType,
+  gradient = false,
 }: StatCardProps) {
   return (
-    <Card>
+    <Card className={gradient ? "bg-gradient-to-br from-white to-gray-50" : ""}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
@@ -29,12 +35,21 @@ export function StatCard({
             ) : (
               <h3 className="text-2xl font-bold mt-1">{value}</h3>
             )}
+            {change && (
+              <p className={`text-xs ${
+                changeType === "positive" ? "text-green-600" :
+                changeType === "negative" ? "text-red-600" :
+                "text-gray-500"
+              } mt-1 flex items-center`}>
+                {change}
+              </p>
+            )}
             {description && (
               <p className="text-xs text-gray-500 mt-1">{description}</p>
             )}
           </div>
           {icon && (
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className={`h-10 w-10 rounded-full ${gradient ? "bg-venu-orange/10" : "bg-primary/10"} flex items-center justify-center`}>
               {loading ? (
                 <Skeleton className="h-6 w-6 rounded-full" />
               ) : (

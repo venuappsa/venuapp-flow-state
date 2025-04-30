@@ -22,6 +22,7 @@ export interface VendorProfile {
   verification_status: string;
   subscription_status: string;
   subscription_renewal?: string;
+  website?: string;
   pricing_settings?: {
     pricingModel: string;
     depositRequired: boolean;

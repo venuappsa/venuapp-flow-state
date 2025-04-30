@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -38,6 +37,21 @@ export default function VendorWelcomePage() {
       navigate("/vendor/dashboard");
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      // Update the setup stage
+      supabase
+        .from("vendor_profiles")
+        .update({
+          setup_progress: 20
+        })
+        .eq("user_id", user.id)
+        .then(({ error }) => {
+          if (error) console.error("Error updating setup progress:", error);
+        });
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">

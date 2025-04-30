@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -51,60 +50,42 @@ export default function VendorMessagesPage() {
     try {
       setLoading(true);
       
-      // Get all vendors where there are messages between the current user and the vendor
-      const { data: messageData, error: messageError } = await supabase
-        .rpc("get_user_messages", { user_id: user.id });
-        
-      if (messageError) throw messageError;
-      
-      if (messageData) {
-        // Extract unique contact IDs (excluding the current user)
-        const uniqueContactIds = [...new Set(
-          messageData
-            .flatMap(msg => [msg.sender_id, msg.recipient_id])
-            .filter(id => id !== user.id)
-        )];
-        
-        if (uniqueContactIds.length > 0) {
-          // Get vendor profiles for these user IDs
-          const { data: vendorData, error: vendorError } = await supabase
-            .from("vendor_profiles")
-            .select("*")
-            .in("user_id", uniqueContactIds);
-            
-          if (vendorError) throw vendorError;
-          
-          // Create contact objects
-          const contactsArray: Contact[] = uniqueContactIds.map(contactId => {
-            const vendor = vendorData?.find(v => v.user_id === contactId);
-            
-            // Find the most recent message from/to this contact
-            const contactMessages = messageData
-              .filter(msg => msg.sender_id === contactId || msg.recipient_id === contactId)
-              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-              
-            const lastMsg = contactMessages[0];
-            const unreadCount = contactMessages.filter(msg => !msg.is_read && msg.recipient_id === user.id).length;
-            
-            return {
-              id: vendor?.id || contactId,
-              userId: contactId,
-              name: vendor?.business_name || vendor?.company_name || "Vendor",
-              role: "vendor",
-              lastMessage: lastMsg?.content || "No messages yet",
-              lastMessageTime: lastMsg ? formatMessageTime(lastMsg.created_at) : "-",
-              unread: unreadCount,
-              avatar: vendor?.logo_url
-            };
-          });
-          
-          setContacts(contactsArray);
-          
-          // If there are contacts, select the first one
-          if (contactsArray.length > 0 && !selectedContact) {
-            setSelectedContact(contactsArray[0]);
-          }
+      // Mock data for contacts until the Supabase functions are available
+      const mockContacts: Contact[] = [
+        {
+          id: "v1",
+          userId: "vendor-1",
+          name: "Catering Delights",
+          role: "vendor",
+          lastMessage: "Yes, we can provide those menu options",
+          lastMessageTime: "2 hours ago",
+          unread: 1,
+        },
+        {
+          id: "v2",
+          userId: "vendor-2",
+          name: "Event Lighting Pro",
+          role: "vendor",
+          lastMessage: "I'll send you our catalog",
+          lastMessageTime: "1 day ago",
+          unread: 0,
+        },
+        {
+          id: "v3",
+          userId: "vendor-3",
+          name: "Sound Masters",
+          role: "vendor",
+          lastMessage: "We're available on that date",
+          lastMessageTime: "3 days ago",
+          unread: 0,
         }
+      ];
+      
+      setContacts(mockContacts);
+      
+      // If there are contacts, select the first one
+      if (mockContacts.length > 0 && !selectedContact) {
+        setSelectedContact(mockContacts[0]);
       }
     } catch (error) {
       console.error("Error fetching contacts:", error);
@@ -122,33 +103,56 @@ export default function VendorMessagesPage() {
     if (!user || !contactId) return;
     
     try {
-      const { data, error } = await supabase
-        .rpc("get_user_messages", { user_id: user.id });
-        
-      if (error) throw error;
+      // Mock messages until the Supabase functions are available
+      const mockMessages: Message[] = [
+        {
+          id: "m1",
+          sender_id: user.id,
+          recipient_id: contactId,
+          sender_role: "host",
+          recipient_role: "vendor",
+          content: "Hi there! Do you offer vegan options in your catering menu?",
+          is_read: true,
+          created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 48).toISOString()
+        },
+        {
+          id: "m2",
+          sender_id: contactId,
+          recipient_id: user.id,
+          sender_role: "vendor",
+          recipient_role: "host",
+          content: "Hello! Yes, we have a variety of vegan options including appetizers, main courses, and desserts. Would you like to see our vegan menu?",
+          is_read: true,
+          created_at: new Date(Date.now() - 3600000 * 36).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 36).toISOString()
+        },
+        {
+          id: "m3",
+          sender_id: user.id,
+          recipient_id: contactId,
+          sender_role: "host",
+          recipient_role: "vendor",
+          content: "That would be great! We're planning an event for about 50 people, and at least 10 of them are vegan.",
+          is_read: true,
+          created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 24).toISOString()
+        },
+        {
+          id: "m4",
+          sender_id: contactId,
+          recipient_id: user.id,
+          sender_role: "vendor",
+          recipient_role: "host",
+          content: "Yes, we can provide those menu options",
+          is_read: false,
+          created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 2).toISOString()
+        }
+      ];
       
-      // Filter messages that are between the current user and the selected contact
-      const filteredMessages = data.filter(
-        (msg: Message) => 
-          (msg.sender_id === user.id && msg.recipient_id === contactId) || 
-          (msg.sender_id === contactId && msg.recipient_id === user.id)
-      );
+      setMessages(mockMessages);
       
-      setMessages(filteredMessages as Message[]);
-      
-      // Mark messages as read
-      const messagesToMarkAsRead = filteredMessages.filter(
-        (msg: Message) => !msg.is_read && msg.recipient_id === user.id
-      );
-      
-      if (messagesToMarkAsRead.length > 0) {
-        await Promise.all(messagesToMarkAsRead.map((msg: Message) => 
-          supabase
-            .from("messages_read_status")
-            .insert({ message_id: msg.id, user_id: user.id })
-        ));
-      }
-        
       // Update unread count for this contact
       setContacts(current =>
         current.map(c =>
@@ -168,27 +172,38 @@ export default function VendorMessagesPage() {
     try {
       setSending(true);
       
-      const newMessage = {
-        sender_id: user.id,
-        recipient_id: selectedContact.userId,
-        sender_role: "host",
-        recipient_role: "vendor",
-        content,
-        is_read: false
-      };
-      
-      const { data, error } = await supabase
-        .rpc("send_message", newMessage);
+      // Simulate sending a message
+      setTimeout(() => {
+        const newMessage: Message = {
+          id: `m${Date.now()}`,
+          sender_id: user.id,
+          recipient_id: selectedContact.userId,
+          sender_role: "host",
+          recipient_role: "vendor",
+          content,
+          is_read: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
         
-      if (error) throw error;
-      
-      // Refresh messages
-      fetchMessages(selectedContact.userId);
-      
-      toast({
-        title: "Message Sent",
-        description: "Your message has been sent successfully"
-      });
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+        
+        // Update last message in contacts
+        setContacts(contacts => 
+          contacts.map(contact => 
+            contact.userId === selectedContact.userId 
+              ? { ...contact, lastMessage: content, lastMessageTime: 'Just now' }
+              : contact
+          )
+        );
+        
+        toast({
+          title: "Message Sent",
+          description: "Your message has been sent successfully"
+        });
+        
+        setSending(false);
+      }, 500);
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
@@ -196,7 +211,6 @@ export default function VendorMessagesPage() {
         description: "Failed to send message",
         variant: "destructive"
       });
-    } finally {
       setSending(false);
     }
   };

@@ -1,183 +1,142 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createProfileAndRole } from "@/hooks/useAuthHelpers";
-import { ArrowRight, ChevronLeft, Store } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { useUser } from "@/hooks/useUser";
+import { supabase } from "@/integrations/supabase/client";
+import AuthLayout from "../auth/AuthLayout";
 
-// Business categories for the vendor signup form
-const BUSINESS_CATEGORIES = [
-  { id: "food", name: "Food & Beverages" },
-  { id: "decoration", name: "Decoration & Design" },
-  { id: "entertainment", name: "Entertainment" },
-  { id: "equipment", name: "Equipment Rental" },
-  { id: "photo", name: "Photography & Video" },
-  { id: "venue", name: "Venue Services" },
-  { id: "planning", name: "Event Planning" },
-  { id: "staffing", name: "Staffing Solutions" },
-  { id: "other", name: "Other Services" },
-];
-
-// Form schema for validation
 const formSchema = z.object({
-  businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  name: z.string().min(1, "First name is required"),
-  surname: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(6, "Phone number is required"),
-  category: z.string().min(1, "Business category is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string().min(8, "Confirm password is required"),
-  terms: z.boolean().refine((val) => val === true, {
-    message: "You must accept the terms and conditions",
+  businessName: z.string().min(2, {
+    message: "Business name must be at least 2 characters.",
   }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+  contactName: z.string().min(2, {
+    message: "Contact name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  phone: z.string().min(10, {
+    message: "Please enter a valid phone number.",
+  }),
 });
 
 export default function VendorSignupPage() {
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const { user } = useUser();
   const navigate = useNavigate();
-  
-  // Initialize react-hook-form
+  const [isSubmitting, setSubmitting] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       businessName: "",
-      name: "",
-      surname: "",
+      contactName: "",
       email: "",
       phone: "",
-      category: "",
-      password: "",
-      confirmPassword: "",
-      terms: false,
     },
   });
 
-  // Form submission handler
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true);
+  const handleSubmit = async (formData: any) => {
+    if (!user) return;
     
     try {
-      // Sign up the vendor with Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            business_name: values.businessName,
-            business_category: values.category,
-          },
-        },
-      });
+      setSubmitting(true);
       
-      if (error) throw error;
-
-      if (data.user) {
-        // Create profile and set role to 'merchant'
-        await createProfileAndRole({
-          userId: data.user.id,
-          name: values.name,
-          surname: values.surname,
-          email: values.email,
-          phone: values.phone,
-          role: 'merchant',
-        });
-
-        // Create mock vendor profile with initial onboarding state
-        const { error: vendorError } = await supabase
+      // Check if vendor profile exists
+      const { data: existingProfile } = await supabase
+        .from("vendor_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+        
+      if (existingProfile) {
+        // Update existing profile
+        const { error } = await supabase
           .from("vendor_profiles")
           .update({
-            business_name: values.businessName,
-            business_category: values.category,
-            setup_stage: 'welcome',
-            setup_progress: 0,
-            status: 'draft',
-            last_active: new Date().toISOString(),
+            company_name: formData.businessName,
+            contact_name: formData.contactName,
+            contact_email: formData.email,
+            contact_phone: formData.phone
           })
-          .eq('user_id', data.user.id);
+          .eq("user_id", user.id);
         
-        if (vendorError) {
-          console.error("Error updating vendor profile:", vendorError);
-        }
-
-        toast({
-          title: "Registration successful!",
-          description: "Welcome to Venuapp. Let's get started with your onboarding.",
-        });
-
-        // Redirect to welcome page
-        navigate("/vendor/welcome");
+        if (error) throw error;
+      } else {
+        // Create new profile
+        const { error } = await supabase
+          .from("vendor_profiles")
+          .insert({
+            user_id: user.id,
+            company_name: formData.businessName,
+            contact_name: formData.contactName,
+            contact_email: formData.email,
+            contact_phone: formData.phone,
+            setup_stage: "welcome",
+            setup_progress: 10,
+            status: "pending"
+          });
+        
+        if (error) throw error;
       }
-    } catch (error: any) {
-      console.error("Error during signup:", error);
+      
       toast({
-        title: "Registration failed",
-        description: error.message || "There was a problem creating your account.",
+        title: "Profile created!",
+        description: "Your vendor profile has been created successfully."
+      });
+      
+      // Add user to vendor role
+      await supabase
+        .from("user_roles")
+        .insert({
+          user_id: user.id,
+          role: "vendor"
+        });
+        
+      navigate("/vendor/welcome");
+    } catch (error: any) {
+      console.error("Error creating vendor profile:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create vendor profile.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <a href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Home
-          </a>
-          <div className="flex justify-center mt-4">
-            <div className="bg-venu-orange p-3 rounded-full">
-              <Store className="h-8 w-8 text-white" />
+    <AuthLayout>
+      <div className="container relative flex flex-col items-center justify-center self-center">
+        <div className="lg:p-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="flex flex-col space-y-2 text-center">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Create Vendor Profile
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Enter your business details to get started
+              </p>
             </div>
-          </div>
-          <h2 className="mt-4 text-3xl font-extrabold text-gray-900">Become a vendor</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Join our platform and showcase your services to event hosts
-          </p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Create your vendor account</CardTitle>
-            <CardDescription>
-              Fill out the form below to get started. All fields are required.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="businessName"
@@ -191,56 +150,32 @@ export default function VendorSignupPage() {
                     </FormItem>
                   )}
                 />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Your First Name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="surname"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Your Last Name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="contactName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>Contact Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="email" 
-                          placeholder="you@example.com" 
-                          autoComplete="email" 
-                          {...field} 
-                        />
+                        <Input placeholder="Your Contact Name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your Email" type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="phone"
@@ -248,129 +183,20 @@ export default function VendorSignupPage() {
                     <FormItem>
                       <FormLabel>Phone Number</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="tel" 
-                          placeholder="Your Phone Number"
-                          autoComplete="tel"
-                          {...field} 
-                        />
+                        <Input placeholder="Your Phone Number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Category</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select business category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {BUSINESS_CATEGORIES.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="Create a password" 
-                          autoComplete="new-password"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        At least 8 characters
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="Confirm your password" 
-                          autoComplete="new-password"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="terms"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          I agree to the <a href="#" className="text-venu-orange hover:underline">Terms of Service</a> and <a href="#" className="text-venu-orange hover:underline">Privacy Policy</a>
-                        </FormLabel>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-venu-orange hover:bg-venu-dark-orange" 
-                  disabled={loading}
-                >
-                  {loading ? "Creating account..." : "Create Vendor Account"}
-                  {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                <Button disabled={isSubmitting} type="submit" className="w-full">
+                  {isSubmitting ? "Submitting..." : "Create Profile"}
                 </Button>
               </form>
             </Form>
-          </CardContent>
-          <CardFooter className="flex justify-center border-t pt-4">
-            <p className="text-sm text-gray-500">
-              Already have an account?{" "}
-              <a href="/auth/login" className="text-venu-orange hover:underline">
-                Sign in
-              </a>
-            </p>
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

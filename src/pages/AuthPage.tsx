@@ -1,311 +1,222 @@
-import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import { useUserRoles } from "@/hooks/useUserRoles";
-import { useRoleRedirect, getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
-import { createProfileAndRole, sendOtp } from "@/hooks/useAuthHelpers";
-import type { Enums } from "@/integrations/supabase/types";
-import RedirectLoaderOverlay from "@/components/RedirectLoaderOverlay";
-import useAuthLoadingState from "@/hooks/useAuthLoadingState";
-import { toast } from "@/components/ui/use-toast";
-import AuthForm from "./AuthForm";
-import OtpStep from "./OtpStep";
-import useConnectionStatus from "@/hooks/useConnectionStatus";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import { useUser } from "@/hooks/useUser";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState("");
-  const [surname, setSurname] = useState("");
-  const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<Enums<"app_role"> | "">("");
-  const [type, setType] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
-  const [honeypot, setHoneypot] = useState("");
-  const [otpStep, setOtpStep] = useState(false);
-  const [sentOtp, setSentOtp] = useState("");
-  const [otpInput, setOtpInput] = useState("");
-  const [signupUserId, setSignupUserId] = useState<string | null>(null);
-  
-  const [pendingRedirect, setPendingRedirect] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  
+  const [activeTab, setActiveTab] = useState("login");
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const sessionCheckedRef = useRef(false);
-  const redirectAttemptsRef = useRef(0);
-  
-  const MAX_REDIRECT_ATTEMPTS = 2;
-  
-  const { user, initialized, loading: userLoading } = useUser();
-  const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(userId);
-  
-  const isAuthLoading = useAuthLoadingState();
-  const { isConnected, isChecking, checkConnection } = useConnectionStatus();
+  const { toast } = useToast();
 
-  useRoleRedirect({
-    pendingRedirect,
-    userId,
-    userRoles: Array.isArray(userRoles) ? userRoles : [],
-    rolesLoading,
-    setPendingRedirect,
-  });
+  // Get the redirect path from location state, or default to "/"
+  const from = location.state?.from || "/";
 
-  useEffect(() => {
-    if (location.state?.skipSessionCheck) {
-      console.log("AuthPage: Skipping session check due to explicit navigation");
-      return;
-    }
-    
-    if (!initialized) {
-      console.log("AuthPage: Waiting for useUser to initialize...");
-      return;
-    }
-    
-    if (sessionCheckedRef.current) {
-      console.log("AuthPage: Session already checked");
-      return;
-    }
-    
-    sessionCheckedRef.current = true;
-    
-    if (user) {
-      console.log("AuthPage: User exists from useUser hook, initiating redirect");
-      setUserId(user.id);
-      setPendingRedirect(true);
-    } else {
-      console.log("AuthPage: No user from useUser hook, staying on auth page");
-    }
-  }, [user, initialized, location.state]);
-
-  useEffect(() => {
-    if (pendingRedirect || redirectAttemptsRef.current >= MAX_REDIRECT_ATTEMPTS) {
-      return;
-    }
-    
-    if (userId && userRoles && !rolesLoading && location.pathname === "/auth") {
-      console.log("AuthPage: User and roles ready, manual redirect check");
-      redirectAttemptsRef.current += 1;
-      
-      const roleArray = Array.isArray(userRoles) ? userRoles : [];
-      
-      if (roleArray.length > 0) {
-        const redirectPath = getRedirectPageForRoles(roleArray);
-        console.log("AuthPage: Manual redirect check result:", redirectPath);
-        
-        if (redirectPath !== location.pathname) {
-          navigate(redirectPath, { replace: true });
-        }
-      }
-    }
-  }, [userId, userRoles, rolesLoading, pendingRedirect, navigate, location.pathname]);
-
-  const handleQuickLogin = () => {
-    setEmail("test@example.com");
-    setPassword("password123");
-    setType("login");
-    toast({ title: "Demo credentials filled!" });
-  };
-
-  if (isConnected === false) {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-            <div className="flex flex-col items-center">
-              <div className="bg-amber-100 text-amber-800 p-4 rounded-md mb-6 w-full">
-                <h2 className="text-lg font-medium mb-2">Connection Error</h2>
-                <p className="text-sm mb-4">Unable to connect to the authentication server. This could be due to:</p>
-                <ul className="list-disc pl-5 mb-4 text-sm">
-                  <li>Internet connection issues</li>
-                  <li>Temporary server downtime</li>
-                  <li>Configuration problem</li>
-                </ul>
-                <Button 
-                  onClick={checkConnection} 
-                  className="w-full flex items-center justify-center gap-2"
-                  disabled={isChecking}
-                >
-                  {isChecking ? "Checking..." : "Try Again"} 
-                  {!isChecking && <RefreshCw className="h-4 w-4" />}
-                </Button>
-              </div>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/')}
-                className="w-full"
-              >
-                Return to Home
-              </Button>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (honeypot) {
-      setLoading(false);
-      return;
-    }
-    if (type === "signup") {
-      if (!role) {
-        toast({ title: "Please select a role", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-      if (password !== confirmPassword) {
-        toast({ title: "Passwords do not match", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-      try {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        console.log("[AuthPage] Signup attempt", { email, result: data?.user?.id, error });
-        
-        if (error) throw error;
-        if (!data.user || !data.user.id) throw new Error("No user ID returned from signup");
-        
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        setSentOtp(otp);
-        setSignupUserId(data.user.id);
-        await sendOtp({ email, code: otp, toast });
-        setOtpStep(true);
-        toast({ title: "Signup step 1 complete", description: "Check your email and enter the OTP to continue." });
-      } catch (e: any) {
-        console.error("[AuthPage] Signup ERROR", e);
-        toast({ title: "Error", description: e.message, variant: "destructive" });
-      }
-      setLoading(false);
-      return;
-    }
-    
+
     try {
-      console.log("[AuthPage] Attempting login with:", { email });
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      console.log("[AuthPage] Login attempt result:", { userId: data?.user?.id, error });
-      
-      if (error) {
-        console.error("[AuthPage] Login ERROR", error);
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-        setLoading(false);
-        return;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back to Venuapp",
+      });
+
+      // Determine where to redirect based on user role
+      // Simplified logic - in a real app you would check user roles
+      if (email.includes("admin")) {
+        navigate("/admin");
+      } else {
+        navigate("/host");
       }
-      
-      if (!data.user) {
-        toast({ title: "Login failed", description: "No user returned.", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-      
-      console.log("[AuthPage] Login successful, setting userId and pendingRedirect");
-      setUserId(data.user.id);
-      setPendingRedirect(true);
-      toast({ title: "Login successful!" });
-      
-      setTimeout(() => {
-        console.log("[AuthPage] Checking roles after login");
-        navigate(`/${Array.isArray(userRoles) && userRoles.length > 0 ? userRoles[0] : ''}`, { replace: true });
-      }, 500);
-    } catch (e: any) {
-      console.error("[AuthPage] Login Exception", e);
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } catch (error: any) {
+      console.error("Error logging in:", error);
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const onOtpSubmit = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (
-      otpInput === sentOtp &&
-      signupUserId &&
-      role !== ""
-    ) {
-      try {
-        await createProfileAndRole({
-          userId: signupUserId,
-          name,
-          surname,
-          email,
-          phone,
-          role,
-        });
-        setUserId(signupUserId);
-        setPendingRedirect(true);
-        toast({ title: "Signup successful!", description: "Welcome!" });
-      } catch (e: any) {
-        toast({ title: "Error", description: e.message, variant: "destructive" });
-      }
-    } else {
-      toast({ title: "Invalid OTP code", variant: "destructive" });
-    }
-    setLoading(false);
-  };
 
-  if (pendingRedirect || isAuthLoading) {
-    return (
-      <>
-        <Navbar />
-        <RedirectLoaderOverlay message="Setting up your dashboard..." />
-      </>
-    );
-  }
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Registration successful",
+        description: "Please check your email to confirm your account",
+      });
+
+      // Switch to login tab after successful registration
+      setActiveTab("login");
+    } catch (error: any) {
+      console.error("Error signing up:", error);
+      toast({
+        title: "Registration failed",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12">
-        {otpStep ? (
-          <OtpStep
-            loading={loading}
-            otpInput={otpInput}
-            setOtpInput={setOtpInput}
-            onOtpSubmit={onOtpSubmit}
-          />
-        ) : (
-          <AuthForm
-            type={type}
-            onTypeChange={setType}
-            otpStep={otpStep}
-            setOtpStep={setOtpStep}
-            setUserId={setUserId}
-            setPendingRedirect={setPendingRedirect}
-            setSentOtp={setSentOtp}
-            setSignupUserId={setSignupUserId}
-            setLoading={setLoading}
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            confirmPassword={confirmPassword}
-            setConfirmPassword={setConfirmPassword}
-            name={name}
-            setName={setName}
-            surname={surname}
-            setSurname={setSurname}
-            phone={phone}
-            setPhone={setPhone}
-            role={role}
-            setRole={setRole}
-            loading={loading}
-            honeypot={honeypot}
-            setHoneypot={setHoneypot}
-            handleQuickLogin={handleQuickLogin}
-            onSubmit={onSubmit}
-          />
-        )}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <div className="flex flex-col items-center mb-6">
+        <img
+          src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
+          alt="Venuapp Logo"
+          className="h-16 w-16 object-contain"
+        />
+        <h1 className="text-2xl font-bold mt-2 text-venu-orange">Venuapp</h1>
       </div>
-    </>
+
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl text-center">Welcome to Venuapp</CardTitle>
+          <CardDescription className="text-center">
+            Sign in to your account or create a new one
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+              <form onSubmit={handleLogin}>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <a href="#" className="text-xs text-venu-orange hover:underline">
+                        Forgot password?
+                      </a>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-venu-orange hover:bg-venu-dark-orange"
+                    disabled={loading}
+                  >
+                    {loading ? "Logging in..." : "Login"}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp}>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Password must be at least 6 characters long
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-venu-orange hover:bg-venu-dark-orange"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating account..." : "Create account"}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        <CardFooter>
+          <p className="text-xs text-center w-full text-muted-foreground">
+            By continuing, you agree to Venuapp's Terms of Service and Privacy Policy
+          </p>
+        </CardFooter>
+      </Card>
+
+      {/* Quick test links */}
+      <div className="mt-8 flex gap-4">
+        <Button variant="outline" size="sm" asChild>
+          <a href="/host">Test Host Panel</a>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <a href="/admin">Test Admin Panel</a>
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -1,155 +1,47 @@
-import { useUser } from "@/hooks/useUser";
-import { useUserRoles } from "@/hooks/useUserRoles";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import AdminSidebar from "@/components/AdminSidebar";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import SecurePanelButton from "@/components/SecurePanelButton";
-import AdminDashboard from "@/components/AdminDashboard";
-import AdminHostVendorManager from "@/components/AdminHostVendorManager";
-import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 
-const SECTION_LABELS: Record<string, string> = {
-  dashboard: "Dashboard & Oversight",
-  host_vendor: "Host & Vendor Management",
-  events: "Event & Invitation Tracking",
-  billing: "Billing & Subscriptions",
-  payment: "Payment & Payout Control",
-  fetchman: "Fetchman Management",
-  reporting: "Reporting & Analytics",
-  notifications: "Notifications & CMS",
-  settings: "Platform Settings",
-};
-
-const ADMIN_TASKS = [
-  "View platform analytics and monitor real-time stats",
-  "Manage hosts, vendors, and fetchman accounts",
-  "Track event creation and invitations",
-  "Handle billing, subscriptions, and payment controls",
-  "Oversee fetchman management and payouts",
-  "Review reports and analytics",
-  "Send announcements and manage notifications",
-  "Change system/platform settings",
-];
-
-function AdminSideFrame() {
-  return (
-    <div className="w-full md:w-[410px] bg-gradient-to-br from-[#FFF3E4] via-[#E5DEFF] to-[#D3E4FD] rounded-2xl shadow-lg border border-[#f0e6ff] flex flex-col min-h-[330px] p-0 overflow-hidden animate-fade-in">
-      <div className="flex px-4 pt-4 gap-2">
-        <div className="text-lg font-bold text-venu-orange/90 drop-shadow">
-          Notice Board
-        </div>
-        <div className="flex-1" />
-      </div>
-      <div className="flex-1 min-h-[220px] px-4 pb-4 flex items-center justify-center transition-all duration-300">
-        <div className="w-full animate-fade-in">
-          <ul className="text-base text-gray-900 list-disc ml-6 space-y-2">
-            <li>⚡ Scheduled platform update: Sat 7pm</li>
-            <li>🎉 New feature: Invite analytics now live</li>
-            <li>🔐 Please set up 2FA for improved security</li>
-            <li>❓ Questions? Contact support@venuapp.com</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-}
+import React from "react";
+import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function AdminPanel() {
-  const [selected, setSelected] = useState<string>("dashboard");
-
   return (
-    <AuthTransitionWrapper requireAuth allowedRoles={["admin"]}>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gray-50">
-          <AdminSidebar selected={selected} onSelect={setSelected} />
-          <SidebarInset>
-            <div className="p-8 flex flex-col gap-10">
-              <div className="flex items-center gap-4 mb-3">
-                <img
-                  src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
-                  alt="Venuapp Logo"
-                  className="h-14 w-14 object-contain drop-shadow"
-                  style={{ borderRadius: "10px" }}
-                />
-                <span className="text-[2.4rem] md:text-[2.5rem] font-extrabold text-venu-orange tracking-tight drop-shadow">
-                  Venuapp
-                </span>
-                <span className="ml-2 px-3 py-1 rounded-full bg-venu-orange/10 text-venu-orange text-sm font-bold hidden sm:inline">
-                  Admin
-                </span>
-                <div className="flex-1" />
-                <SecurePanelButton />
-              </div>
-
-              {selected === "dashboard" && (
-                <div className="rounded-2xl bg-white shadow-xl p-0 mb-4 flex flex-col items-stretch gap-0 md:flex-row md:gap-10">
-                  <div className="flex-1 min-w-[230px] p-8 flex flex-col justify-center">
-                    <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">
-                      Welcome to your Admin Panel
-                    </h2>
-                    <p className="text-gray-700 mb-3 text-base">
-                      As an <span className="text-venu-orange font-bold">admin</span>, you have access to:
-                    </p>
-                    <ul className="list-disc pl-6 text-gray-800 grid gap-2 text-base font-medium mb-2">
-                      {ADMIN_TASKS.map((task, i) => (
-                        <li key={i}>{task}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="flex-shrink-0 flex items-center justify-center md:pr-8 pb-6 md:pb-0 w-full md:w-auto">
-                    <AdminSideFrame />
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-white shadow rounded-2xl p-8 min-h-[300px]">
-                {selected === "dashboard" && <AdminDashboard />}
-                {selected === "host_vendor" && (
-                  <div>
-                    <AdminHostVendorManager />
-                  </div>
-                )}
-                {selected === "events" && (
-                  <div>
-                    <p className="text-gray-600">Event & Invitation tracking tools.</p>
-                  </div>
-                )}
-                {selected === "billing" && (
-                  <div>
-                    <p className="text-gray-600">Billing & Subscription management.</p>
-                  </div>
-                )}
-                {selected === "payment" && (
-                  <div>
-                    <p className="text-gray-600">Payment & payout controls.</p>
-                  </div>
-                )}
-                {selected === "fetchman" && (
-                  <div>
-                    <p className="text-gray-600">Fetchman (delivery staff) management.</p>
-                  </div>
-                )}
-                {selected === "reporting" && (
-                  <div>
-                    <p className="text-gray-600">Reporting & analytics tools.</p>
-                  </div>
-                )}
-                {selected === "notifications" && (
-                  <div>
-                    <p className="text-gray-600">Push announcements, CMS management.</p>
-                  </div>
-                )}
-                {selected === "settings" && (
-                  <div>
-                    <p className="text-gray-600">Platform settings and configuration controls.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </SidebarInset>
+    <AdminPanelLayout>
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">128</div>
+              <p className="text-sm text-muted-foreground">Total registered users</p>
+              <Button variant="outline" className="mt-4 w-full">View Users</Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Hosts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">36</div>
+              <p className="text-sm text-muted-foreground">Active venue hosts</p>
+              <Button variant="outline" className="mt-4 w-full">Manage Hosts</Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Events</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">52</div>
+              <p className="text-sm text-muted-foreground">Upcoming events</p>
+              <Button variant="outline" className="mt-4 w-full">View Events</Button>
+            </CardContent>
+          </Card>
         </div>
-      </SidebarProvider>
-    </AuthTransitionWrapper>
+      </div>
+    </AdminPanelLayout>
   );
 }

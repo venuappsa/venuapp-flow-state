@@ -6,11 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import CustomerPage from "./pages/CustomerPage";
-import HostPage from "./pages/HostPage";
-import MerchantPage from "./pages/MerchantPage";
-import FetchmanPage from "./pages/FetchmanPage";
-import SubscribePage from "./pages/SubscribePage";
 import AuthPage from "./pages/AuthPage";
 import AdminPanel from "./pages/AdminPanel";
 import HostPanel from "./pages/HostPanel";
@@ -41,7 +36,20 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
+          
+          {/* Admin panel routes */}
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/users" element={<AdminPanel />} />
+          <Route path="/admin/hosts" element={<AdminPanel />} />
+          <Route path="/admin/events" element={<AdminPanel />} />
+          <Route path="/admin/merchants" element={<AdminPanel />} />
+          <Route path="/admin/subscriptions" element={<AdminPanel />} />
+          <Route path="/admin/reports" element={<AdminPanel />} />
+          <Route path="/admin/verifications" element={<AdminPanel />} />
+          <Route path="/admin/notifications" element={<AdminPanel />} />
+          <Route path="/admin/support" element={<AdminPanel />} />
+          <Route path="/admin/platform" element={<AdminPanel />} />
+          <Route path="/admin/settings" element={<AdminPanel />} />
           
           {/* Host panel routes */}
           <Route path="/host" element={<HostPanel />} />
@@ -62,10 +70,6 @@ const App = () => (
           <Route path="/host/messages" element={<MessagesPage />} />
           <Route path="/host/notifications" element={<NotificationsPage />} />
           
-          <Route path="/customer" element={<CustomerPage />} />
-          <Route path="/merchant" element={<MerchantPage />} />
-          <Route path="/fetchman" element={<FetchmanPage />} />
-          <Route path="/subscribe" element={<SubscribePage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

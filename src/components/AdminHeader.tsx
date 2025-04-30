@@ -13,21 +13,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, Menu, Settings, User, Plus } from "lucide-react";
+import { Bell, LogOut, Menu, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import AdminSidebar from "@/components/AdminSidebar";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
 
-export default function HostHeader() {
+export default function AdminHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
   const { toast } = useToast();
 
   const displayName = user?.user_metadata?.full_name || 
     user?.email?.split("@")[0] || 
-    "Host";
+    "Admin";
   
   const initials = displayName
     .split(" ")
@@ -71,46 +70,40 @@ export default function HostHeader() {
 
         {/* Logo - visible on both mobile and desktop */}
         <div className={cn("flex items-center", mobileMenuOpen ? "hidden" : "")}>
-          <Link to="/host" className="flex items-center">
+          <Link to="/admin" className="flex items-center">
             <img
               src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
               alt="Venuapp Logo"
               className="h-8 w-8 object-contain"
             />
-            <h1 className="text-xl font-semibold ml-2 hidden sm:inline-block text-venu-orange">
-              Venuapp
+            <h1 className="text-xl font-semibold ml-2 hidden sm:inline-block">
+              <span className="text-venu-orange">Venuapp</span>
+              <span className="ml-1 text-gray-500">Admin</span>
             </h1>
           </Link>
         </div>
 
         {/* Desktop navigation - hidden on mobile */}
         <div className="hidden md:flex items-center gap-6 ml-6">
-          <Link to="/host" className="text-sm font-medium hover:text-venu-orange transition-colors">
+          <Link to="/admin" className="text-sm font-medium hover:text-venu-orange transition-colors">
             Dashboard
           </Link>
-          <Link to="/host/venues" className="text-sm font-medium hover:text-venu-orange transition-colors">
-            Venues
+          <Link to="/admin/users" className="text-sm font-medium hover:text-venu-orange transition-colors">
+            Users
           </Link>
-          <Link to="/host/events" className="text-sm font-medium hover:text-venu-orange transition-colors">
+          <Link to="/admin/events" className="text-sm font-medium hover:text-venu-orange transition-colors">
             Events
           </Link>
-          <Link to="/host/merchants" className="text-sm font-medium hover:text-venu-orange transition-colors">
-            Merchants
+          <Link to="/admin/settings" className="text-sm font-medium hover:text-venu-orange transition-colors">
+            Settings
           </Link>
         </div>
 
-        {/* Right side of header - actions, notifications and profile */}
+        {/* Right side of header - notifications and profile */}
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild className="hidden md:flex">
-            <Link to="/host/events/new">
-              <Plus className="h-4 w-4 mr-2" />
-              New Event
-            </Link>
-          </Button>
-
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
-            <Badge className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center">3</Badge>
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
           </Button>
 
           <DropdownMenu>
@@ -127,13 +120,13 @@ export default function HostHeader() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/host/profile" className="flex items-center cursor-pointer">
+                <Link to="/admin/profile" className="flex items-center cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/host/settings" className="flex items-center cursor-pointer">
+                <Link to="/admin/settings" className="flex items-center cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </Link>
@@ -151,9 +144,7 @@ export default function HostHeader() {
       {/* Mobile drawer */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
-          <div className="h-full">
-            <DashboardSidebar />
-          </div>
+          <AdminSidebar onNavItemClick={() => setMobileMenuOpen(false)} />
         </SheetContent>
       </Sheet>
     </header>

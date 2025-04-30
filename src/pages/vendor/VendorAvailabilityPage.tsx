@@ -1,85 +1,33 @@
 
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Check, X, Info, Save } from 'lucide-react';
-import { format, isSameDay } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
+import { addWeeks, subWeeks } from 'date-fns';
+import { format } from 'date-fns';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/hooks/useUser';
-import { cn } from '@/lib/utils';
 import VendorPanelLayout from '@/components/layouts/VendorPanelLayout';
-
-interface Availability {
-  id: string;
-  date: string;
-  is_available: boolean;
-  time_start: string | null;
-  time_end: string | null;
-  notes: string | null;
-}
-
-interface AvailabilityDay {
-  date: Date;
-  isAvailable: boolean;
-  timeStart?: string;
-  timeEnd?: string;
-  notes?: string;
-  id?: string;
-}
-
-interface DefaultHours {
-  timeStart: string;
-  timeEnd: string;
-}
+import DefaultHoursForm from '@/components/vendor/availability/DefaultHoursForm';
+import AvailabilityCalendar from '@/components/vendor/availability/AvailabilityCalendar';
+import CalendarSync from '@/components/vendor/availability/CalendarSync';
+import WeekToolbar from '@/components/vendor/availability/WeekToolbar';
+import { 
+  AvailabilityDay, 
+  DefaultHours, 
+  getDefaultHours, 
+  applyDefaultsToWeek 
+} from '@/utils/availability';
 
 export default function VendorAvailabilityPage() {
   const { user } = useUser();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [availabilityDays, setAvailabilityDays] = useState<AvailabilityDay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState<AvailabilityDay | null>(null);
-  const [isAvailable, setIsAvailable] = useState(true);
-  const [timeStart, setTimeStart] = useState('09:00');
-  const [timeEnd, setTimeEnd] = useState('17:00');
-  const [notes, setNotes] = useState('');
-  const [showDialog, setShowDialog] = useState(false);
   
   // Default working hours state
-  const [defaultTimeStart, setDefaultTimeStart] = useState('09:00');
-  const [defaultTimeEnd, setDefaultTimeEnd] = useState('17:00');
-  const [isSavingDefaults, setIsSavingDefaults] = useState(false);
+  const [defaultHours, setDefaultHours] = useState<DefaultHours>({
+    timeStart: '09:00',
+    timeEnd: '17:00'
+  });
 
   useEffect(() => {
     if (user) {
@@ -142,87 +90,12 @@ export default function VendorAvailabilityPage() {
 
   const fetchDefaultHours = async () => {
     if (!user) return;
-
-    try {
-      // We'll store default hours in localStorage for this implementation
-      // In a real application, this would be stored in the database
-      const savedDefaults = localStorage.getItem(`vendor_default_hours_${user.id}`);
-      if (savedDefaults) {
-        const defaults: DefaultHours = JSON.parse(savedDefaults);
-        setDefaultTimeStart(defaults.timeStart);
-        setDefaultTimeEnd(defaults.timeEnd);
-      }
-    } catch (error) {
-      console.error('Error fetching default hours:', error);
-    }
+    const defaults = getDefaultHours(user.id);
+    setDefaultHours(defaults);
   };
 
-  const saveDefaultHours = async () => {
+  const handleSaveAvailability = async (day: AvailabilityDay) => {
     if (!user) return;
-
-    setIsSavingDefaults(true);
-    try {
-      // Store default hours in localStorage
-      const defaults: DefaultHours = {
-        timeStart: defaultTimeStart,
-        timeEnd: defaultTimeEnd
-      };
-      
-      localStorage.setItem(`vendor_default_hours_${user.id}`, JSON.stringify(defaults));
-      
-      // Update the state for new availability entries
-      setTimeStart(defaultTimeStart);
-      setTimeEnd(defaultTimeEnd);
-      
-      toast({
-        title: 'Default hours saved',
-        description: 'Your default working hours have been updated.',
-      });
-    } catch (error) {
-      console.error('Error saving default hours:', error);
-      toast({
-        title: 'Failed to save default hours',
-        description: 'Please try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSavingDefaults(false);
-    }
-  };
-
-  const handleDayClick = (day: Date) => {
-    const selectedDate = new Date(day);
-    
-    // Check if this day already has availability set
-    const existingDay = availabilityDays.find((d) => 
-      isSameDay(new Date(d.date), selectedDate)
-    );
-
-    if (existingDay) {
-      setSelectedDay({
-        ...existingDay,
-        date: selectedDate,
-      });
-      setIsAvailable(existingDay.isAvailable);
-      setTimeStart(existingDay.timeStart || defaultTimeStart);
-      setTimeEnd(existingDay.timeEnd || defaultTimeEnd);
-      setNotes(existingDay.notes || '');
-    } else {
-      setSelectedDay({
-        date: selectedDate,
-        isAvailable: true,
-      });
-      setIsAvailable(true);
-      setTimeStart(defaultTimeStart);
-      setTimeEnd(defaultTimeEnd);
-      setNotes('');
-    }
-
-    setShowDialog(true);
-  };
-
-  const handleSaveAvailability = async () => {
-    if (!selectedDay || !user) return;
 
     setIsLoading(true);
     try {
@@ -246,21 +119,21 @@ export default function VendorAvailabilityPage() {
 
       const availabilityData = {
         vendor_id: vendorProfile.id,
-        date: format(selectedDay.date, 'yyyy-MM-dd'),
-        is_available: isAvailable,
-        time_start: isAvailable ? timeStart : null,
-        time_end: isAvailable ? timeEnd : null,
-        notes: notes || null,
+        date: format(day.date, 'yyyy-MM-dd'),
+        is_available: day.isAvailable,
+        time_start: day.isAvailable ? day.timeStart : null,
+        time_end: day.isAvailable ? day.timeEnd : null,
+        notes: day.notes || null,
       };
 
       let response;
       
       // If we're editing an existing day
-      if (selectedDay.id) {
+      if (day.id) {
         response = await supabase
           .from('vendor_availability')
           .update(availabilityData)
-          .eq('id', selectedDay.id);
+          .eq('id', day.id);
       } else {
         response = await supabase
           .from('vendor_availability')
@@ -271,11 +144,10 @@ export default function VendorAvailabilityPage() {
 
       toast({
         title: 'Availability updated',
-        description: `${format(selectedDay.date, 'MMMM d, yyyy')} has been ${isAvailable ? 'marked as available' : 'blocked'}`,
+        description: `${format(day.date, 'MMMM d, yyyy')} has been ${day.isAvailable ? 'marked as available' : 'blocked'}`,
       });
 
       await fetchAvailability();
-      setShowDialog(false);
     } catch (error) {
       console.error('Error saving availability:', error);
       toast({
@@ -288,38 +160,38 @@ export default function VendorAvailabilityPage() {
     }
   };
 
-  const getDayClassName = (day: Date) => {
-    const existingDay = availabilityDays.find((d) => 
-      isSameDay(new Date(d.date), day)
-    );
-    
-    if (existingDay) {
-      return existingDay.isAvailable 
-        ? 'bg-green-50 text-green-800 rounded-full border-green-200 hover:bg-green-100'
-        : 'bg-red-50 text-red-800 rounded-full border-red-200 hover:bg-red-100';
-    }
-    
-    return '';
+  const handleSaveDefaultHours = (hours: DefaultHours) => {
+    setDefaultHours(hours);
   };
 
-  const applyDefaultsToWeek = () => {
-    if (!date) return;
-    
-    const currentDate = new Date(date.getTime());
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Sunday
+  const handleApplyDefaultsToWeek = () => {
+    if (!date || !user) return;
     
     toast({
       title: 'Applying default hours',
       description: 'Default hours will be applied to the current week.',
     });
     
-    // This is where you would batch apply default hours to multiple days
-    // For this example, we'll just show a toast notification
+    // Apply default hours to current week
+    const updatedAvailability = applyDefaultsToWeek(date, defaultHours, availabilityDays);
+    setAvailabilityDays(updatedAvailability);
+    
     toast({
-      title: 'Feature coming soon',
-      description: 'This feature will be available in the next update.',
+      title: 'Default hours applied',
+      description: 'Your availability has been updated for this week.',
     });
+  };
+  
+  const handlePrevWeek = () => {
+    setDate(prev => prev ? subWeeks(prev, 1) : subWeeks(new Date(), 1));
+  };
+  
+  const handleNextWeek = () => {
+    setDate(prev => prev ? addWeeks(prev, 1) : addWeeks(new Date(), 1));
+  };
+  
+  const handleToday = () => {
+    setDate(new Date());
   };
 
   return (
@@ -332,199 +204,33 @@ export default function VendorAvailabilityPage() {
           </div>
         </div>
 
+        <WeekToolbar 
+          currentDate={date || new Date()}
+          onPrevWeek={handlePrevWeek}
+          onNextWeek={handleNextWeek}
+          onToday={handleToday}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>Calendar</span>
-                  <Dialog open={showDialog} onOpenChange={setShowDialog}>
-                    <DialogTrigger asChild>
-                      <Button size="sm" disabled={isLoading}>
-                        Set Availability
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Set Availability</DialogTitle>
-                        <DialogDescription>
-                          {selectedDay && format(selectedDay.date, 'MMMM d, yyyy')}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="py-4 space-y-4">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            type="button"
-                            variant={isAvailable ? "default" : "outline"}
-                            onClick={() => setIsAvailable(true)}
-                            className="flex-1"
-                          >
-                            <Check className="h-4 w-4 mr-2" />
-                            Available
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={!isAvailable ? "default" : "outline"}
-                            onClick={() => setIsAvailable(false)}
-                            className="flex-1"
-                          >
-                            <X className="h-4 w-4 mr-2" />
-                            Not Available
-                          </Button>
-                        </div>
-                        
-                        {isAvailable && (
-                          <>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="start-time">Start Time</Label>
-                                <Input
-                                  id="start-time"
-                                  type="time"
-                                  value={timeStart}
-                                  onChange={(e) => setTimeStart(e.target.value)}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="end-time">End Time</Label>
-                                <Input
-                                  id="end-time"
-                                  type="time"
-                                  value={timeEnd}
-                                  onChange={(e) => setTimeEnd(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                          </>
-                        )}
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="notes">Notes (optional)</Label>
-                          <Textarea
-                            id="notes"
-                            placeholder="Add any notes about this day"
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-                        <Button 
-                          onClick={handleSaveAvailability}
-                          disabled={isLoading}
-                        >
-                          {isLoading ? 'Saving...' : 'Save'}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </CardTitle>
-                <CardDescription>
-                  Click on a day to set or update your availability
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  onDayClick={handleDayClick}
-                  className="rounded-md border"
-                  dayClassName={getDayClassName}
-                  classNames={{
-                    day_selected: "bg-blue-500 text-white hover:bg-blue-600 focus:bg-blue-600",
-                  }}
-                />
-                <div className="flex space-x-4 mt-4">
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
-                    <span className="text-sm">Available</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
-                    <span className="text-sm">Unavailable</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <AvailabilityCalendar 
+              availabilityDays={availabilityDays}
+              defaultTimeStart={defaultHours.timeStart}
+              defaultTimeEnd={defaultHours.timeEnd}
+              isLoading={isLoading}
+              onSaveAvailability={handleSaveAvailability}
+            />
           </div>
 
-          <div>
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Calendar Sync</CardTitle>
-                <CardDescription>
-                  Connect your external calendars to automatically update your availability
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start" disabled>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  <span>Connect Google Calendar</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className="ml-auto">Coming Soon</Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        This feature will be available soon!
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </Button>
-                
-                <Card className="bg-blue-50 border-blue-100">
-                  <CardContent className="p-4 flex gap-3">
-                    <Info className="h-5 w-5 text-blue-500 shrink-0" />
-                    <p className="text-sm text-blue-700">
-                      Calendar sync will allow you to automatically mark dates as unavailable based on your existing calendars.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <div className="border-t pt-4">
-                  <h3 className="font-medium mb-2">Default Working Hours</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label htmlFor="default-start">Start</Label>
-                      <Input 
-                        id="default-start" 
-                        type="time" 
-                        value={defaultTimeStart}
-                        onChange={e => setDefaultTimeStart(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="default-end">End</Label>
-                      <Input 
-                        id="default-end" 
-                        type="time" 
-                        value={defaultTimeEnd}
-                        onChange={e => setDefaultTimeEnd(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full mt-2" 
-                    variant="outline"
-                    onClick={saveDefaultHours}
-                    disabled={isSavingDefaults}
-                  >
-                    {isSavingDefaults ? 'Saving...' : 'Save Default Hours'}
-                    <Save className="ml-2 h-4 w-4" />
-                  </Button>
-                  
-                  <Button 
-                    className="w-full mt-2" 
-                    variant="outline" 
-                    onClick={applyDefaultsToWeek}
-                  >
-                    Apply to Current Week
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            <CalendarSync userId={user?.id || ''} />
+            
+            <DefaultHoursForm 
+              userId={user?.id || ''}
+              initialValues={defaultHours}
+              onSave={handleSaveDefaultHours}
+              onApplyToWeek={handleApplyDefaultsToWeek}
+            />
           </div>
         </div>
       </div>

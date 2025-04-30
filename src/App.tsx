@@ -15,6 +15,7 @@ import EventManagementPage from "./pages/EventManagementPage";
 import EventsPage from "./pages/EventsPage";
 import VendorsPage from "./pages/VendorsPage";
 import FinancePage from "./pages/FinancePage";
+import FinanceSettingsPage from "./pages/FinanceSettingsPage";
 import VenuesPage from "./pages/VenuesPage";
 import VenueManagementPage from "./pages/VenueManagementPage";
 import GuestPage from "./pages/GuestPage";
@@ -24,6 +25,8 @@ import SettingsPage from "./pages/SettingsPage";
 import KnowledgeBasePage from "./pages/KnowledgeBasePage";
 import MessagesPage from "./pages/MessagesPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import EventTimelinePage from "./pages/EventTimelinePage";
+import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 
 // Auth pages imports
 import AuthLayout from "./pages/auth/AuthLayout";
@@ -104,6 +107,7 @@ const App = () => (
           <Route path="/admin/support" element={<AdminPanel />} />
           <Route path="/admin/platform" element={<AdminPanel />} />
           <Route path="/admin/settings" element={<AdminPanel />} />
+          <Route path="/admin/payouts" element={<AdminPayoutsPage />} />
           
           {/* Host panel routes */}
           <Route path="/host" element={<HostPanel />} />
@@ -116,10 +120,12 @@ const App = () => (
           <Route path="/host/events" element={<EventsPage />} />
           <Route path="/host/events/new" element={<EventManagementPage />} />
           <Route path="/host/events/:eventId" element={<EventManagementPage />} />
+          <Route path="/host/events/:eventId/timeline" element={<EventTimelinePage />} />
           <Route path="/host/merchants" element={<MerchantsPage />} />
           <Route path="/host/vendors" element={<VendorsPage />} />
           <Route path="/host/invitations" element={<InvitationsPage />} />
           <Route path="/host/finance" element={<FinancePage />} />
+          <Route path="/host/finance/settings" element={<FinanceSettingsPage />} />
           <Route path="/host/guests" element={<GuestPage />} />
           <Route path="/host/analytics" element={<AnalyticsPage />} />
           <Route path="/host/settings" element={<SettingsPage />} />

@@ -35,14 +35,15 @@ export default function VendorMetricsDashboard() {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .rpc('get_vendor_metrics', { vendor_user_id: user.id });
-        
-      if (error) throw error;
+      // For now, use mock data
+      const mockData: VendorMetrics = {
+        total_hosts: 5,
+        active_hosts: 3,
+        messages_this_week: 14,
+        response_rate: 0.9
+      };
       
-      if (data) {
-        setMetrics(data as VendorMetrics);
-      }
+      setMetrics(mockData);
     } catch (error) {
       console.error("Error fetching vendor metrics:", error);
     } finally {

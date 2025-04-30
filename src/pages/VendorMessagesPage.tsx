@@ -53,9 +53,7 @@ export default function VendorMessagesPage() {
       
       // Get all vendors where there are messages between the current user and the vendor
       const { data: messageData, error: messageError } = await supabase
-        .from("messages")
-        .select("*, sender:sender_id, recipient:recipient_id")
-        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`);
+        .rpc("get_user_messages", { user_id: user.id });
         
       if (messageError) throw messageError;
       
@@ -125,21 +123,31 @@ export default function VendorMessagesPage() {
     
     try {
       const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .or(`and(sender_id.eq.${user.id},recipient_id.eq.${contactId}),and(sender_id.eq.${contactId},recipient_id.eq.${user.id})`)
-        .order("created_at", { ascending: true });
+        .rpc("get_user_messages", { user_id: user.id });
         
       if (error) throw error;
       
-      setMessages(data as Message[]);
+      // Filter messages that are between the current user and the selected contact
+      const filteredMessages = data.filter(
+        (msg: Message) => 
+          (msg.sender_id === user.id && msg.recipient_id === contactId) || 
+          (msg.sender_id === contactId && msg.recipient_id === user.id)
+      );
+      
+      setMessages(filteredMessages as Message[]);
       
       // Mark messages as read
-      await supabase
-        .from("messages")
-        .update({ is_read: true })
-        .eq("recipient_id", user.id)
-        .eq("sender_id", contactId);
+      const messagesToMarkAsRead = filteredMessages.filter(
+        (msg: Message) => !msg.is_read && msg.recipient_id === user.id
+      );
+      
+      if (messagesToMarkAsRead.length > 0) {
+        await Promise.all(messagesToMarkAsRead.map((msg: Message) => 
+          supabase
+            .from("messages_read_status")
+            .insert({ message_id: msg.id, user_id: user.id })
+        ));
+      }
         
       // Update unread count for this contact
       setContacts(current =>
@@ -170,27 +178,17 @@ export default function VendorMessagesPage() {
       };
       
       const { data, error } = await supabase
-        .from("messages")
-        .insert(newMessage)
-        .select();
+        .rpc("send_message", newMessage);
         
       if (error) throw error;
       
-      // Update messages list with the new message
-      setMessages(current => [...current, data[0] as Message]);
+      // Refresh messages
+      fetchMessages(selectedContact.userId);
       
-      // Update the contact's last message
-      setContacts(current =>
-        current.map(c =>
-          c.userId === selectedContact.userId
-            ? {
-                ...c,
-                lastMessage: content,
-                lastMessageTime: "Just now"
-              }
-            : c
-        )
-      );
+      toast({
+        title: "Message Sent",
+        description: "Your message has been sent successfully"
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       toast({

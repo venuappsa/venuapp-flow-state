@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -50,6 +51,8 @@ import VendorServicesPage from "./pages/vendor/VendorServicesPage";
 import VendorPricingPage from "./pages/vendor/VendorPricingPage";
 import VendorGoLivePage from "./pages/vendor/VendorGoLivePage";
 import VendorPanelPage from "./pages/vendor/VendorPanelPage";
+import VendorMessagesPage from "./pages/vendor/VendorMessagesPage";
+import VendorMessagesPage as HostVendorMessagesPage from "./pages/VendorMessagesPage";
 
 const queryClient = new QueryClient();
 
@@ -112,7 +115,7 @@ const App = () => (
           <Route path="/host/analytics" element={<AnalyticsPage />} />
           <Route path="/host/settings" element={<SettingsPage />} />
           <Route path="/host/knowledge" element={<KnowledgeBasePage />} />
-          <Route path="/host/messages" element={<VendorMessagesPage />} />
+          <Route path="/host/messages" element={<HostVendorMessagesPage />} />
           <Route path="/host/notifications" element={<NotificationsPage />} />
 
           {/* Vendor panel routes */}

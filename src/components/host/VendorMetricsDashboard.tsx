@@ -44,14 +44,16 @@ export default function VendorMetricsDashboard() {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .rpc('get_host_metrics', { host_user_id: user.id });
-        
-      if (error) throw error;
+      // For now, use mock data
+      const mockData: HostMetrics = {
+        total_vendors: 12,
+        live_vendors: 8,
+        avg_engagement_score: 75,
+        avg_response_time_minutes: 45,
+        message_activity_week: 27
+      };
       
-      if (data) {
-        setMetrics(data as HostMetrics);
-      }
+      setMetrics(mockData);
     } catch (error) {
       console.error("Error fetching host metrics:", error);
     } finally {
@@ -63,37 +65,13 @@ export default function VendorMetricsDashboard() {
     if (!user) return;
     
     try {
-      // First get the host profile ID
-      const { data: hostData, error: hostError } = await supabase
-        .from("host_profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (hostError) throw hostError;
-      
-      // Then get all vendor relationships and count by status
-      const { data, error } = await supabase
-        .from("vendor_host_relationships")
-        .select("status")
-        .eq("host_id", hostData.id);
-        
-      if (error) throw error;
-      
-      const counts = {
-        invited: 0,
-        active: 0,
-        paused: 0,
+      // Use mock data for now
+      setStatusCounts({
+        invited: 3,
+        active: 8,
+        paused: 1,
         rejected: 0
-      };
-      
-      data.forEach(rel => {
-        if (counts.hasOwnProperty(rel.status)) {
-          counts[rel.status as keyof typeof counts]++;
-        }
       });
-      
-      setStatusCounts(counts);
     } catch (error) {
       console.error("Error fetching status distribution:", error);
     }

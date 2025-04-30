@@ -25,6 +25,19 @@ import KnowledgeBasePage from "./pages/KnowledgeBasePage";
 import MessagesPage from "./pages/MessagesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 
+// Auth pages imports
+import AuthLayout from "./pages/auth/AuthLayout";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import TwoFactorAuthPage from "./pages/auth/TwoFactorAuthPage";
+import AuthTestReport from "./pages/auth/TestReport";
+
+// Profile and User Management imports
+import AdminProfilePage from "./pages/AdminProfilePage";
+import HostProfilePage from "./pages/HostProfilePage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -35,11 +48,24 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<AuthPage />} />
+          
+          {/* Auth routes */}
+          <Route path="/auth" element={<AuthLayout />}>
+            <Route index element={<LoginPage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
+            <Route path="forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="2fa" element={<TwoFactorAuthPage />} />
+            <Route path="test-report" element={<AuthTestReport />} />
+          </Route>
+          
+          {/* Legacy auth page (to be removed) */}
+          <Route path="/auth-old" element={<AuthPage />} />
           
           {/* Admin panel routes */}
           <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/users" element={<AdminPanel />} />
+          <Route path="/admin/profile" element={<AdminProfilePage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/hosts" element={<AdminPanel />} />
           <Route path="/admin/events" element={<AdminPanel />} />
           <Route path="/admin/merchants" element={<AdminPanel />} />
@@ -53,6 +79,7 @@ const App = () => (
           
           {/* Host panel routes */}
           <Route path="/host" element={<HostPanel />} />
+          <Route path="/host/profile" element={<HostProfilePage />} />
           <Route path="/host/venues" element={<VenuesPage />} />
           <Route path="/host/venues/new" element={<VenueCreate />} />
           <Route path="/host/venues/:venueId" element={<VenueManagementPage />} />

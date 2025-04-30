@@ -37,7 +37,7 @@ interface BookingRequest {
   host_name: string;
   start_date: string;
   end_date: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: "pending" | "accepted" | "declined";
   invitation_date: string;
   fee: number | null;
   venue_name?: string;
@@ -153,6 +153,11 @@ export default function VendorBookingsPage() {
           //   hostName = hostData.contact_name || hostData.company_name || "Event Host";
           // }
 
+          // Ensure status is properly typed
+          const typedStatus: "pending" | "accepted" | "declined" = 
+            item.status === "accepted" ? "accepted" :
+            item.status === "declined" ? "declined" : "pending";
+
           return {
             id: item.id,
             event_id: item.event_id,
@@ -160,7 +165,7 @@ export default function VendorBookingsPage() {
             host_name: hostName,
             start_date: item.events.start_date,
             end_date: item.events.end_date,
-            status: item.status,
+            status: typedStatus,
             invitation_date: item.invitation_date,
             fee: item.fee,
             venue_name: "Venue Name" // Would come from a join with venues table
@@ -197,8 +202,10 @@ export default function VendorBookingsPage() {
 
     try {
       const now = new Date().toISOString();
+      const statusValue: "accepted" | "declined" = responseType === 'accept' ? "accepted" : "declined";
+      
       const updateData: any = {
-        status: responseType,
+        status: statusValue,
         response_date: now,
       };
 
@@ -224,7 +231,7 @@ export default function VendorBookingsPage() {
       setBookingRequests(prev => 
         prev.map(req => 
           req.id === selectedRequest.id 
-            ? { ...req, status: responseType } 
+            ? { ...req, status: statusValue } 
             : req
         )
       );

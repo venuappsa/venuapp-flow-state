@@ -55,6 +55,7 @@ interface Event {
   start_date: string;
   end_date: string;
   status: string;
+  venue_id?: string; // Make venue_id optional
   venue_name?: string;
   vendor_count?: number;
 }
@@ -91,7 +92,8 @@ export default function EventsPage() {
           name, 
           start_date, 
           end_date, 
-          status
+          status,
+          venue_id
         `)
         .eq('host_id', user.id);
 
@@ -229,13 +231,15 @@ export default function EventsPage() {
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1">
-                <Input
-                  placeholder="Search events..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-md"
-                  icon={<Search className="h-4 w-4" />}
-                />
+                <div className="relative max-w-md">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input
+                    placeholder="Search events..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 max-w-md"
+                  />
+                </div>
               </div>
               <div className="flex gap-2">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>

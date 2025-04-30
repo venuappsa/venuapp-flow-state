@@ -13,7 +13,7 @@ interface VendorPanelLayoutProps {
 }
 
 export default function VendorPanelLayout({ children }: VendorPanelLayoutProps) {
-  const { user, isLoading: userLoading } = useUser();
+  const { user, loading: userLoading } = useUser();
   const { data: roles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
   
@@ -25,7 +25,7 @@ export default function VendorPanelLayout({ children }: VendorPanelLayoutProps) 
     
     if (!rolesLoading && user && roles.length > 0) {
       // Check if user has vendor/merchant role
-      const isMerchant = roles.some(role => role.role === 'merchant');
+      const isMerchant = roles.some(role => role === 'merchant');
       if (!isMerchant) {
         navigate('/');
       }

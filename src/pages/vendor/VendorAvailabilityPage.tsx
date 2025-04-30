@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Check, X, Info } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
@@ -352,7 +351,7 @@ export default function VendorAvailabilityPage() {
                   className="rounded-md border"
                   classNames={{
                     day_selected: "bg-blue-500 text-white hover:bg-blue-600 focus:bg-blue-600",
-                    day: (day) => cn(getDayClassName(day)),
+                    day: (day) => getDayClassName(day),
                   }}
                 />
                 <div className="flex space-x-4 mt-4">

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   Calendar,
   InboxIcon,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,6 +26,7 @@ interface SidebarItemProps {
   path: string;
   isActive: boolean;
   isCollapsed: boolean;
+  onClick?: () => void;
 }
 
 const SidebarItem = ({
@@ -33,6 +35,7 @@ const SidebarItem = ({
   path,
   isActive,
   isCollapsed,
+  onClick,
 }: SidebarItemProps) => (
   <Link to={path}>
     <Button
@@ -43,6 +46,7 @@ const SidebarItem = ({
           ? "bg-venu-orange/10 text-venu-orange hover:bg-venu-orange/15"
           : "text-gray-600 hover:text-venu-orange hover:bg-venu-orange/5"
       )}
+      onClick={onClick}
     >
       {icon}
       {!isCollapsed && <span className="ml-2">{label}</span>}
@@ -84,6 +88,11 @@ export default function VendorSidebar() {
       icon: <Calendar size={20} />,
       label: "Availability",
       path: "/vendor/availability",
+    },
+    {
+      icon: <Star size={20} />,
+      label: "Reviews",
+      path: "/vendor/reviews",
     },
     {
       icon: <Radio size={20} />,

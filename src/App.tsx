@@ -57,6 +57,7 @@ import VendorAvailabilityPage from "./pages/vendor/VendorAvailabilityPage";
 import VendorGoLivePage from "./pages/vendor/VendorGoLivePage";
 import VendorPanelPage from "./pages/vendor/VendorPanelPage";
 import VendorMessagesPage from "./pages/vendor/VendorMessagesPage";
+import VendorReviewsPage from "./pages/vendor/VendorReviewsPage"; // Added new import
 import HostVendorMessagesPage from "./pages/VendorMessagesPage";
 
 const queryClient = new QueryClient();
@@ -144,6 +145,7 @@ const App = () => (
           <Route path="/vendor/availability" element={<VendorAvailabilityPage />} />
           <Route path="/vendor/go-live" element={<VendorGoLivePage />} />
           <Route path="/vendor/messages" element={<VendorMessagesPage />} />
+          <Route path="/vendor/reviews" element={<VendorReviewsPage />} /> {/* Added new route */}
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

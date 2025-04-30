@@ -5,22 +5,40 @@ import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VendorProfile } from "@/types/vendor";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, AlertCircle, ChevronRight, MessageSquare, Store } from "lucide-react";
-import VendorMetricsDashboard from "@/components/vendor/VendorMetricsDashboard";
+
+// Import our new components
+import VendorMetricsCards from "@/components/vendor/dashboard/VendorMetricsCards";
+import BookingTrendsChart from "@/components/vendor/dashboard/BookingTrendsChart";
+import NotificationsCard from "@/components/vendor/dashboard/NotificationsCard";
+import BookingHistoryTable from "@/components/vendor/bookings/BookingHistoryTable";
+import { getVendorData } from "@/utils/vendorAnalyticsData";
 
 export default function VendorDashboardPage() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [vendorProfile, setVendorProfile] = useState<VendorProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [vendorDataLoading, setVendorDataLoading] = useState(true);
+  const [vendorData, setVendorData] = useState<any>(null);
   
   useEffect(() => {
     if (user) {
       fetchVendorProfile();
+    }
+  }, [user]);
+  
+  useEffect(() => {
+    if (user) {
+      // Get vendor analytics data
+      setVendorDataLoading(true);
+      const data = getVendorData(user.id);
+      setVendorData(data);
+      setVendorDataLoading(false);
     }
   }, [user]);
   
@@ -131,17 +149,37 @@ export default function VendorDashboardPage() {
               <TabsList>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="metrics">Metrics</TabsTrigger>
+                <TabsTrigger value="bookings">Bookings</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="overview">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                  {/* Quick Actions Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Quick Actions</CardTitle>
-                      <CardDescription>Manage your vendor account</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+              <TabsContent value="overview" className="space-y-6">
+                {/* Metrics Cards */}
+                <VendorMetricsCards 
+                  metrics={vendorData?.metrics || []}
+                  loading={vendorDataLoading} 
+                />
+                
+                {/* Charts and Notifications */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <BookingTrendsChart 
+                    weeklyData={vendorData?.weeklyTrends || []}
+                    monthlyData={vendorData?.monthlyTrends || []}
+                    loading={vendorDataLoading}
+                  />
+                  
+                  <NotificationsCard 
+                    notifications={vendorData?.notifications || []}
+                    loading={vendorDataLoading}
+                  />
+                </div>
+                
+                {/* Quick Actions Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <Button variant="outline" className="w-full justify-start" asChild>
                         <a href="/vendor/profile">
                           <Store className="mr-2 h-4 w-4" />
@@ -155,116 +193,42 @@ export default function VendorDashboardPage() {
                         </a>
                       </Button>
                       <Button variant="outline" className="w-full justify-start" asChild>
+                        <a href="/vendor/availability">
+                          <Store className="mr-2 h-4 w-4" />
+                          Update Availability
+                        </a>
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start" asChild>
                         <a href="/vendor/messages">
                           <MessageSquare className="mr-2 h-4 w-4" />
                           View Messages
                         </a>
                       </Button>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Account Status Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Account Status</CardTitle>
-                      <CardDescription>Your current vendor status</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Profile</span>
-                          <span className="flex items-center text-sm font-medium text-green-600">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Complete
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Services</span>
-                          <span className="flex items-center text-sm font-medium text-green-600">
-                            {vendorProfile?.setup_stage === "services" || 
-                             vendorProfile?.setup_stage === "pricing" || 
-                             vendorProfile?.setup_stage === "live" ? (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Complete
-                              </>
-                            ) : (
-                              <>
-                                <AlertCircle className="h-4 w-4 mr-1 text-yellow-500" />
-                                Incomplete
-                              </>
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Pricing</span>
-                          <span className="flex items-center text-sm font-medium text-green-600">
-                            {vendorProfile?.setup_stage === "pricing" || 
-                             vendorProfile?.setup_stage === "live" ? (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Complete
-                              </>
-                            ) : (
-                              <>
-                                <AlertCircle className="h-4 w-4 mr-1 text-yellow-500" />
-                                Incomplete
-                              </>
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Verification</span>
-                          <span className="flex items-center text-sm font-medium text-green-600">
-                            {vendorProfile?.verification_status === 'verified' ? (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Verified
-                              </>
-                            ) : (
-                              <>
-                                <AlertCircle className="h-4 w-4 mr-1 text-yellow-500" />
-                                {vendorProfile?.verification_status || 'Pending'}
-                              </>
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Subscription Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Subscription</CardTitle>
-                      <CardDescription>Your current plan</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div>
-                          <p className="font-medium">
-                            {vendorProfile?.subscription_status === 'active' 
-                              ? 'Active Subscription' 
-                              : 'No Active Subscription'}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {vendorProfile?.subscription_status === 'active' && vendorProfile?.subscription_renewal
-                              ? `Renews on ${new Date(vendorProfile.subscription_renewal).toLocaleDateString()}`
-                              : 'Upgrade to access all features'}
-                          </p>
-                        </div>
-                        
-                        <Button variant="outline" className="w-full">
-                          Manage Subscription
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
               
               <TabsContent value="metrics">
-                <VendorMetricsDashboard />
+                <div className="space-y-6">
+                  <VendorMetricsCards 
+                    metrics={vendorData?.metrics || []}
+                    loading={vendorDataLoading} 
+                  />
+                  
+                  <BookingTrendsChart 
+                    weeklyData={vendorData?.weeklyTrends || []}
+                    monthlyData={vendorData?.monthlyTrends || []}
+                    loading={vendorDataLoading}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="bookings">
+                <BookingHistoryTable 
+                  bookings={vendorData?.bookings || []}
+                  loading={vendorDataLoading}
+                />
               </TabsContent>
             </Tabs>
           </>

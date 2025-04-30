@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -69,45 +68,44 @@ export default function VendorGoLivePage() {
         }
         
         if (profileData) {
-          const vendorProfile = profileData as VendorProfile;
-          setProfile(vendorProfile);
-          setIsVisible(vendorProfile.status === "live");
+          setProfile(profileData as VendorProfile);
+          setIsVisible(profileData.status === "live");
           
           // Perform checks
           setChecksPassed({
-            profile: !!vendorProfile.business_name && 
-                      !!vendorProfile.description && 
-                      (vendorProfile.description?.length || 0) > 20,
+            profile: !!profileData.business_name && 
+                      !!profileData.description && 
+                      (profileData.description?.length || 0) > 20,
             services: false, // Will update after fetching services
-            pricing: vendorProfile.setup_stage === "golive" || 
-                      vendorProfile.status === "live",
+            pricing: profileData.setup_stage === "golive" || 
+                      profileData.status === "live",
           });
         }
         
-        // Fetch services
-        const { data: servicesData, error: servicesError } = await supabase
-          .from("vendor_services")
-          .select("id")
-          .eq("vendor_id", user.id);
-          
-        if (servicesError) {
-          console.error("Error fetching services:", servicesError);
-          toast({
-            title: "Error loading services",
-            description: "Please try again later",
-            variant: "destructive"
-          });
-          return;
+        // Fetch services count
+        try {
+          // We can't directly use vendor_services yet because types aren't updated
+          // So we'll use a raw query for now
+          const { count, error: countError } = await supabase
+            .from("vendor_services")
+            .select("id", { count: "exact", head: true })
+            .eq("vendor_id", user.id);
+            
+          if (countError) {
+            console.error("Error fetching services count:", countError);
+          } else {
+            const servicesCount = count || 0;
+            setServiceCount(servicesCount);
+            
+            // Update services check
+            setChecksPassed(checks => ({
+              ...checks,
+              services: servicesCount > 0
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching services count:", err);
         }
-        
-        const count = servicesData ? servicesData.length : 0;
-        setServiceCount(count);
-        
-        // Update services check
-        setChecksPassed(checks => ({
-          ...checks,
-          services: count > 0
-        }));
         
       } catch (err) {
         console.error("Error fetching vendor data:", err);
@@ -493,7 +491,7 @@ export default function VendorGoLivePage() {
                   {profile.logo_url ? (
                     <img 
                       src={profile.logo_url} 
-                      alt={profile.business_name} 
+                      alt={profile.business_name || 'Vendor'} 
                       className="h-full w-full object-contain rounded"
                     />
                   ) : (
@@ -503,9 +501,9 @@ export default function VendorGoLivePage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium">{profile.business_name}</h3>
+                  <h3 className="text-lg font-medium">{profile.business_name || profile.company_name}</h3>
                   <p className="text-sm text-gray-500 capitalize">
-                    {profile.business_category?.replace("_", " ")}
+                    {profile.business_category?.replace("_", " ") || 'Service Provider'}
                   </p>
                   <div className="mt-2">
                     <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">

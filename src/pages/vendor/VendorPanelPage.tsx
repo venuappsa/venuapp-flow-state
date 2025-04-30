@@ -18,7 +18,7 @@ export default function VendorPanelPage() {
         try {
           const { data, error } = await supabase
             .from("vendor_profiles")
-            .select("setup_stage")
+            .select("*")
             .eq("user_id", user.id)
             .single();
             

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -123,9 +122,7 @@ export default function VendorServicesPage() {
         
         // Check if we already have services for this vendor
         const { data, error } = await supabase
-          .from("vendor_services")
-          .select("*")
-          .eq("vendor_id", user.id);
+          .rpc('get_vendor_services', { vendor_user_id: user.id });
           
         if (error) {
           console.error("Error fetching services:", error);
@@ -166,7 +163,7 @@ export default function VendorServicesPage() {
     };
 
     fetchVendorServices();
-  }, [user, form, toast]);
+  }, [user, toast]);
 
   // Add a new service field
   const handleAddService = () => {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -32,21 +31,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
+  AlertCircle,
   ChevronLeft,
   ChevronRight,
-  CreditCard,
-  Calendar,
-  Clock,
+  DollarSign,
+  Brush,
+  Info,
 } from "lucide-react";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
 import { VendorProfile } from "@/types/vendor";
 
 // Form schema for pricing settings
-const pricingSchema = z.object({
+const pricingFormSchema = z.object({
   pricingModel: z.string(),
   depositRequired: z.boolean().default(false),
   depositPercentage: z.coerce.number().min(0).max(100).default(25),
@@ -64,10 +66,12 @@ export default function VendorPricingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [vendorProfile, setVendorProfile] = useState<VendorProfile | null>(null);
+  const [depositRequired, setDepositRequired] = useState(false);
+  const [discount, setDiscount] = useState(false);
 
   // Initialize form with react-hook-form
-  const form = useForm<z.infer<typeof pricingSchema>>({
-    resolver: zodResolver(pricingSchema),
+  const form = useForm<z.infer<typeof pricingFormSchema>>({
+    resolver: zodResolver(pricingFormSchema),
     defaultValues: {
       pricingModel: "fixed",
       depositRequired: false,
@@ -82,7 +86,7 @@ export default function VendorPricingPage() {
   });
 
   useEffect(() => {
-    // Fetch vendor profile data when component mounts
+    // Fetch vendor profile when component mounts
     const fetchVendorProfile = async () => {
       if (!user) return;
 
@@ -95,39 +99,43 @@ export default function VendorPricingPage() {
           .single();
 
         if (error) {
-          console.error("Error fetching vendor profile:", error);
+          console.error("Error fetching profile:", error);
           toast({
             title: "Error loading profile",
-            description: "Please try again later",
+            description: "Please try again",
             variant: "destructive"
           });
           return;
         }
 
         if (data) {
-          const profile = data as VendorProfile;
-          setVendorProfile(profile);
+          const profileData = data as VendorProfile;
+          setVendorProfile(profileData);
           
-          // Populate form with existing data if available
-          if (profile.pricing_settings) {
+          // If pricing settings exist, populate the form
+          if (profileData.pricing_settings) {
+            const pricing = profileData.pricing_settings;
+            setDepositRequired(pricing.depositRequired);
+            setDiscount(pricing.discount);
+            
             form.reset({
-              pricingModel: profile.pricing_settings.pricingModel,
-              depositRequired: profile.pricing_settings.depositRequired,
-              depositPercentage: profile.pricing_settings.depositPercentage,
-              negotiable: profile.pricing_settings.negotiable,
-              discount: profile.pricing_settings.discount,
-              discountType: profile.pricing_settings.discountType,
-              discountValue: profile.pricing_settings.discountValue,
-              availabilityMode: profile.pricing_settings.availabilityMode,
-              leadTime: profile.pricing_settings.leadTime,
+              pricingModel: pricing.pricingModel || "fixed",
+              depositRequired: pricing.depositRequired || false,
+              depositPercentage: pricing.depositPercentage || 25,
+              negotiable: pricing.negotiable || false,
+              discount: pricing.discount || false,
+              discountType: pricing.discountType || "percentage",
+              discountValue: pricing.discountValue || 0,
+              availabilityMode: pricing.availabilityMode || "always",
+              leadTime: pricing.leadTime || "1_week",
             });
           }
         }
       } catch (err) {
-        console.error("Error in fetch operation:", err);
+        console.error("Error fetching profile:", err);
         toast({
           title: "Error loading profile",
-          description: "Please try again later",
+          description: "Please try again",
           variant: "destructive"
         });
       } finally {
@@ -136,29 +144,39 @@ export default function VendorPricingPage() {
     };
 
     fetchVendorProfile();
-  }, [user, form, toast]);
+  }, [user, toast, form]);
 
   // Form submission handler
-  const onSubmit = async (values: z.infer<typeof pricingSchema>) => {
+  const onSubmit = async (values: z.infer<typeof pricingFormSchema>) => {
     if (!user) return;
     setLoading(true);
 
     try {
-      // Update vendor profile in the database
+      // Update vendor profile with pricing settings
       const { error } = await supabase
         .from("vendor_profiles")
         .update({
-          pricing_settings: values,
-          setup_stage: "golive", // Move to the next onboarding step
-          setup_progress: 75, // Update progress percentage
+          pricing_settings: {
+            pricingModel: values.pricingModel,
+            depositRequired: values.depositRequired,
+            depositPercentage: values.depositPercentage,
+            negotiable: values.negotiable,
+            discount: values.discount,
+            discountType: values.discountType,
+            discountValue: values.discountValue,
+            availabilityMode: values.availabilityMode,
+            leadTime: values.leadTime,
+          },
+          setup_stage: "golive",
+          setup_progress: 75,
           last_active: new Date().toISOString(),
         })
         .eq("user_id", user.id);
 
       if (error) {
-        console.error("Error updating pricing:", error);
+        console.error("Error updating pricing settings:", error);
         toast({
-          title: "Error updating pricing",
+          title: "Error saving pricing settings",
           description: "Please try again",
           variant: "destructive"
         });
@@ -166,18 +184,18 @@ export default function VendorPricingPage() {
       }
 
       toast({
-        title: "Pricing updated successfully",
-        description: "Your pricing and availability settings have been saved",
+        title: "Pricing settings saved",
+        description: "Your pricing and availability preferences have been updated",
       });
 
       // Navigate to the next step after a short delay
       setTimeout(() => {
         navigate("/vendor/go-live");
       }, 1000);
-    } catch (error) {
-      console.error("Error updating pricing:", error);
+    } catch (err) {
+      console.error("Error updating pricing settings:", err);
       toast({
-        title: "Error updating pricing",
+        title: "Error saving pricing settings",
         description: "Please try again",
         variant: "destructive"
       });

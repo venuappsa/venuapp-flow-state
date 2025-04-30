@@ -26,20 +26,7 @@ import {
   Radio,
 } from "lucide-react";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
-
-// Interface for vendor profile
-interface VendorProfile {
-  business_name: string;
-  business_category: string;
-  logo_url: string | null;
-  description: string;
-  contact_name: string;
-  contact_email: string;
-  contact_phone: string;
-  setup_stage: string;
-  setup_progress: number;
-  status: "draft" | "live" | "suspended";
-}
+import { VendorProfile } from "@/types/vendor";
 
 export default function VendorGoLivePage() {
   const { user } = useUser();
@@ -71,20 +58,29 @@ export default function VendorGoLivePage() {
           .eq("user_id", user.id)
           .single();
           
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          toast({
+            title: "Error loading profile",
+            description: "Please try again later",
+            variant: "destructive"
+          });
+          return;
+        }
         
         if (profileData) {
-          setProfile(profileData as VendorProfile);
-          setIsVisible(profileData.status === "live");
+          const vendorProfile = profileData as VendorProfile;
+          setProfile(vendorProfile);
+          setIsVisible(vendorProfile.status === "live");
           
           // Perform checks
           setChecksPassed({
-            profile: !!profileData.business_name && 
-                      !!profileData.description && 
-                      profileData.description.length > 20,
+            profile: !!vendorProfile.business_name && 
+                      !!vendorProfile.description && 
+                      (vendorProfile.description?.length || 0) > 20,
             services: false, // Will update after fetching services
-            pricing: profileData.setup_stage === "golive" || 
-                      profileData.status === "live",
+            pricing: vendorProfile.setup_stage === "golive" || 
+                      vendorProfile.status === "live",
           });
         }
         
@@ -94,7 +90,15 @@ export default function VendorGoLivePage() {
           .select("id")
           .eq("vendor_id", user.id);
           
-        if (servicesError) throw servicesError;
+        if (servicesError) {
+          console.error("Error fetching services:", servicesError);
+          toast({
+            title: "Error loading services",
+            description: "Please try again later",
+            variant: "destructive"
+          });
+          return;
+        }
         
         const count = servicesData ? servicesData.length : 0;
         setServiceCount(count);
@@ -109,8 +113,8 @@ export default function VendorGoLivePage() {
         console.error("Error fetching vendor data:", err);
         toast({
           title: "Error loading profile",
-          description: "Please try again or contact support",
-          variant: "destructive",
+          description: "Please try again later",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
@@ -141,7 +145,15 @@ export default function VendorGoLivePage() {
         })
         .eq("user_id", user.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error toggling visibility:", error);
+        toast({
+          title: "Error updating status",
+          description: "Please try again",
+          variant: "destructive"
+        });
+        return;
+      }
       
       setIsVisible(!isVisible);
       
@@ -157,7 +169,7 @@ export default function VendorGoLivePage() {
       toast({
         title: "Error updating status",
         description: "Please try again",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -182,7 +194,15 @@ export default function VendorGoLivePage() {
         })
         .eq("user_id", user.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error going live:", error);
+        toast({
+          title: "Error activating profile",
+          description: "Please try again",
+          variant: "destructive"
+        });
+        return;
+      }
       
       setIsVisible(true);
       
@@ -200,8 +220,8 @@ export default function VendorGoLivePage() {
       console.error("Error going live:", err);
       toast({
         title: "Error activating profile",
-        description: "Please try again or contact support",
-        variant: "destructive",
+        description: "Please try again",
+        variant: "destructive"
       });
     } finally {
       setGoingLive(false);

@@ -43,6 +43,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
+import { VendorService } from "@/types/vendor";
 
 // Service categories for dropdown
 const SERVICE_CATEGORIES = [
@@ -87,7 +88,7 @@ export default function VendorServicesPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [vendorServices, setVendorServices] = useState<any[]>([]);
+  const [vendorServices, setVendorServices] = useState<VendorService[]>([]);
 
   // Initialize react-hook-form with useFieldArray for dynamic form fields
   const form = useForm<z.infer<typeof servicesFormSchema>>({
@@ -120,29 +121,33 @@ export default function VendorServicesPage() {
       try {
         setLoading(true);
         
-        // In a real app, fetch services from the database
-        // Mock data retrieval with a timeout
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
         // Check if we already have services for this vendor
         const { data, error } = await supabase
           .from("vendor_services")
           .select("*")
           .eq("vendor_id", user.id);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching services:", error);
+          toast({
+            title: "Error loading services",
+            description: "Please try again",
+            variant: "destructive"
+          });
+          return;
+        }
         
         if (data && data.length > 0) {
-          setVendorServices(data);
+          setVendorServices(data as VendorService[]);
           
           // Populate form with existing services
           form.reset({
-            services: data.map((service: any) => ({
+            services: data.map((service: VendorService) => ({
               id: service.id,
               title: service.title,
-              description: service.description,
-              category: service.category,
-              duration: service.duration,
+              description: service.description || "",
+              category: service.category || "",
+              duration: service.duration || "",
               price: service.price,
               priceUnit: service.price_unit || "fixed",
             })),
@@ -153,7 +158,7 @@ export default function VendorServicesPage() {
         toast({
           title: "Error loading services",
           description: "Please refresh the page to try again",
-          variant: "destructive",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
@@ -182,15 +187,11 @@ export default function VendorServicesPage() {
     setLoading(true);
 
     try {
-      // In a real implementation, you would save to Supabase
-      // For this mock version, we'll simulate a successful save
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       // Update services table
       for (const service of values.services) {
         if (service.id) {
           // Update existing service
-          await supabase
+          const { error } = await supabase
             .from("vendor_services")
             .update({
               title: service.title,
@@ -203,9 +204,19 @@ export default function VendorServicesPage() {
             })
             .eq("id", service.id)
             .eq("vendor_id", user.id);
+            
+          if (error) {
+            console.error("Error updating service:", error);
+            toast({
+              title: "Error saving services",
+              description: "Please try again",
+              variant: "destructive"
+            });
+            return;
+          }
         } else {
           // Insert new service
-          await supabase
+          const { error } = await supabase
             .from("vendor_services")
             .insert({
               vendor_id: user.id,
@@ -218,11 +229,21 @@ export default function VendorServicesPage() {
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             });
+            
+          if (error) {
+            console.error("Error adding new service:", error);
+            toast({
+              title: "Error saving services",
+              description: "Please try again",
+              variant: "destructive"
+            });
+            return;
+          }
         }
       }
 
       // Update vendor profile to track onboarding progress
-      await supabase
+      const { error } = await supabase
         .from("vendor_profiles")
         .update({
           setup_stage: "pricing",
@@ -230,6 +251,15 @@ export default function VendorServicesPage() {
           last_active: new Date().toISOString(),
         })
         .eq("user_id", user.id);
+        
+      if (error) {
+        console.error("Error updating profile progress:", error);
+        toast({
+          title: "Services saved, but couldn't update progress",
+          description: "You may continue to the next step",
+        });
+        return;
+      }
 
       toast({
         title: "Services saved",
@@ -247,7 +277,7 @@ export default function VendorServicesPage() {
       toast({
         title: "Error saving services",
         description: "Please try again",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);

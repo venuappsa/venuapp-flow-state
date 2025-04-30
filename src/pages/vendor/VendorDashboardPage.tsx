@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ChevronRight, Clock } from "lucide-react";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
+import { VendorProfile } from "@/types/vendor";
+import { useToast } from "@/components/ui/use-toast";
 
 interface OnboardingStep {
   id: string;
@@ -17,15 +19,9 @@ interface OnboardingStep {
   icon: React.ReactNode;
 }
 
-interface VendorProfile {
-  setup_stage: string;
-  setup_progress: number;
-  business_name: string;
-  status: string;
-}
-
 export default function VendorDashboardPage() {
   const { user } = useUser();
+  const { toast } = useToast();
   const [vendorProfile, setVendorProfile] = useState<VendorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -80,12 +76,17 @@ export default function VendorDashboardPage() {
         setLoading(true);
         const { data, error } = await supabase
           .from("vendor_profiles")
-          .select("business_name, setup_stage, setup_progress, status")
+          .select("*")
           .eq("user_id", user.id)
           .single();
           
         if (error) {
           console.error("Error fetching vendor profile:", error);
+          toast({
+            title: "Error loading profile",
+            description: "Please try again later",
+            variant: "destructive"
+          });
           return;
         }
         
@@ -94,13 +95,18 @@ export default function VendorDashboardPage() {
         }
       } catch (err) {
         console.error("Error in fetch operation:", err);
+        toast({
+          title: "Error loading profile",
+          description: "Please try again later",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
     };
     
     fetchVendorProfile();
-  }, [user]);
+  }, [user, toast]);
   
   // Determine the next step based on current progress
   const getNextStep = (): OnboardingStep | undefined => {

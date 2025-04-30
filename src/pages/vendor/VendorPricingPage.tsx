@@ -31,39 +31,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import {
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
   Calendar,
-  Info,
-  DollarSign,
   Clock,
-  Brush,
 } from "lucide-react";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
+import { VendorProfile } from "@/types/vendor";
 
-// Pricing schema
-const pricingFormSchema = z.object({
-  pricingModel: z.enum(["fixed", "hourly", "package", "custom"], {
-    required_error: "Please select a pricing model",
-  }),
+// Form schema for pricing settings
+const pricingSchema = z.object({
+  pricingModel: z.string(),
   depositRequired: z.boolean().default(false),
-  depositPercentage: z.number().min(0).max(100).optional(),
+  depositPercentage: z.coerce.number().min(0).max(100).default(25),
   negotiable: z.boolean().default(false),
   discount: z.boolean().default(false),
-  discountType: z.enum(["percentage", "fixed_amount", "none"]).optional(),
-  discountValue: z.number().min(0).optional(),
-  availabilityMode: z.enum(["always", "specific_days", "by_request"], {
-    required_error: "Please select availability mode",
-  }),
-  leadTime: z.enum(["same_day", "1_day", "2_3_days", "1_week", "2_weeks", "custom"], {
-    required_error: "Please select lead time",
-  }),
+  discountType: z.string().default("none"),
+  discountValue: z.coerce.number().min(0).default(0),
+  availabilityMode: z.string(),
+  leadTime: z.string(),
 });
 
 export default function VendorPricingPage() {
@@ -71,92 +63,111 @@ export default function VendorPricingPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [vendorPricing, setVendorPricing] = useState<any>(null);
+  const [vendorProfile, setVendorProfile] = useState<VendorProfile | null>(null);
 
-  // Initialize form
-  const form = useForm<z.infer<typeof pricingFormSchema>>({
-    resolver: zodResolver(pricingFormSchema),
+  // Initialize form with react-hook-form
+  const form = useForm<z.infer<typeof pricingSchema>>({
+    resolver: zodResolver(pricingSchema),
     defaultValues: {
       pricingModel: "fixed",
       depositRequired: false,
+      depositPercentage: 25,
       negotiable: false,
       discount: false,
+      discountType: "none",
+      discountValue: 0,
       availabilityMode: "always",
       leadTime: "1_week",
     },
   });
 
-  // Watch form values for conditional rendering
-  const depositRequired = form.watch("depositRequired");
-  const discount = form.watch("discount");
-
   useEffect(() => {
-    // Fetch vendor pricing settings when component mounts
-    const fetchVendorPricing = async () => {
+    // Fetch vendor profile data when component mounts
+    const fetchVendorProfile = async () => {
       if (!user) return;
 
       try {
         setLoading(true);
-        
-        // In a real app, fetch pricing from the database
-        // Mock data retrieval with a timeout
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Check if we already have pricing settings for this vendor
         const { data, error } = await supabase
           .from("vendor_profiles")
-          .select("pricing_settings")
+          .select("*")
           .eq("user_id", user.id)
           .single();
-          
-        if (error) throw error;
-        
-        if (data && data.pricing_settings) {
-          setVendorPricing(data.pricing_settings);
-          
-          // Populate form with existing settings
-          form.reset({
-            pricingModel: data.pricing_settings.pricingModel || "fixed",
-            depositRequired: data.pricing_settings.depositRequired || false,
-            depositPercentage: data.pricing_settings.depositPercentage,
-            negotiable: data.pricing_settings.negotiable || false,
-            discount: data.pricing_settings.discount || false,
-            discountType: data.pricing_settings.discountType,
-            discountValue: data.pricing_settings.discountValue,
-            availabilityMode: data.pricing_settings.availabilityMode || "always",
-            leadTime: data.pricing_settings.leadTime || "1_week",
+
+        if (error) {
+          console.error("Error fetching vendor profile:", error);
+          toast({
+            title: "Error loading profile",
+            description: "Please try again later",
+            variant: "destructive"
           });
+          return;
+        }
+
+        if (data) {
+          const profile = data as VendorProfile;
+          setVendorProfile(profile);
+          
+          // Populate form with existing data if available
+          if (profile.pricing_settings) {
+            form.reset({
+              pricingModel: profile.pricing_settings.pricingModel,
+              depositRequired: profile.pricing_settings.depositRequired,
+              depositPercentage: profile.pricing_settings.depositPercentage,
+              negotiable: profile.pricing_settings.negotiable,
+              discount: profile.pricing_settings.discount,
+              discountType: profile.pricing_settings.discountType,
+              discountValue: profile.pricing_settings.discountValue,
+              availabilityMode: profile.pricing_settings.availabilityMode,
+              leadTime: profile.pricing_settings.leadTime,
+            });
+          }
         }
       } catch (err) {
-        console.error("Error fetching pricing settings:", err);
+        console.error("Error in fetch operation:", err);
+        toast({
+          title: "Error loading profile",
+          description: "Please try again later",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchVendorPricing();
-  }, [user, form]);
+    fetchVendorProfile();
+  }, [user, form, toast]);
 
   // Form submission handler
-  const onSubmit = async (values: z.infer<typeof pricingFormSchema>) => {
+  const onSubmit = async (values: z.infer<typeof pricingSchema>) => {
     if (!user) return;
     setLoading(true);
 
     try {
-      // In a real implementation, save to Supabase
-      await supabase
+      // Update vendor profile in the database
+      const { error } = await supabase
         .from("vendor_profiles")
         .update({
           pricing_settings: values,
-          setup_stage: "golive",
-          setup_progress: 75,
+          setup_stage: "golive", // Move to the next onboarding step
+          setup_progress: 75, // Update progress percentage
           last_active: new Date().toISOString(),
         })
         .eq("user_id", user.id);
 
+      if (error) {
+        console.error("Error updating pricing:", error);
+        toast({
+          title: "Error updating pricing",
+          description: "Please try again",
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
-        title: "Pricing settings saved",
-        description: "Your pricing and availability preferences have been updated",
+        title: "Pricing updated successfully",
+        description: "Your pricing and availability settings have been saved",
       });
 
       // Navigate to the next step after a short delay
@@ -164,11 +175,11 @@ export default function VendorPricingPage() {
         navigate("/vendor/go-live");
       }, 1000);
     } catch (error) {
-      console.error("Error saving pricing settings:", error);
+      console.error("Error updating pricing:", error);
       toast({
-        title: "Error saving settings",
+        title: "Error updating pricing",
         description: "Please try again",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);

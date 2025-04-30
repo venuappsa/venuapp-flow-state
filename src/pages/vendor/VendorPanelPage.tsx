@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function VendorPanelPage() {
   const { user } = useUser();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   useEffect(() => {
     // If user is logged in, check their onboarding stage and redirect appropriately
@@ -22,12 +24,18 @@ export default function VendorPanelPage() {
             
           if (error) {
             console.error("Error checking vendor profile:", error);
+            toast({
+              title: "Error loading profile",
+              description: "Please try again later",
+              variant: "destructive"
+            });
             return;
           }
           
           // Redirect based on setup stage
           if (data) {
-            switch(data.setup_stage) {
+            const setupStage = data.setup_stage;
+            switch(setupStage) {
               case "welcome":
                 navigate("/vendor/welcome");
                 break;
@@ -38,12 +46,17 @@ export default function VendorPanelPage() {
           }
         } catch (err) {
           console.error("Error checking onboarding stage:", err);
+          toast({
+            title: "Error loading profile",
+            description: "Please try again later",
+            variant: "destructive"
+          });
         }
       }
     };
     
     checkOnboardingStage();
-  }, [user, navigate]);
+  }, [user, navigate, toast]);
   
   return (
     <VendorPanelLayout>

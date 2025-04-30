@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, Upload, UserRound, CheckCircle, ChevronRight } from "lucide-react";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
+import { VendorProfile } from "@/types/vendor";
 
 // Business categories for dropdown
 const BUSINESS_CATEGORIES = [
@@ -74,7 +75,7 @@ export default function VendorProfilePage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [vendorProfile, setVendorProfile] = useState<any>(null);
+  const [vendorProfile, setVendorProfile] = useState<VendorProfile | null>(null);
 
   // Initialize form with react-hook-form
   const form = useForm<z.infer<typeof profileFormSchema>>({
@@ -110,38 +111,49 @@ export default function VendorProfilePage() {
 
         if (error) {
           console.error("Error fetching vendor profile:", error);
+          toast({
+            title: "Error loading profile",
+            description: "Please try again later",
+            variant: "destructive"
+          });
           return;
         }
 
         if (data) {
-          setVendorProfile(data);
-          setLogoUrl(data.logo_url || null);
+          const profile = data as VendorProfile;
+          setVendorProfile(profile);
+          setLogoUrl(profile.logo_url || null);
           
           // Populate form with existing data
           form.reset({
-            businessName: data.business_name || "",
-            businessCategory: data.business_category || "",
-            description: data.description || "",
-            contactName: data.contact_name || "",
-            contactEmail: data.contact_email || "",
-            contactPhone: data.contact_phone || "",
-            address: data.address || "",
-            city: data.city || "",
-            state: data.state || "",
-            zipcode: data.zipcode || "",
-            country: data.country || "",
-            website: data.website || "",
+            businessName: profile.business_name || "",
+            businessCategory: profile.business_category || "",
+            description: profile.description || "",
+            contactName: profile.contact_name || "",
+            contactEmail: profile.contact_email || "",
+            contactPhone: profile.contact_phone || "",
+            address: profile.address || "",
+            city: profile.city || "",
+            state: profile.state || "",
+            zipcode: profile.zipcode || "",
+            country: profile.country || "",
+            website: profile.website || "",
           });
         }
       } catch (err) {
         console.error("Error in fetch operation:", err);
+        toast({
+          title: "Error loading profile",
+          description: "Please try again later",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchVendorProfile();
-  }, [user, form]);
+  }, [user, form, toast]);
 
   // Handle logo upload
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,7 +190,7 @@ export default function VendorProfilePage() {
       toast({
         title: "Logo upload failed",
         description: "Please try again",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setUploading(false);
@@ -214,7 +226,15 @@ export default function VendorProfilePage() {
         })
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating profile:", error);
+        toast({
+          title: "Error updating profile",
+          description: "Please try again",
+          variant: "destructive"
+        });
+        return;
+      }
 
       toast({
         title: "Profile updated successfully",
@@ -230,7 +250,7 @@ export default function VendorProfilePage() {
       toast({
         title: "Error updating profile",
         description: "Please try again",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);

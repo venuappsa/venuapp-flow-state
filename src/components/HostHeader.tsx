@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, Menu, Settings, User, Plus } from "lucide-react";
+import { Bell, LogOut, Menu, Settings, User, Plus, LayoutDashboard, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -85,7 +85,8 @@ export default function HostHeader() {
 
         {/* Desktop navigation - hidden on mobile */}
         <div className="hidden md:flex items-center gap-6 ml-6">
-          <Link to="/host" className="text-sm font-medium hover:text-venu-orange transition-colors">
+          <Link to="/host/dashboard" className="text-sm font-medium hover:text-venu-orange transition-colors flex items-center gap-1">
+            <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Link>
           <Link to="/host/venues" className="text-sm font-medium hover:text-venu-orange transition-colors">
@@ -96,6 +97,10 @@ export default function HostHeader() {
           </Link>
           <Link to="/host/merchants" className="text-sm font-medium hover:text-venu-orange transition-colors">
             Merchants
+          </Link>
+          <Link to="/host/invitations" className="text-sm font-medium hover:text-venu-orange transition-colors flex items-center gap-1">
+            <Send className="h-4 w-4" />
+            Invitations
           </Link>
         </div>
 

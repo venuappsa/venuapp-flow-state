@@ -38,6 +38,10 @@ import AdminProfilePage from "./pages/AdminProfilePage";
 import HostProfilePage from "./pages/HostProfilePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 
+// Dashboard and Invitation pages
+import HostDashboardPage from "./pages/HostDashboardPage";
+import InvitationsPage from "./pages/InvitationsPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -79,6 +83,7 @@ const App = () => (
           
           {/* Host panel routes */}
           <Route path="/host" element={<HostPanel />} />
+          <Route path="/host/dashboard" element={<HostDashboardPage />} />
           <Route path="/host/profile" element={<HostProfilePage />} />
           <Route path="/host/venues" element={<VenuesPage />} />
           <Route path="/host/venues/new" element={<VenueCreate />} />
@@ -89,6 +94,7 @@ const App = () => (
           <Route path="/host/events/:eventId" element={<EventManagementPage />} />
           <Route path="/host/merchants" element={<MerchantsPage />} />
           <Route path="/host/vendors" element={<VendorsPage />} />
+          <Route path="/host/invitations" element={<InvitationsPage />} />
           <Route path="/host/finance" element={<FinancePage />} />
           <Route path="/host/guests" element={<GuestPage />} />
           <Route path="/host/analytics" element={<AnalyticsPage />} />

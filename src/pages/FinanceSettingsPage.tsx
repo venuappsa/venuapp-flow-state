@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
-import { Bank, Save } from 'lucide-react';
+import { Save, CreditCard } from 'lucide-react';
 import { useUser } from '@/hooks/useUser';
 
 interface PaymentSettings {

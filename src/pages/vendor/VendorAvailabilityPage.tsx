@@ -226,6 +226,7 @@ export default function VendorAvailabilityPage() {
     }
   };
 
+  // Modify this function to return a string directly rather than a function
   const getDayClassName = (day: Date) => {
     const existingDay = availabilityDays.find((d) => 
       isSameDay(new Date(d.date), day)
@@ -351,7 +352,7 @@ export default function VendorAvailabilityPage() {
                   className="rounded-md border"
                   classNames={{
                     day_selected: "bg-blue-500 text-white hover:bg-blue-600 focus:bg-blue-600",
-                    day: (day) => getDayClassName(day),
+                    day: ({ date, ...props }) => cn(getDayClassName(date)),
                   }}
                 />
                 <div className="flex space-x-4 mt-4">

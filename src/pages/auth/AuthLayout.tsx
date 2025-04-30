@@ -1,25 +1,15 @@
 
-import React from "react";
-import { Link, Outlet } from "react-router-dom";
+import React, { ReactNode } from "react";
 
-export default function AuthLayout() {
+interface AuthLayoutProps {
+  children: ReactNode;
+}
+
+export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="flex flex-col items-center mb-6">
-        <Link to="/">
-          <img
-            src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
-            alt="Venuapp Logo"
-            className="h-16 w-16 object-contain"
-          />
-        </Link>
-        <h1 className="text-2xl font-bold mt-2 text-venu-orange">Venuapp</h1>
-      </div>
-
-      <Outlet />
-
-      <div className="mt-8 text-center text-sm text-gray-500">
-        <p>© {new Date().getFullYear()} Venuapp. All rights reserved.</p>
+    <div className="min-h-screen flex justify-center items-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-6 rounded-lg shadow-md">
+        {children}
       </div>
     </div>
   );

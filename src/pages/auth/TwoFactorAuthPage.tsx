@@ -89,7 +89,8 @@ export default function TwoFactorAuthPage() {
                     {slots.map((slot, index) => (
                       <InputOTPSlot 
                         key={index} 
-                        {...slot} 
+                        {...slot}
+                        index={index}
                         className="w-12 h-14 text-xl border-venu-orange/30 focus:border-venu-orange"
                       />
                     ))}

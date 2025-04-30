@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,27 +37,32 @@ export default function VendorGoLivePage() {
         })
         .eq("user_id", user.id);
 
-    if (error) {
-      throw error;
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Congratulations!",
+        description: "Your vendor profile is now live and visible to hosts."
+      });
+
+      // Redirect to dashboard
+      navigate("/vendor/dashboard");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: error.message,
+      });
+    } finally {
+      setSubmitting(false);
     }
+  };
 
-    toast({
-      title: "Congratulations!",
-      description: "Your vendor profile is now live and visible to hosts."
-    });
-
-    // Redirect to dashboard
-    navigate("/vendor/dashboard");
-  } catch (error: any) {
-    toast({
-      variant: "destructive",
-      title: "Uh oh! Something went wrong.",
-      description: error.message,
-    });
-  } finally {
-    setSubmitting(false);
-  }
-};
+  // Fix for the CheckedState issue
+  const handleCheckedChange = (checked: boolean | "indeterminate") => {
+    setTermsChecked(checked === true);
+  };
 
   return (
     <VendorPanelLayout>
@@ -77,7 +83,7 @@ export default function VendorGoLivePage() {
               <Checkbox
                 id="terms"
                 checked={termsChecked}
-                onCheckedChange={setTermsChecked}
+                onCheckedChange={handleCheckedChange}
                 disabled={submitting}
               />
               <span>I agree to the terms and conditions</span>

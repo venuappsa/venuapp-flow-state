@@ -81,19 +81,49 @@ export default function VendorServicesPage() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from("vendor_services")
-        .select("*")
-        .eq("vendor_id", user.id);
+      // Since we don't have a vendor_services table yet, we'll use mock data
+      const mockServices: VendorService[] = [
+        {
+          id: "1",
+          vendor_id: user.id,
+          title: "Full Event Catering",
+          description: "Complete food service for your event including appetizers, main course, and desserts",
+          category: "Food",
+          duration: "Full day",
+          price: 2500,
+          price_unit: "per_event",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: "2",
+          vendor_id: user.id,
+          title: "Appetizers Only",
+          description: "Selection of premium appetizers for your guests",
+          category: "Food",
+          duration: "3 hours",
+          price: 1200,
+          price_unit: "per_event",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
 
-      if (error) {
-        throw error;
-      }
-
-      // Initialize form with existing services
-      if (data && data.length > 0) {
-        form.reset({ services: data as any });
-        setServices(data as VendorService[]);
+      // Check if there are any stored services in localStorage
+      const storedServices = localStorage.getItem("vendorServices");
+      if (storedServices) {
+        try {
+          const parsedServices = JSON.parse(storedServices);
+          setServices(parsedServices);
+          form.reset({ services: parsedServices });
+        } catch (error) {
+          console.error("Error parsing stored services", error);
+          setServices(mockServices);
+          form.reset({ services: mockServices });
+        }
+      } else {
+        setServices(mockServices);
+        form.reset({ services: mockServices });
       }
     } catch (error) {
       console.error("Error fetching services:", error);
@@ -131,31 +161,26 @@ export default function VendorServicesPage() {
     try {
       setSaving(true);
 
-      // Delete existing services
-      const { error: deleteError } = await supabase
-        .from("vendor_services")
-        .delete()
-        .eq("vendor_id", user.id);
-
-      if (deleteError) {
-        throw deleteError;
-      }
-
-      // Insert new services
-      const servicesToInsert = values.services.map((service) => ({
-        ...service,
+      // Since we don't have a vendor_services table yet, we'll store data in localStorage
+      const servicesToSave = values.services.map((service, index) => ({
+        id: services[index]?.id || `temp-${Date.now()}-${index}`,
         vendor_id: user.id,
+        ...service,
+        created_at: services[index]?.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }));
 
-      const { error: insertError } = await supabase
-        .from("vendor_services")
-        .insert(servicesToInsert);
+      // Save to localStorage as a temporary solution
+      localStorage.setItem("vendorServices", JSON.stringify(servicesToSave));
 
-      if (insertError) {
-        throw insertError;
-      }
-
-      await updateSetupStage();
+      // Update vendor profile setup progress
+      await supabase
+        .from("vendor_profiles")
+        .update({
+          setup_progress: 75,
+          setup_stage: "services"
+        })
+        .eq("user_id", user.id);
 
       toast({
         title: "Services saved",
@@ -172,26 +197,6 @@ export default function VendorServicesPage() {
       });
     } finally {
       setSaving(false);
-    }
-  };
-
-  const updateSetupStage = async () => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from("vendor_profiles")
-        .update({
-          setup_progress: 75,
-          setup_stage: "services"
-        })
-        .eq("user_id", user.id);
-
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      console.error("Error updating setup stage:", error);
     }
   };
 

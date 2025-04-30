@@ -67,7 +67,7 @@ export default function VendorSignupPage() {
         const { error } = await supabase
           .from("vendor_profiles")
           .update({
-            company_name: formData.businessName,
+            business_name: formData.businessName, // Changed from company_name to business_name
             contact_name: formData.contactName,
             contact_email: formData.email,
             contact_phone: formData.phone
@@ -81,7 +81,7 @@ export default function VendorSignupPage() {
           .from("vendor_profiles")
           .insert({
             user_id: user.id,
-            company_name: formData.businessName,
+            business_name: formData.businessName, // Changed from company_name to business_name
             contact_name: formData.contactName,
             contact_email: formData.email,
             contact_phone: formData.phone,

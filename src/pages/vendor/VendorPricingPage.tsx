@@ -38,16 +38,20 @@ export default function VendorPricingPage() {
     // Load pricing settings from localStorage for demonstration
     const storedSettings = localStorage.getItem("pricingSettings");
     if (storedSettings) {
-      const settings = JSON.parse(storedSettings);
-      setPricingModel(settings.pricingModel || "fixed");
-      setDepositRequired(settings.depositRequired || false);
-      setDepositPercentage([settings.depositPercentage] || [50]);
-      setNegotiable(settings.negotiable || false);
-      setDiscount(settings.discount || false);
-      setDiscountType(settings.discountType || "percentage");
-      setDiscountValue(settings.discountValue || "");
-      setAvailabilityMode(settings.availabilityMode || "instant");
-      setLeadTime(settings.leadTime || "");
+      try {
+        const settings = JSON.parse(storedSettings);
+        setPricingModel(settings.pricingModel || "fixed");
+        setDepositRequired(settings.depositRequired || false);
+        setDepositPercentage([settings.depositPercentage || 50]);
+        setNegotiable(settings.negotiable || false);
+        setDiscount(settings.discount || false);
+        setDiscountType(settings.discountType || "percentage");
+        setDiscountValue(settings.discountValue || "");
+        setAvailabilityMode(settings.availabilityMode || "instant");
+        setLeadTime(settings.leadTime || "");
+      } catch (error) {
+        console.error("Error parsing pricing settings from localStorage", error);
+      }
     }
   }, []);
 
@@ -57,11 +61,24 @@ export default function VendorPricingPage() {
   try {
     setSaving(true);
 
-    // Update vendor profile with pricing settings
+    // Update vendor profile
     const { error } = await supabase
       .from("vendor_profiles")
       .update({
-        setup_progress: 90
+        setup_stage: "pricing",
+        setup_progress: 90,
+        // Store pricing settings as JSON in the profile
+        pricing_settings: {
+          pricingModel,
+          depositRequired,
+          depositPercentage: depositPercentage[0],
+          negotiable,
+          discount,
+          discountType,
+          discountValue,
+          availabilityMode,
+          leadTime
+        }
       })
       .eq("user_id", user.id);
 

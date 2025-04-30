@@ -40,7 +40,7 @@ export default function VendorWelcomePage() {
 
   useEffect(() => {
     if (user) {
-      // Update the setup stage
+      // Update the setup progress
       supabase
         .from("vendor_profiles")
         .update({

@@ -49,6 +49,8 @@ import VendorDashboardPage from "./pages/vendor/VendorDashboardPage";
 import VendorProfilePage from "./pages/vendor/VendorProfilePage";
 import VendorServicesPage from "./pages/vendor/VendorServicesPage";
 import VendorPricingPage from "./pages/vendor/VendorPricingPage";
+import VendorBookingsPage from "./pages/vendor/VendorBookingsPage";
+import VendorAvailabilityPage from "./pages/vendor/VendorAvailabilityPage";
 import VendorGoLivePage from "./pages/vendor/VendorGoLivePage";
 import VendorPanelPage from "./pages/vendor/VendorPanelPage";
 import VendorMessagesPage from "./pages/vendor/VendorMessagesPage";
@@ -132,6 +134,8 @@ const App = () => (
           <Route path="/vendor/profile" element={<VendorProfilePage />} />
           <Route path="/vendor/services" element={<VendorServicesPage />} />
           <Route path="/vendor/pricing" element={<VendorPricingPage />} />
+          <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
+          <Route path="/vendor/availability" element={<VendorAvailabilityPage />} />
           <Route path="/vendor/go-live" element={<VendorGoLivePage />} />
           <Route path="/vendor/messages" element={<VendorMessagesPage />} />
           

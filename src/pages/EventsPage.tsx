@@ -1,258 +1,367 @@
 
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { dummyEvents } from "@/data/hostDummyData";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Calendar,
   CalendarPlus,
-  Filter,
+  Calendar,
   Search,
-  ChevronRight,
-  Map,
-  CalendarDays,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
+  Settings,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  CalendarX,
+  ArrowUpDown
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { calculateFetchmanEstimate } from "@/utils/fetchmanCalculator";
-import { toast } from "@/components/ui/use-toast";
-import HostPanelLayout from "@/components/layouts/HostPanelLayout";
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { toast } from '@/components/ui/use-toast';
+import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useUser } from '@/hooks/useUser';
+import HostPanelLayout from '@/components/layouts/HostPanelLayout';
+
+interface Event {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  venue_name?: string;
+  vendor_count?: number;
+}
 
 export default function EventsPage() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [venueFilter, setVenueFilter] = useState("");
-  const [activeTab, setActiveTab] = useState("upcoming");
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-ZA', { 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
-    }).format(date);
-  };
-  
-  const navigateToEvent = (eventId: string) => {
-    navigate(`/host/events/${eventId}`);
-  };
-  
-  const filteredEvents = dummyEvents.filter(event => {
-    // Apply search filter
-    if (searchQuery && !event.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+  const { user } = useUser();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('date');
+
+  useEffect(() => {
+    if (user) {
+      fetchEvents();
     }
-    
+  }, [user]);
+
+  useEffect(() => {
+    filterEvents();
+  }, [events, searchTerm, statusFilter, sortBy]);
+
+  const fetchEvents = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          id, 
+          name, 
+          start_date, 
+          end_date, 
+          status
+        `)
+        .eq('host_id', user.id);
+
+      if (error) throw error;
+
+      if (data) {
+        // In a real app, you would join with the venues table and count event_vendors
+        // Here, we'll add mock data for demonstration
+        const eventsWithCounts = data.map(event => ({
+          ...event,
+          venue_name: event.venue_id ? 'Sample Venue' : 'No Venue Selected',
+          vendor_count: Math.floor(Math.random() * 10)
+        }));
+
+        setEvents(eventsWithCounts);
+        setFilteredEvents(eventsWithCounts);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast({
+        title: 'Failed to load events',
+        description: 'Could not fetch your events. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filterEvents = () => {
+    let filtered = [...events];
+
     // Apply status filter
-    if (statusFilter && event.status !== statusFilter) {
-      return false;
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(event => event.status === statusFilter);
     }
-    
-    // Apply venue filter
-    if (venueFilter && event.venueName !== venueFilter) {
-      return false;
+
+    // Apply search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        event =>
+          event.name.toLowerCase().includes(term) ||
+          (event.venue_name && event.venue_name.toLowerCase().includes(term))
+      );
     }
-    
-    // Apply tab filter
-    if (activeTab === 'upcoming' && event.status !== 'upcoming') {
-      return false;
-    } else if (activeTab === 'past' && event.status !== 'past') {
-      return false;
-    } else if (activeTab === 'active' && event.status !== 'active') {
-      return false;
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'date':
+          return new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'status':
+          return a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredEvents(filtered);
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'draft':
+        return <Clock className="h-4 w-4 text-gray-500" />;
+      case 'planning':
+        return <Settings className="h-4 w-4 text-purple-500" />;
+      case 'booked':
+        return <Calendar className="h-4 w-4 text-blue-500" />;
+      case 'live':
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case 'complete':
+        return <CheckCircle2 className="h-4 w-4 text-yellow-500" />;
+      case 'cancelled':
+        return <CalendarX className="h-4 w-4 text-red-500" />;
+      default:
+        return <AlertTriangle className="h-4 w-4 text-gray-500" />;
     }
-    
-    return true;
-  });
-  
-  // Get unique venues for filter
-  const venues = [...new Set(dummyEvents.map(event => event.venueName))];
-  
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'draft':
+        return <Badge variant="outline" className="border-gray-500 text-gray-500">{getStatusIcon(status)} Draft</Badge>;
+      case 'planning':
+        return <Badge className="bg-purple-100 text-purple-800 border-purple-200">{getStatusIcon(status)} Planning</Badge>;
+      case 'booked':
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">{getStatusIcon(status)} Booked</Badge>;
+      case 'live':
+        return <Badge className="bg-green-100 text-green-800 border-green-200">{getStatusIcon(status)} Live</Badge>;
+      case 'complete':
+        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">{getStatusIcon(status)} Complete</Badge>;
+      case 'cancelled':
+        return <Badge className="bg-red-100 text-red-800 border-red-200">{getStatusIcon(status)} Cancelled</Badge>;
+      default:
+        return <Badge variant="outline">{getStatusIcon(status)} Unknown</Badge>;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy');
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <HostPanelLayout>
-      <div className="max-w-7xl mx-auto py-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="container mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Events</h1>
-            <p className="text-gray-500">Manage all your event schedules</p>
+            <h1 className="text-2xl font-bold">Events</h1>
+            <p className="text-gray-500">Manage your events and bookings</p>
           </div>
-          <Button onClick={() => toast({ title: "Coming Soon", description: "Event creation will be available in the next update." })}>
+          <Button 
+            onClick={() => navigate('/host/events/new')}
+            className="mt-4 md:mt-0"
+          >
             <CalendarPlus className="h-4 w-4 mr-2" />
-            Create Event
+            Create New Event
           </Button>
         </div>
-        
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+
+        <Card className="mb-8">
+          <CardHeader className="pb-3">
+            <CardTitle>Events Overview</CardTitle>
+            <CardDescription>
+              View and manage all your events
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="flex-1">
                 <Input
                   placeholder="Search events..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="max-w-md"
+                  icon={<Search className="h-4 w-4" />}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="upcoming">Upcoming</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="past">Past</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={venueFilter} onValueChange={setVenueFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by venue" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Venues</SelectItem>
-                  {venues.map(venue => (
-                    <SelectItem key={venue} value={venue}>{venue}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex justify-end">
-                <Button variant="outline" className="flex gap-2">
-                  <Filter size={16} />
-                  Apply Filters
-                </Button>
+              <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Status</SelectLabel>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="planning">Planning</SelectItem>
+                      <SelectItem value="booked">Booked</SelectItem>
+                      <SelectItem value="live">Live</SelectItem>
+                      <SelectItem value="complete">Complete</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Sort By</SelectLabel>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="status">Status</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="upcoming" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>Upcoming Events</span>
-            </TabsTrigger>
-            <TabsTrigger value="active" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>Active Events</span>
-            </TabsTrigger>
-            <TabsTrigger value="past" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <span>Past Events</span>
-            </TabsTrigger>
-            <TabsTrigger value="draft" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>Draft Events</span>
-            </TabsTrigger>
-          </TabsList>
 
-          {['upcoming', 'active', 'past', 'draft'].map(tab => (
-            <TabsContent key={tab} value={tab}>
-              {filteredEvents.length > 0 ? (
-                <div className="space-y-4">
-                  {filteredEvents.map(event => (
-                    <Card 
-                      key={event.id} 
-                      className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => navigateToEvent(event.id)}
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <div className="ml-auto flex gap-2">
+                      <Skeleton className="h-8 w-24" />
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredEvents.length > 0 ? (
+              <Table>
+                <TableCaption>A list of your events</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[300px]">Event Name</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Venue</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Vendors</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEvents.map((event) => (
+                    <TableRow 
+                      key={event.id}
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => navigate(`/host/events/${event.id}`)}
                     >
-                      <div className="md:flex">
-                        <div className="md:w-1/4 lg:w-1/6 bg-gray-100 flex items-center justify-center p-4">
-                          <div className="text-center">
-                            <div className="text-lg font-bold">{new Date(event.date).toLocaleDateString('en-ZA', { day: 'numeric' })}</div>
-                            <div className="text-sm">{new Date(event.date).toLocaleDateString('en-ZA', { month: 'short' })}</div>
-                            <div className="text-xs text-gray-500">{new Date(event.date).toLocaleDateString('en-ZA', { year: 'numeric' })}</div>
-                          </div>
-                        </div>
-                        <div className="flex-1 p-4">
-                          <div className="md:flex md:items-start md:justify-between">
-                            <div className="mb-2 md:mb-0">
-                              <div className="flex items-center">
-                                <h3 className="font-medium text-lg">{event.name}</h3>
-                                <Badge className={`ml-2 ${
-                                  event.status === "upcoming" ? "bg-blue-100 text-blue-800" :
-                                  event.status === "active" ? "bg-green-100 text-green-800" :
-                                  "bg-gray-100 text-gray-800"
-                                }`}>
-                                  {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                                </Badge>
-                              </div>
-                              <div className="text-sm text-gray-500 mt-1">{event.venueName} • {formatDate(event.date)}</div>
-                            </div>
-                            <div className="flex space-x-1 md:space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="p-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toast({
-                                    title: "Map View",
-                                    description: `View map for ${event.name}`,
-                                  });
-                                }}
-                              >
-                                <Map className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="p-1">
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mt-4">
-                            <div>
-                              <div className="text-xs text-gray-500">Capacity</div>
-                              <div className="font-medium">{event.capacity}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500">Tickets Sold</div>
-                              <div className="font-medium">{event.ticketsSold} / {event.capacity}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500">Vendors</div>
-                              <div className="font-medium">{event.vendors || 12}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500">Fetchmen Needed</div>
-                              <div className="font-medium">{calculateFetchmanEstimate(event.capacity, event.vendors || 12)}</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
+                      <TableCell className="font-medium">{event.name}</TableCell>
+                      <TableCell>{formatDate(event.start_date)}</TableCell>
+                      <TableCell>{event.venue_name || 'No Venue'}</TableCell>
+                      <TableCell>{getStatusBadge(event.status)}</TableCell>
+                      <TableCell>{event.vendor_count || 0}</TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/host/events/${event.id}`);
+                          }}
+                        >
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-12 border rounded-lg">
+                <div className="flex justify-center mb-4">
+                  <Calendar className="h-12 w-12 text-gray-300" />
                 </div>
-              ) : (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <CardTitle className="mb-2">No {tab} events found</CardTitle>
-                    <p className="text-gray-500 mb-4">
-                      {tab === "upcoming" && "You don't have any upcoming events scheduled."}
-                      {tab === "active" && "You don't have any active events right now."}
-                      {tab === "past" && "No past events match your filter criteria."}
-                      {tab === "draft" && "You don't have any draft events."}
-                    </p>
-                    <Button onClick={() => toast({ title: "Coming Soon", description: "Event creation will be available in the next update." })}>
-                      <CalendarPlus className="h-4 w-4 mr-2" />
-                      Create Event
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+                <h3 className="text-lg font-medium mb-1">No events found</h3>
+                <p className="text-gray-500 mb-4">
+                  {searchTerm || statusFilter !== 'all'
+                    ? "No events match your current filter settings."
+                    : "You haven't created any events yet."}
+                </p>
+                <Button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('all');
+                    if (events.length === 0) {
+                      navigate('/host/events/new');
+                    }
+                  }}
+                >
+                  {searchTerm || statusFilter !== 'all'
+                    ? "Clear Filters"
+                    : "Create Your First Event"}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="border-t pt-6">
+            <p className="text-sm text-gray-500">
+              {filteredEvents.length} event{filteredEvents.length !== 1 && 's'} found
+            </p>
+          </CardFooter>
+        </Card>
       </div>
     </HostPanelLayout>
   );

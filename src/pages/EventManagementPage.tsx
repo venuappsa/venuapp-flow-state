@@ -1,108 +1,142 @@
 
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Clock,
-  Calendar,
-  Share2,
-  FileText,
-} from "lucide-react";
-import { dummyEvents } from "@/data/hostDummyData";
 import { toast } from "@/components/ui/use-toast";
-import FetchmanEstimation from "@/components/FetchmanEstimation";
-import { 
-  calculateFetchmanAllocation,
-  FetchmanAllocationResult
-} from "@/utils/fetchmanCalculator";
-import OverviewTab from "@/components/event/OverviewTab";
-import VendorsTab from "@/components/event/VendorsTab";
-import MapTab from "@/components/event/MapTab";
-import TicketsTab from "@/components/event/TicketsTab";
-import ScheduleTab from "@/components/event/ScheduleTab";
-import StaffTab from "@/components/event/StaffTab";
-import FinancesTab from "@/components/event/FinancesTab";
+import { ArrowLeft, CalendarClock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/hooks/useUser";
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
+import EventCreationForm from "@/components/event/EventCreationForm";
+import VendorBookingsCard from "@/components/event/VendorBookingsCard";
+
+interface EventData {
+  id: string;
+  name: string;
+  description: string;
+  venue_id: string;
+  venue_name?: string; // Optional as it might come from a join
+  start_date: string;
+  end_date: string;
+  status: string;
+  capacity: number;
+  is_public: boolean;
+}
 
 export default function EventManagementPage() {
-  const { eventId } = useParams<{ eventId: string }>();
-  const [event, setEvent] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { eventId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const isNew = !eventId || eventId === "new";
   const [activeTab, setActiveTab] = useState("overview");
-  const [fetchmanAllocation, setFetchmanAllocation] = useState<FetchmanAllocationResult | null>(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      const foundEvent = dummyEvents.find((e) => e.id === eventId);
-      if (foundEvent) {
-        const eventWithDefaults = {
-          ...foundEvent,
-          floorArea: foundEvent.floorArea || 1000,
-          multiLevel: foundEvent.multiLevel || false,
-        };
-        
-        setEvent(eventWithDefaults);
-        
-        const allocation = calculateFetchmanAllocation(
-          eventWithDefaults.capacity, 
-          eventWithDefaults.floorArea, 
-          eventWithDefaults.multiLevel
-        );
-        setFetchmanAllocation(allocation);
-      }
-      setLoading(false);
-    }, 300);
-  }, [eventId]);
+    // Get active tab from location state if provided
+    if (location.state && location.state.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
 
-  const handleShareEvent = () => {
-    if (!event) return;
+    // Only fetch event data if this is an existing event
+    if (!isNew && eventId) {
+      fetchEventData(eventId);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isNew, eventId, location.state]);
+
+  const fetchEventData = async (id: string) => {
+    if (!user) return;
     
-    const shareableLink = `https://venuapp.co.za/events/${event.id}`;
-    navigator.clipboard.writeText(shareableLink).then(
-      () => {
-        toast({
-          title: "Link copied",
-          description: `Shareable link for ${event.name} copied to clipboard`,
-        });
-      },
-      (err) => {
-        console.error('Could not copy text: ', err);
-        toast({
-          title: "Error",
-          description: "Could not copy link to clipboard",
-          variant: "destructive",
-        });
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("events")
+        .select(`
+          id, 
+          name, 
+          description, 
+          venue_id, 
+          start_date, 
+          end_date, 
+          status, 
+          capacity, 
+          is_public
+        `)
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setEvent(data);
       }
-    );
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      toast({
+        title: "Error loading event",
+        description: "Failed to load event details.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFetchmanUpdate = (data: {fetchmenCount: number, cost: number, allocation: FetchmanAllocationResult}) => {
-    setFetchmanAllocation(data.allocation);
+  const getFormattedDates = () => {
+    if (!event) return "";
+    
+    const startDate = new Date(event.start_date);
+    const endDate = new Date(event.end_date);
+    
+    const options: Intl.DateTimeFormatOptions = { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    };
+    
+    return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
   };
 
-  if (loading) {
-    return (
-      <HostPanelLayout>
-        <div className="container mx-auto py-8 px-4">
-          <Skeleton className="h-10 w-1/2 mb-6" />
-          <Skeleton className="h-64 w-full mb-6" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </HostPanelLayout>
-    );
-  }
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case 'live':
+        return 'bg-green-100 text-green-800';
+      case 'booked':
+        return 'bg-blue-100 text-blue-800';
+      case 'planning':
+        return 'bg-purple-100 text-purple-800';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
+      case 'complete':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  if (!event) {
+  if (isNew) {
     return (
       <HostPanelLayout>
-        <div className="container mx-auto py-8 px-4 text-center">
-          <h2 className="text-2xl font-bold mb-4">Event not found</h2>
-          <p className="mb-6">The event you're looking for doesn't exist or has been removed.</p>
-          <Button asChild>
-            <Link to="/host">Return to Dashboard</Link>
-          </Button>
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center mb-6">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate("/host/events")}
+              className="mr-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" /> Back
+            </Button>
+            <h1 className="text-2xl font-bold">Create New Event</h1>
+          </div>
+          <EventCreationForm />
         </div>
       </HostPanelLayout>
     );
@@ -110,107 +144,180 @@ export default function EventManagementPage() {
 
   return (
     <HostPanelLayout>
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Link
-                to="/host"
-                className="text-sm text-gray-500 hover:text-venu-orange"
-              >
-                Dashboard
-              </Link>
-              <span className="text-gray-500">/</span>
-              <Link
-                to="/host/events"
-                className="text-sm text-gray-500 hover:text-venu-orange"
-              >
-                Events
-              </Link>
-              <span className="text-gray-500">/</span>
-              <span className="text-sm font-medium">{event.name}</span>
+      <div className="max-w-7xl mx-auto">
+        {isLoading ? (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-8 w-48" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold">{event.name}</h1>
-            <div className="flex items-center mt-2">
-              <div className="flex items-center ml-1 text-sm text-gray-500">
-                <Calendar className="h-4 w-4 mr-1" />
-                <span>
-                  {new Date(event.date).toLocaleDateString("en-ZA", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
+            <Skeleton className="h-12 w-full" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Skeleton className="h-40 col-span-2" />
+              <Skeleton className="h-40" />
+            </div>
+          </div>
+        ) : event ? (
+          <>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate("/host/events")}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" /> Back
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold">{event.name}</h1>
+                  <div className="flex items-center text-gray-500 text-sm mt-1">
+                    <CalendarClock className="h-4 w-4 mr-1" />
+                    <span>{getFormattedDates()}</span>
+                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusClass(event.status)}`}>
+                      {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="outline">
+                  Edit Event
+                </Button>
+                <Button>
+                  Publish Event
+                </Button>
               </div>
             </div>
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="mb-6">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="vendors">Vendors</TabsTrigger>
+                <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                <TabsTrigger value="guests">Guests</TabsTrigger>
+                <TabsTrigger value="finances">Finances</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="overview">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white p-6 rounded-lg border shadow-sm">
+                      <h2 className="text-lg font-medium mb-4">Event Details</h2>
+                      <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <dt className="text-sm font-medium text-gray-500">Event Name</dt>
+                          <dd className="mt-1">{event.name}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-gray-500">Status</dt>
+                          <dd className="mt-1">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(event.status)}`}>
+                              {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                            </span>
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-gray-500">Date Range</dt>
+                          <dd className="mt-1">{getFormattedDates()}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-gray-500">Capacity</dt>
+                          <dd className="mt-1">{event.capacity || 'Not set'}</dd>
+                        </div>
+                        <div className="md:col-span-2">
+                          <dt className="text-sm font-medium text-gray-500">Description</dt>
+                          <dd className="mt-1">{event.description || 'No description provided.'}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                    
+                    <div className="bg-white p-6 rounded-lg border shadow-sm">
+                      <h2 className="text-lg font-medium mb-4">Timeline</h2>
+                      <div className="text-center py-12 text-gray-500">
+                        <p>Timeline feature coming soon.</p>
+                        <Button variant="outline" className="mt-4">
+                          Set Up Event Timeline
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <VendorBookingsCard eventId={event.id} />
+                    
+                    <div className="bg-white p-6 rounded-lg border shadow-sm">
+                      <h2 className="text-lg font-medium mb-4">Quick Actions</h2>
+                      <div className="space-y-2">
+                        <Button variant="outline" className="w-full justify-start">
+                          Edit Event Details
+                        </Button>
+                        <Button variant="outline" className="w-full justify-start">
+                          Manage Guest List
+                        </Button>
+                        <Button variant="outline" className="w-full justify-start">
+                          View Booking History
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="vendors">
+                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                  <h2 className="text-lg font-medium mb-4">Vendor Management</h2>
+                  <div className="mb-6">
+                    <VendorBookingsCard eventId={event.id} />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="schedule">
+                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                  <h2 className="text-lg font-medium mb-4">Event Schedule</h2>
+                  <div className="text-center py-20 text-gray-500">
+                    <p>Schedule management feature coming soon.</p>
+                    <Button className="mt-4">
+                      Set Up Event Schedule
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="guests">
+                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                  <h2 className="text-lg font-medium mb-4">Guest Management</h2>
+                  <div className="text-center py-20 text-gray-500">
+                    <p>Guest management feature coming soon.</p>
+                    <Button className="mt-4">
+                      Add Guests
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="finances">
+                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                  <h2 className="text-lg font-medium mb-4">Financial Overview</h2>
+                  <div className="text-center py-20 text-gray-500">
+                    <p>Financial tracking feature coming soon.</p>
+                    <Button className="mt-4">
+                      Set Up Budget
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          <div className="text-center py-20">
+            <h2 className="text-xl font-medium text-gray-500">Event not found</h2>
+            <p className="text-gray-400 mt-2">The event you're looking for doesn't exist or you don't have permission to view it.</p>
+            <Button className="mt-6" onClick={() => navigate("/host/events")}>
+              Back to Events
+            </Button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={handleShareEvent}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm">
-              <Clock className="h-4 w-4 mr-2" />
-              Reschedule
-            </Button>
-            <Button size="sm">
-              <FileText className="h-4 w-4 mr-2" />
-              Edit Details
-            </Button>
-          </div>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-white mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="vendors">Vendors</TabsTrigger>
-            <TabsTrigger value="map">Map</TabsTrigger>
-            <TabsTrigger value="tickets">Tickets</TabsTrigger>
-            <TabsTrigger value="schedule">Schedule</TabsTrigger>
-            <TabsTrigger value="staff">Staff</TabsTrigger>
-            <TabsTrigger value="fetchmen">Fetchmen</TabsTrigger>
-            <TabsTrigger value="finances">Finances</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
-            <OverviewTab eventData={event} />
-          </TabsContent>
-
-          <TabsContent value="vendors">
-            <VendorsTab eventId={event.id} />
-          </TabsContent>
-
-          <TabsContent value="map">
-            <MapTab eventData={event} />
-          </TabsContent>
-
-          <TabsContent value="tickets">
-            <TicketsTab eventId={event.id} />
-          </TabsContent>
-          
-          <TabsContent value="schedule">
-            <ScheduleTab eventId={event.id} />
-          </TabsContent>
-          
-          <TabsContent value="staff">
-            <StaffTab eventId={event.id} />
-          </TabsContent>
-
-          <TabsContent value="fetchmen" className="space-y-6">
-            <FetchmanEstimation 
-              capacity={event.capacity} 
-              vendors={event.vendors || 12} 
-              hours={event.durationHours || 5}
-              venueName={event.venueName}
-              floorArea={event.floorArea || 1000}
-              onUpdate={handleFetchmanUpdate}
-            />
-          </TabsContent>
-          
-          <TabsContent value="finances">
-            <FinancesTab eventId={event.id} eventData={event} />
-          </TabsContent>
-        </Tabs>
+        )}
       </div>
     </HostPanelLayout>
   );

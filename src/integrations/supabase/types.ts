@@ -9,6 +9,108 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      event_vendors: {
+        Row: {
+          created_at: string
+          decline_reason: string | null
+          event_id: string
+          fee: number | null
+          id: string
+          invitation_date: string
+          notes: string | null
+          response_date: string | null
+          status: string
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          decline_reason?: string | null
+          event_id: string
+          fee?: number | null
+          id?: string
+          invitation_date?: string
+          notes?: string | null
+          response_date?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          decline_reason?: string | null
+          event_id?: string
+          fee?: number | null
+          id?: string
+          invitation_date?: string
+          notes?: string | null
+          response_date?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_vendors_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_vendors_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          description: string | null
+          end_date: string
+          host_id: string
+          id: string
+          is_public: boolean | null
+          name: string
+          start_date: string
+          status: string
+          updated_at: string
+          venue_id: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          end_date: string
+          host_id: string
+          id?: string
+          is_public?: boolean | null
+          name: string
+          start_date: string
+          status?: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          host_id?: string
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Relationships: []
+      }
       host_profiles: {
         Row: {
           company_name: string | null
@@ -213,6 +315,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vendor_availability: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          is_available: boolean | null
+          notes: string | null
+          time_end: string | null
+          time_start: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          is_available?: boolean | null
+          notes?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          is_available?: boolean | null
+          notes?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_availability_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vendor_categories: {
         Row: {

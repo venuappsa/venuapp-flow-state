@@ -13,6 +13,8 @@ import {
   HelpCircle,
   ChevronRight,
   ChevronLeft,
+  Calendar,
+  InboxIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -74,19 +76,29 @@ export default function VendorSidebar() {
       path: "/vendor/pricing",
     },
     {
+      icon: <InboxIcon size={20} />,
+      label: "Bookings",
+      path: "/vendor/bookings",
+    },
+    {
+      icon: <Calendar size={20} />,
+      label: "Availability",
+      path: "/vendor/availability",
+    },
+    {
       icon: <Radio size={20} />,
       label: "Go Live",
       path: "/vendor/go-live",
     },
     {
-      icon: <Settings size={20} />,
-      label: "Settings",
-      path: "/vendor/settings",
-    },
-    {
       icon: <MessageSquare size={20} />,
       label: "Messages",
       path: "/vendor/messages",
+    },
+    {
+      icon: <Settings size={20} />,
+      label: "Settings",
+      path: "/vendor/settings",
     },
     {
       icon: <HelpCircle size={20} />,

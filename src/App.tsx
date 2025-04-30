@@ -42,6 +42,16 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import HostDashboardPage from "./pages/HostDashboardPage";
 import InvitationsPage from "./pages/InvitationsPage";
 
+// Vendor pages imports
+import VendorSignupPage from "./pages/vendor/VendorSignupPage";
+import VendorWelcomePage from "./pages/vendor/VendorWelcomePage";
+import VendorDashboardPage from "./pages/vendor/VendorDashboardPage";
+import VendorProfilePage from "./pages/vendor/VendorProfilePage";
+import VendorServicesPage from "./pages/vendor/VendorServicesPage";
+import VendorPricingPage from "./pages/vendor/VendorPricingPage";
+import VendorGoLivePage from "./pages/vendor/VendorGoLivePage";
+import VendorPanelPage from "./pages/vendor/VendorPanelPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -65,6 +75,9 @@ const App = () => (
           
           {/* Legacy auth page (to be removed) */}
           <Route path="/auth-old" element={<AuthPage />} />
+
+          {/* Vendor Signup (Public) */}
+          <Route path="/vendor-signup" element={<VendorSignupPage />} />
           
           {/* Admin panel routes */}
           <Route path="/admin" element={<AdminPanel />} />
@@ -102,6 +115,15 @@ const App = () => (
           <Route path="/host/knowledge" element={<KnowledgeBasePage />} />
           <Route path="/host/messages" element={<MessagesPage />} />
           <Route path="/host/notifications" element={<NotificationsPage />} />
+
+          {/* Vendor panel routes */}
+          <Route path="/vendor" element={<VendorPanelPage />} />
+          <Route path="/vendor/welcome" element={<VendorWelcomePage />} />
+          <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
+          <Route path="/vendor/profile" element={<VendorProfilePage />} />
+          <Route path="/vendor/services" element={<VendorServicesPage />} />
+          <Route path="/vendor/pricing" element={<VendorPricingPage />} />
+          <Route path="/vendor/go-live" element={<VendorGoLivePage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

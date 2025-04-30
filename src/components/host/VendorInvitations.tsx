@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from '@/components/ui/use-toast';
 import { 
   Search, 
@@ -22,10 +23,12 @@ import {
   ClipboardCheck,
   PlusCircle,
   Store,
-  Mail
+  Mail,
+  Clock,
+  CalendarClock
 } from 'lucide-react';
 
-// Demo data for vendors
+// Demo data for vendors with additional engagement metrics
 const demoVendors = [
   {
     id: 'v1',
@@ -36,7 +39,9 @@ const demoVendors = [
     invitedDate: '2024-04-18',
     email: 'contact@gourmetdelights.com',
     acceptanceRate: '85%',
-    setupProgress: '0%'
+    setupProgress: '0%',
+    setupStatus: 'Not Started',
+    lastActive: '3 days ago'
   },
   {
     id: 'v2',
@@ -47,7 +52,9 @@ const demoVendors = [
     invitedDate: '2024-04-10',
     email: 'info@soundsystemspro.com',
     acceptanceRate: '100%',
-    setupProgress: '75%'
+    setupProgress: '75%',
+    setupStatus: 'In Progress',
+    lastActive: '1 day ago'
   },
   {
     id: 'v3',
@@ -58,7 +65,9 @@ const demoVendors = [
     invitedDate: '2024-04-05',
     email: 'team@eventplannersinc.com',
     acceptanceRate: '45%',
-    setupProgress: '0%'
+    setupProgress: '0%',
+    setupStatus: 'Not Started',
+    lastActive: '7 days ago'
   },
   {
     id: 'v4',
@@ -69,7 +78,9 @@ const demoVendors = [
     invitedDate: '2024-03-28',
     email: 'sales@craftbreweryco.co.za',
     acceptanceRate: '100%',
-    setupProgress: '90%'
+    setupProgress: '90%',
+    setupStatus: 'Live',
+    lastActive: 'Today'
   },
   {
     id: 'v5',
@@ -80,7 +91,9 @@ const demoVendors = [
     invitedDate: '2024-04-20',
     email: 'info@decormasters.com',
     acceptanceRate: '0%',
-    setupProgress: '0%'
+    setupProgress: '0%',
+    setupStatus: 'Not Started',
+    lastActive: '5 days ago'
   },
   {
     id: 'v6',
@@ -91,7 +104,9 @@ const demoVendors = [
     invitedDate: '2024-03-15',
     email: 'orders@sweettreatbakery.com',
     acceptanceRate: '100%',
-    setupProgress: '60%'
+    setupProgress: '60%',
+    setupStatus: 'In Progress',
+    lastActive: '2 days ago'
   },
   {
     id: 'v7',
@@ -102,7 +117,9 @@ const demoVendors = [
     invitedDate: '',
     email: 'info@partysupplies.co.za',
     acceptanceRate: '0%',
-    setupProgress: '0%'
+    setupProgress: '0%',
+    setupStatus: 'Not Started',
+    lastActive: '-'
   },
   {
     id: 'v8',
@@ -113,7 +130,9 @@ const demoVendors = [
     invitedDate: '',
     email: 'book@photoboothrentals.com',
     acceptanceRate: '0%',
-    setupProgress: '0%'
+    setupProgress: '0%',
+    setupStatus: 'Not Started',
+    lastActive: '-'
   }
 ];
 
@@ -131,13 +150,27 @@ const StatusBadge = ({ status }: { status: string }) => {
   }
 };
 
+// Setup status badge components
+const SetupStatusBadge = ({ status }: { status: string }) => {
+  switch (status) {
+    case 'Live':
+      return <Badge className="bg-green-500">Live</Badge>;
+    case 'In Progress':
+      return <Badge className="bg-blue-500">In Progress</Badge>;
+    default:
+      return <Badge variant="outline" className="bg-gray-200 text-gray-700">Not Started</Badge>;
+  }
+};
+
 export default function VendorInvitations() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [setupStatusFilter, setSetupStatusFilter] = useState('all');
   const [showQRCode, setShowQRCode] = useState(false);
   const [invitationLink, setInvitationLink] = useState('https://venuapp.co.za/vendor/signup?ref=HOST123');
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   
   // Filter vendors based on search term and filters
   const filteredVendors = demoVendors.filter(vendor => {
@@ -148,8 +181,9 @@ export default function VendorInvitations() {
     
     const matchesCategory = categoryFilter === 'all' || vendor.category === categoryFilter;
     const matchesStatus = statusFilter === 'all' || vendor.status === statusFilter;
+    const matchesSetupStatus = setupStatusFilter === 'all' || vendor.setupStatus === setupStatusFilter;
     
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory && matchesStatus && matchesSetupStatus;
   });
 
   const handleSendInvitation = (vendorId: string) => {
@@ -191,7 +225,7 @@ export default function VendorInvitations() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-[180px]">
                   <Filter className="mr-2 h-4 w-4" />
@@ -217,87 +251,234 @@ export default function VendorInvitations() {
                   <SelectItem value="declined">Declined</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={setupStatusFilter} onValueChange={setSetupStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Setup Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Setup Statuses</SelectItem>
+                  <SelectItem value="Not Started">Not Started</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Live">Live</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex border rounded-md overflow-hidden">
+                <Button 
+                  variant={viewMode === 'card' ? "default" : "ghost"} 
+                  size="sm" 
+                  onClick={() => setViewMode('card')}
+                  className="rounded-none"
+                >
+                  Cards
+                </Button>
+                <Button 
+                  variant={viewMode === 'list' ? "default" : "ghost"} 
+                  size="sm" 
+                  onClick={() => setViewMode('list')}
+                  className="rounded-none"
+                >
+                  List
+                </Button>
+              </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredVendors.map(vendor => (
-              <Card key={vendor.id} className="overflow-hidden">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{vendor.name}</CardTitle>
-                      <CardDescription>{vendor.category}</CardDescription>
-                    </div>
-                    <StatusBadge status={vendor.status} />
-                  </div>
-                </CardHeader>
-                <CardContent className="pb-0">
-                  <p className="text-sm text-gray-700 mb-3">{vendor.description}</p>
-                  
-                  {vendor.status !== 'new' && (
-                    <div className="text-sm text-gray-600">
-                      <div className="flex justify-between mb-1">
-                        <span>Invited:</span>
-                        <span>{vendor.invitedDate}</span>
+          {viewMode === 'card' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredVendors.map(vendor => (
+                <Card key={vendor.id} className="overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{vendor.name}</CardTitle>
+                        <CardDescription>{vendor.category}</CardDescription>
                       </div>
-                      {vendor.status === 'accepted' && (
-                        <div className="flex justify-between">
-                          <span>Setup Progress:</span>
-                          <span>{vendor.setupProgress}</span>
-                        </div>
-                      )}
+                      <StatusBadge status={vendor.status} />
                     </div>
-                  )}
+                  </CardHeader>
+                  <CardContent className="pb-0">
+                    <p className="text-sm text-gray-700 mb-3">{vendor.description}</p>
+                    
+                    {vendor.status !== 'new' && (
+                      <div className="text-sm text-gray-600 space-y-3">
+                        <div className="flex justify-between mb-1">
+                          <span>Invited:</span>
+                          <span>{vendor.invitedDate}</span>
+                        </div>
+                        {vendor.status === 'accepted' && (
+                          <>
+                            <div className="flex justify-between items-center">
+                              <span>Setup Progress:</span>
+                              <span>{vendor.setupProgress}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className={`h-1.5 rounded-full ${
+                                  parseInt(vendor.setupProgress) === 100 
+                                    ? 'bg-green-500' 
+                                    : parseInt(vendor.setupProgress) > 50
+                                      ? 'bg-blue-500'
+                                      : 'bg-orange-500'
+                                }`}
+                                style={{ width: vendor.setupProgress }}
+                              />
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Setup Status:</span>
+                              <SetupStatusBadge status={vendor.setupStatus} />
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Last Active:</span>
+                              <span>{vendor.lastActive}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="pt-4">
+                    {vendor.status === 'new' ? (
+                      <Button 
+                        className="w-full bg-venu-orange hover:bg-venu-dark-orange" 
+                        onClick={() => handleSendInvitation(vendor.id)}
+                      >
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Invitation
+                      </Button>
+                    ) : vendor.status === 'invited' ? (
+                      <Button 
+                        className="w-full" 
+                        variant="outline"
+                        onClick={() => handleSendInvitation(vendor.id)}
+                      >
+                        <Send className="mr-2 h-4 w-4" />
+                        Resend Invitation
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="w-full" 
+                        variant="secondary"
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Contact Vendor
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              ))}
+              
+              {/* Add new vendor card */}
+              <Card className="border-dashed h-full">
+                <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center">
+                  <div className="bg-gray-100 p-4 rounded-full mb-4">
+                    <PlusCircle className="h-8 w-8 text-venu-orange" />
+                  </div>
+                  <CardTitle className="text-lg mb-2">Add New Vendor</CardTitle>
+                  <CardDescription>Create a new vendor profile to send invitations</CardDescription>
+                  <Button 
+                    className="mt-4 bg-venu-orange hover:bg-venu-dark-orange"
+                  >
+                    <Store className="mr-2 h-4 w-4" />
+                    Add Vendor
+                  </Button>
                 </CardContent>
-                <CardFooter className="pt-4">
-                  {vendor.status === 'new' ? (
-                    <Button 
-                      className="w-full bg-venu-orange hover:bg-venu-dark-orange" 
-                      onClick={() => handleSendInvitation(vendor.id)}
-                    >
-                      <Send className="mr-2 h-4 w-4" />
-                      Send Invitation
-                    </Button>
-                  ) : vendor.status === 'invited' ? (
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => handleSendInvitation(vendor.id)}
-                    >
-                      <Send className="mr-2 h-4 w-4" />
-                      Resend Invitation
-                    </Button>
-                  ) : (
-                    <Button 
-                      className="w-full" 
-                      variant="secondary"
-                    >
-                      <Mail className="mr-2 h-4 w-4" />
-                      Contact Vendor
-                    </Button>
-                  )}
-                </CardFooter>
               </Card>
-            ))}
-            
-            {/* Add new vendor card */}
-            <Card className="border-dashed h-full">
-              <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center">
-                <div className="bg-gray-100 p-4 rounded-full mb-4">
-                  <PlusCircle className="h-8 w-8 text-venu-orange" />
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50 border-b text-left">
+                        <th className="py-3 px-4 font-medium text-gray-700">Vendor</th>
+                        <th className="py-3 px-4 font-medium text-gray-700">Category</th>
+                        <th className="py-3 px-4 font-medium text-gray-700">Status</th>
+                        <th className="py-3 px-4 font-medium text-gray-700">Setup Progress</th>
+                        <th className="py-3 px-4 font-medium text-gray-700">Setup Status</th>
+                        <th className="py-3 px-4 font-medium text-gray-700">Last Active</th>
+                        <th className="py-3 px-4 font-medium text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredVendors.map(vendor => (
+                        <tr key={vendor.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback className="bg-venu-orange/10 text-venu-orange">
+                                  {vendor.name.substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{vendor.name}</div>
+                                <div className="text-xs text-gray-500">{vendor.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">{vendor.category}</td>
+                          <td className="py-3 px-4"><StatusBadge status={vendor.status} /></td>
+                          <td className="py-3 px-4">
+                            {vendor.status === 'accepted' ? (
+                              <div className="flex items-center gap-2">
+                                <Progress value={parseInt(vendor.setupProgress)} className="h-1.5 w-20" />
+                                <span className="text-xs">{vendor.setupProgress}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-500">N/A</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            {vendor.status === 'accepted' ? (
+                              <SetupStatusBadge status={vendor.setupStatus} />
+                            ) : (
+                              <span className="text-xs text-gray-500">N/A</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3 w-3 text-gray-400" />
+                              <span className="text-sm">{vendor.lastActive}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            {vendor.status === 'new' ? (
+                              <Button 
+                                size="sm"
+                                className="bg-venu-orange hover:bg-venu-dark-orange" 
+                                onClick={() => handleSendInvitation(vendor.id)}
+                              >
+                                <Send className="mr-2 h-3 w-3" />
+                                Send
+                              </Button>
+                            ) : vendor.status === 'invited' ? (
+                              <Button 
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSendInvitation(vendor.id)}
+                              >
+                                <Send className="mr-2 h-3 w-3" />
+                                Resend
+                              </Button>
+                            ) : (
+                              <Button 
+                                size="sm"
+                                variant="secondary"
+                              >
+                                <Mail className="mr-2 h-3 w-3" />
+                                Contact
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <CardTitle className="text-lg mb-2">Add New Vendor</CardTitle>
-                <CardDescription>Create a new vendor profile to send invitations</CardDescription>
-                <Button 
-                  className="mt-4 bg-venu-orange hover:bg-venu-dark-orange"
-                >
-                  <Store className="mr-2 h-4 w-4" />
-                  Add Vendor
-                </Button>
               </CardContent>
             </Card>
-          </div>
+          )}
           
           {filteredVendors.length === 0 && searchTerm && (
             <div className="text-center p-10">
@@ -380,48 +561,58 @@ export default function VendorInvitations() {
             
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Top Performing Categories</CardTitle>
-                <CardDescription>Categories with highest vendor engagement</CardDescription>
+                <CardTitle className="text-lg">Vendor Engagement</CardTitle>
+                <CardDescription>Onboarding status for invited vendors</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between items-center">
-                      <div className="text-sm font-medium">Food & Beverage</div>
-                      <div className="text-sm text-gray-500">85% acceptance</div>
+                      <div className="text-sm font-medium">Profile Setup</div>
+                      <div className="text-sm text-gray-500">60% completed</div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                      <div className="bg-venu-orange h-2 rounded-full" style={{ width: '85%' }}></div>
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '60%' }}></div>
                     </div>
                   </div>
                   
                   <div>
                     <div className="flex justify-between items-center">
-                      <div className="text-sm font-medium">Entertainment</div>
-                      <div className="text-sm text-gray-500">75% acceptance</div>
+                      <div className="text-sm font-medium">Services Added</div>
+                      <div className="text-sm text-gray-500">45% completed</div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                      <div className="bg-venu-orange h-2 rounded-full" style={{ width: '75%' }}></div>
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
                     </div>
                   </div>
                   
                   <div>
                     <div className="flex justify-between items-center">
-                      <div className="text-sm font-medium">Services</div>
-                      <div className="text-sm text-gray-500">70% acceptance</div>
+                      <div className="text-sm font-medium">Pricing Set</div>
+                      <div className="text-sm text-gray-500">30% completed</div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                      <div className="bg-venu-orange h-2 rounded-full" style={{ width: '70%' }}></div>
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '30%' }}></div>
                     </div>
                   </div>
                   
                   <div>
                     <div className="flex justify-between items-center">
-                      <div className="text-sm font-medium">Equipment</div>
-                      <div className="text-sm text-gray-500">50% acceptance</div>
+                      <div className="text-sm font-medium">Live Profiles</div>
+                      <div className="text-sm text-gray-500">25% completed</div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                      <div className="bg-venu-orange h-2 rounded-full" style={{ width: '50%' }}></div>
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '25%' }}></div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 mt-2 border-t">
+                    <div className="flex justify-between">
+                      <div className="flex items-center gap-2">
+                        <CalendarClock className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-medium">Average time to go live</span>
+                      </div>
+                      <div className="text-sm font-medium">4.2 days</div>
                     </div>
                   </div>
                 </div>

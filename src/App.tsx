@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
@@ -56,6 +56,13 @@ import HostVendorMessagesPage from "./pages/VendorMessagesPage";
 
 const queryClient = new QueryClient();
 
+// Create a wrapper component to use AuthLayout with Outlet
+const AuthLayoutWrapper = () => (
+  <AuthLayout>
+    <Outlet />
+  </AuthLayout>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -66,7 +73,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           
           {/* Auth routes */}
-          <Route path="/auth" element={<AuthLayout />}>
+          <Route path="/auth" element={<AuthLayoutWrapper />}>
             <Route index element={<LoginPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />

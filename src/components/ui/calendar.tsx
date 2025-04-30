@@ -63,7 +63,7 @@ function Calendar({
           return (
             <button
               {...props}
-              className={cn(props.className as string, customClassName)}
+              className={cn(customClassName)}
             />
           );
         },

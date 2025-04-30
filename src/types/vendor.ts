@@ -15,9 +15,9 @@ export interface VendorProfile {
   state?: string;
   zipcode?: string;
   country?: string;
-  setup_stage: string;
-  setup_progress: number;
-  status: string;
+  setup_stage?: string;
+  setup_progress?: number;
+  status?: string;
   is_suspended: boolean;
   verification_status: string;
   subscription_status: string;

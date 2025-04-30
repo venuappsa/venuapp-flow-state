@@ -1,10 +1,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -59,9 +57,11 @@ export default function VendorGoLivePage() {
     }
   };
 
-  // Fix for the CheckedState issue
+  // Fixed handler for CheckedState
   const handleCheckedChange = (checked: boolean | "indeterminate") => {
-    setTermsChecked(checked === true);
+    if (checked === true || checked === false) {
+      setTermsChecked(checked);
+    }
   };
 
   return (

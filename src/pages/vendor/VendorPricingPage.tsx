@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -56,66 +55,59 @@ export default function VendorPricingPage() {
   }, []);
 
   const handleSave = async () => {
-  if (!user) return;
+    if (!user) return;
 
-  try {
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    // Update vendor profile
-    const { error } = await supabase
-      .from("vendor_profiles")
-      .update({
-        setup_stage: "pricing",
-        setup_progress: 90,
-        // Store pricing settings as JSON in the profile
-        pricing_settings: {
-          pricingModel,
-          depositRequired,
-          depositPercentage: depositPercentage[0],
-          negotiable,
-          discount,
-          discountType,
-          discountValue,
-          availabilityMode,
-          leadTime
-        }
-      })
-      .eq("user_id", user.id);
+      // Store pricing settings as JSON in localStorage
+      const pricingSettings = {
+        pricingModel,
+        depositRequired,
+        depositPercentage: depositPercentage[0],
+        negotiable,
+        discount,
+        discountType,
+        discountValue,
+        availabilityMode,
+        leadTime
+      };
 
-    if (error) {
-      throw error;
+      // Update vendor profile
+      const { error } = await supabase
+        .from("vendor_profiles")
+        .update({
+          setup_stage: "pricing",
+          setup_progress: 90,
+          // Store pricing settings as JSON in the profile
+          pricing_settings: pricingSettings
+        })
+        .eq("user_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+      
+      // Store the pricing settings in localStorage for demonstration
+      localStorage.setItem("pricingSettings", JSON.stringify(pricingSettings));
+
+      toast({
+        title: "Pricing settings saved",
+        description: "Your pricing preferences have been updated successfully"
+      });
+
+      navigate("/vendor/go-live");
+    } catch (error: any) {
+      console.error("Error saving pricing settings:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save pricing settings",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
     }
-    
-    // Store the pricing settings in localStorage for demonstration
-    localStorage.setItem("pricingSettings", JSON.stringify({
-      pricingModel,
-      depositRequired,
-      depositPercentage: depositPercentage[0],
-      negotiable,
-      discount,
-      discountType,
-      discountValue,
-      availabilityMode,
-      leadTime
-    }));
-
-    toast({
-      title: "Pricing settings saved",
-      description: "Your pricing preferences have been updated successfully"
-    });
-
-    navigate("/vendor/go-live");
-  } catch (error: any) {
-    console.error("Error saving pricing settings:", error);
-    toast({
-      title: "Error",
-      description: error.message || "Failed to save pricing settings",
-      variant: "destructive"
-    });
-  } finally {
-    setSaving(false);
-  }
-};
+  };
 
   return (
     <VendorPanelLayout>

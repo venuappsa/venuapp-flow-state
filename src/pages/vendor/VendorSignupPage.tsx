@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -67,7 +68,7 @@ export default function VendorSignupPage() {
         const { error } = await supabase
           .from("vendor_profiles")
           .update({
-            business_name: formData.businessName, // Changed from company_name to business_name
+            business_name: formData.businessName,
             contact_name: formData.contactName,
             contact_email: formData.email,
             contact_phone: formData.phone
@@ -81,7 +82,7 @@ export default function VendorSignupPage() {
           .from("vendor_profiles")
           .insert({
             user_id: user.id,
-            business_name: formData.businessName, // Changed from company_name to business_name
+            business_name: formData.businessName,
             contact_name: formData.contactName,
             contact_email: formData.email,
             contact_phone: formData.phone,
@@ -98,12 +99,12 @@ export default function VendorSignupPage() {
         description: "Your vendor profile has been created successfully."
       });
       
-      // Add user to vendor role
+      // Add user to vendor role (using 'merchant' as the valid role type)
       await supabase
         .from("user_roles")
         .insert({
           user_id: user.id,
-          role: "vendor"
+          role: "merchant"
         });
         
       navigate("/vendor/welcome");

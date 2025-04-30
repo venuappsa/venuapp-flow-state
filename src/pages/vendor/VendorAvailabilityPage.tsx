@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Check, X, Info } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, X, Info, Save } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -58,6 +59,11 @@ interface AvailabilityDay {
   id?: string;
 }
 
+interface DefaultHours {
+  timeStart: string;
+  timeEnd: string;
+}
+
 export default function VendorAvailabilityPage() {
   const { user } = useUser();
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -69,10 +75,16 @@ export default function VendorAvailabilityPage() {
   const [timeEnd, setTimeEnd] = useState('17:00');
   const [notes, setNotes] = useState('');
   const [showDialog, setShowDialog] = useState(false);
+  
+  // Default working hours state
+  const [defaultTimeStart, setDefaultTimeStart] = useState('09:00');
+  const [defaultTimeEnd, setDefaultTimeEnd] = useState('17:00');
+  const [isSavingDefaults, setIsSavingDefaults] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchAvailability();
+      fetchDefaultHours();
     }
   }, [user]);
 
@@ -128,6 +140,56 @@ export default function VendorAvailabilityPage() {
     }
   };
 
+  const fetchDefaultHours = async () => {
+    if (!user) return;
+
+    try {
+      // We'll store default hours in localStorage for this implementation
+      // In a real application, this would be stored in the database
+      const savedDefaults = localStorage.getItem(`vendor_default_hours_${user.id}`);
+      if (savedDefaults) {
+        const defaults: DefaultHours = JSON.parse(savedDefaults);
+        setDefaultTimeStart(defaults.timeStart);
+        setDefaultTimeEnd(defaults.timeEnd);
+      }
+    } catch (error) {
+      console.error('Error fetching default hours:', error);
+    }
+  };
+
+  const saveDefaultHours = async () => {
+    if (!user) return;
+
+    setIsSavingDefaults(true);
+    try {
+      // Store default hours in localStorage
+      const defaults: DefaultHours = {
+        timeStart: defaultTimeStart,
+        timeEnd: defaultTimeEnd
+      };
+      
+      localStorage.setItem(`vendor_default_hours_${user.id}`, JSON.stringify(defaults));
+      
+      // Update the state for new availability entries
+      setTimeStart(defaultTimeStart);
+      setTimeEnd(defaultTimeEnd);
+      
+      toast({
+        title: 'Default hours saved',
+        description: 'Your default working hours have been updated.',
+      });
+    } catch (error) {
+      console.error('Error saving default hours:', error);
+      toast({
+        title: 'Failed to save default hours',
+        description: 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingDefaults(false);
+    }
+  };
+
   const handleDayClick = (day: Date) => {
     const selectedDate = new Date(day);
     
@@ -142,8 +204,8 @@ export default function VendorAvailabilityPage() {
         date: selectedDate,
       });
       setIsAvailable(existingDay.isAvailable);
-      setTimeStart(existingDay.timeStart || '09:00');
-      setTimeEnd(existingDay.timeEnd || '17:00');
+      setTimeStart(existingDay.timeStart || defaultTimeStart);
+      setTimeEnd(existingDay.timeEnd || defaultTimeEnd);
       setNotes(existingDay.notes || '');
     } else {
       setSelectedDay({
@@ -151,8 +213,8 @@ export default function VendorAvailabilityPage() {
         isAvailable: true,
       });
       setIsAvailable(true);
-      setTimeStart('09:00');
-      setTimeEnd('17:00');
+      setTimeStart(defaultTimeStart);
+      setTimeEnd(defaultTimeEnd);
       setNotes('');
     }
 
@@ -238,6 +300,26 @@ export default function VendorAvailabilityPage() {
     }
     
     return '';
+  };
+
+  const applyDefaultsToWeek = () => {
+    if (!date) return;
+    
+    const currentDate = new Date(date.getTime());
+    const startOfWeek = new Date(currentDate);
+    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Sunday
+    
+    toast({
+      title: 'Applying default hours',
+      description: 'Default hours will be applied to the current week.',
+    });
+    
+    // This is where you would batch apply default hours to multiple days
+    // For this example, we'll just show a toast notification
+    toast({
+      title: 'Feature coming soon',
+      description: 'This feature will be available in the next update.',
+    });
   };
 
   return (
@@ -409,7 +491,8 @@ export default function VendorAvailabilityPage() {
                       <Input 
                         id="default-start" 
                         type="time" 
-                        defaultValue="09:00" 
+                        value={defaultTimeStart}
+                        onChange={e => setDefaultTimeStart(e.target.value)}
                       />
                     </div>
                     <div>
@@ -417,12 +500,27 @@ export default function VendorAvailabilityPage() {
                       <Input 
                         id="default-end" 
                         type="time" 
-                        defaultValue="17:00" 
+                        value={defaultTimeEnd}
+                        onChange={e => setDefaultTimeEnd(e.target.value)}
                       />
                     </div>
                   </div>
-                  <Button className="w-full mt-2" variant="outline" disabled>
-                    Save Default Hours <Badge variant="outline" className="ml-2">Coming Soon</Badge>
+                  <Button 
+                    className="w-full mt-2" 
+                    variant="outline"
+                    onClick={saveDefaultHours}
+                    disabled={isSavingDefaults}
+                  >
+                    {isSavingDefaults ? 'Saving...' : 'Save Default Hours'}
+                    <Save className="ml-2 h-4 w-4" />
+                  </Button>
+                  
+                  <Button 
+                    className="w-full mt-2" 
+                    variant="outline" 
+                    onClick={applyDefaultsToWeek}
+                  >
+                    Apply to Current Week
                   </Button>
                 </div>
               </CardContent>

@@ -52,7 +52,7 @@ import VendorPricingPage from "./pages/vendor/VendorPricingPage";
 import VendorGoLivePage from "./pages/vendor/VendorGoLivePage";
 import VendorPanelPage from "./pages/vendor/VendorPanelPage";
 import VendorMessagesPage from "./pages/vendor/VendorMessagesPage";
-import VendorMessagesPage as HostVendorMessagesPage from "./pages/VendorMessagesPage";
+import HostVendorMessagesPage from "./pages/VendorMessagesPage";
 
 const queryClient = new QueryClient();
 

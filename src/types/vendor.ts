@@ -60,8 +60,8 @@ export interface Message {
   id: string;
   sender_id: string;
   recipient_id: string;
-  sender_role: string;
-  recipient_role: string;
+  sender_role: "host" | "vendor" | "guest" | "fetchman" | "support";
+  recipient_role: "host" | "vendor" | "guest" | "fetchman" | "support";
   content: string;
   is_read: boolean;
   created_at: string;
@@ -72,7 +72,7 @@ export interface VendorHostRelationship {
   id: string;
   vendor_id: string;
   host_id: string;
-  status: string;
+  status: "invited" | "active" | "paused" | "rejected";
   engagement_score: number;
   first_contact_date: string;
   last_interaction_date: string;

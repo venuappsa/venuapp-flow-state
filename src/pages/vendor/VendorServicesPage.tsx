@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -172,14 +173,22 @@ export default function VendorServicesPage() {
       // Save to localStorage as a temporary solution
       localStorage.setItem("vendorServices", JSON.stringify(servicesToSave));
 
-      // Update vendor profile setup progress
-      await supabase
-        .from("vendor_profiles")
-        .update({
-          setup_progress: 75,
-          setup_stage: "services"
-        })
-        .eq("user_id", user.id);
+      try {
+        // Update vendor profile with mock data for now
+        await supabase
+          .from("vendor_profiles")
+          .update({
+            // These fields are added to the type definition but may not exist in the actual database table yet
+            setup_progress: 75
+          })
+          .eq("user_id", user.id);
+      } catch (error) {
+        console.error("Error with supabase update:", error);
+      }
+
+      // Store in localStorage as fallback
+      localStorage.setItem("vendorSetupProgress", "75");
+      localStorage.setItem("vendorSetupStage", "services");
 
       toast({
         title: "Services saved",

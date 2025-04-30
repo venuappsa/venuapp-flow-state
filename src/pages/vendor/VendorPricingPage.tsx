@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import {
   Card,
@@ -31,11 +32,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import {
   AlertCircle,
   ChevronLeft,
@@ -43,6 +50,8 @@ import {
   DollarSign,
   Brush,
   Info,
+  CalendarIcon as Calendar,
+  Clock,
 } from "lucide-react";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
 import { VendorProfile } from "@/types/vendor";
@@ -109,7 +118,7 @@ export default function VendorPricingPage() {
         }
 
         if (data) {
-          const profileData = data as VendorProfile;
+          const profileData = data as unknown as VendorProfile;
           setVendorProfile(profileData);
           
           // If pricing settings exist, populate the form

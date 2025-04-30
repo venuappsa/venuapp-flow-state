@@ -5,6 +5,7 @@ import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
 import { useToast } from "@/components/ui/use-toast";
+import { VendorProfile } from "@/types/vendor";
 
 export default function VendorPanelPage() {
   const { user } = useUser();
@@ -34,7 +35,9 @@ export default function VendorPanelPage() {
           
           // Redirect based on setup stage
           if (data) {
-            const setupStage = data.setup_stage;
+            const profileData = data as unknown as VendorProfile;
+            const setupStage = profileData.setup_stage || 'welcome';
+            
             switch(setupStage) {
               case "welcome":
                 navigate("/vendor/welcome");

@@ -68,33 +68,33 @@ export default function VendorGoLivePage() {
         }
         
         if (profileData) {
-          setProfile(profileData as VendorProfile);
-          setIsVisible(profileData.status === "live");
+          const vendorProfile = profileData as unknown as VendorProfile;
+          setProfile(vendorProfile);
+          setIsVisible(vendorProfile.status === "live");
           
           // Perform checks
           setChecksPassed({
-            profile: !!profileData.business_name && 
-                      !!profileData.description && 
-                      (profileData.description?.length || 0) > 20,
+            profile: !!vendorProfile.business_name && 
+                    !!vendorProfile.description && 
+                    (vendorProfile.description?.length || 0) > 20,
             services: false, // Will update after fetching services
-            pricing: profileData.setup_stage === "golive" || 
-                      profileData.status === "live",
+            pricing: vendorProfile.setup_stage === "golive" || 
+                    vendorProfile.status === "live",
           });
         }
         
         // Fetch services count
         try {
-          // We can't directly use vendor_services yet because types aren't updated
-          // So we'll use a raw query for now
-          const { count, error: countError } = await supabase
-            .from("vendor_services")
-            .select("id", { count: "exact", head: true })
-            .eq("vendor_id", user.id);
+          // Call our edge function to get services
+          const { data: servicesData, error: servicesError } = await supabase.functions
+            .invoke("get_vendor_services", {
+              body: { vendor_user_id: user.id }
+            });
             
-          if (countError) {
-            console.error("Error fetching services count:", countError);
+          if (servicesError) {
+            console.error("Error fetching services count:", servicesError);
           } else {
-            const servicesCount = count || 0;
+            const servicesCount = servicesData?.length || 0;
             setServiceCount(servicesCount);
             
             // Update services check
@@ -491,12 +491,12 @@ export default function VendorGoLivePage() {
                   {profile.logo_url ? (
                     <img 
                       src={profile.logo_url} 
-                      alt={profile.business_name || 'Vendor'} 
+                      alt={profile.business_name || profile.company_name || 'Vendor'} 
                       className="h-full w-full object-contain rounded"
                     />
                   ) : (
                     <div className="text-2xl font-bold text-gray-400">
-                      {profile.business_name?.charAt(0) || "V"}
+                      {(profile.business_name || profile.company_name || "V").charAt(0)}
                     </div>
                   )}
                 </div>

@@ -120,9 +120,11 @@ export default function VendorServicesPage() {
       try {
         setLoading(true);
         
-        // Check if we already have services for this vendor
-        const { data, error } = await supabase
-          .rpc('get_vendor_services', { vendor_user_id: user.id });
+        // Call our edge function to get services
+        const { data, error } = await supabase.functions
+          .invoke("get_vendor_services", {
+            body: { vendor_user_id: user.id }
+          });
           
         if (error) {
           console.error("Error fetching services:", error);
@@ -134,7 +136,7 @@ export default function VendorServicesPage() {
           return;
         }
         
-        if (data && data.length > 0) {
+        if (data && Array.isArray(data) && data.length > 0) {
           setVendorServices(data as VendorService[]);
           
           // Populate form with existing services
@@ -163,7 +165,7 @@ export default function VendorServicesPage() {
     };
 
     fetchVendorServices();
-  }, [user, toast]);
+  }, [user, toast, form]);
 
   // Add a new service field
   const handleAddService = () => {
@@ -184,58 +186,44 @@ export default function VendorServicesPage() {
     setLoading(true);
 
     try {
-      // Update services table
+      // For each service, either update existing or create new
       for (const service of values.services) {
         if (service.id) {
-          // Update existing service
-          const { error } = await supabase
-            .from("vendor_services")
-            .update({
-              title: service.title,
-              description: service.description,
-              category: service.category,
-              duration: service.duration || null,
-              price: service.price,
-              price_unit: service.priceUnit,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", service.id)
-            .eq("vendor_id", user.id);
-            
-          if (error) {
-            console.error("Error updating service:", error);
-            toast({
-              title: "Error saving services",
-              description: "Please try again",
-              variant: "destructive"
-            });
-            return;
-          }
+          // Use edge function to update service
+          await supabase.functions.invoke("get_vendor_services", {
+            body: {
+              action: "update",
+              vendor_user_id: user.id,
+              service_id: service.id,
+              service_data: {
+                title: service.title,
+                description: service.description,
+                category: service.category,
+                duration: service.duration || null,
+                price: service.price,
+                price_unit: service.priceUnit,
+                updated_at: new Date().toISOString(),
+              }
+            }
+          });
         } else {
-          // Insert new service
-          const { error } = await supabase
-            .from("vendor_services")
-            .insert({
-              vendor_id: user.id,
-              title: service.title,
-              description: service.description,
-              category: service.category,
-              duration: service.duration || null,
-              price: service.price,
-              price_unit: service.priceUnit,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
-            
-          if (error) {
-            console.error("Error adding new service:", error);
-            toast({
-              title: "Error saving services",
-              description: "Please try again",
-              variant: "destructive"
-            });
-            return;
-          }
+          // Use edge function to create service
+          await supabase.functions.invoke("get_vendor_services", {
+            body: {
+              action: "create",
+              vendor_user_id: user.id,
+              service_data: {
+                title: service.title,
+                description: service.description,
+                category: service.category,
+                duration: service.duration || null,
+                price: service.price,
+                price_unit: service.priceUnit,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }
+            }
+          });
         }
       }
 

@@ -15,7 +15,6 @@ export interface VendorProfile {
   state?: string;
   zipcode?: string;
   country?: string;
-  website?: string;
   setup_stage: string;
   setup_progress: number;
   status: string;
@@ -34,6 +33,11 @@ export interface VendorProfile {
     availabilityMode: string;
     leadTime: string;
   };
+  // New metrics fields
+  response_time_minutes?: number;
+  message_response_rate?: number;
+  total_hosts_connected?: number;
+  active_listings?: number;
   created_at: string;
   updated_at: string;
   last_active?: string;
@@ -50,4 +54,45 @@ export interface VendorService {
   price_unit: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  sender_role: string;
+  recipient_role: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VendorHostRelationship {
+  id: string;
+  vendor_id: string;
+  host_id: string;
+  status: string;
+  engagement_score: number;
+  first_contact_date: string;
+  last_interaction_date: string;
+  invitation_code?: string;
+  invitation_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VendorMetrics {
+  total_hosts: number;
+  active_hosts: number;
+  messages_this_week: number;
+  response_rate: number;
+}
+
+export interface HostMetrics {
+  total_vendors: number;
+  live_vendors: number;
+  avg_engagement_score: number;
+  avg_response_time_minutes: number;
+  message_activity_week: number;
 }

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -113,7 +112,7 @@ const App = () => (
           <Route path="/host/analytics" element={<AnalyticsPage />} />
           <Route path="/host/settings" element={<SettingsPage />} />
           <Route path="/host/knowledge" element={<KnowledgeBasePage />} />
-          <Route path="/host/messages" element={<MessagesPage />} />
+          <Route path="/host/messages" element={<VendorMessagesPage />} />
           <Route path="/host/notifications" element={<NotificationsPage />} />
 
           {/* Vendor panel routes */}
@@ -124,6 +123,7 @@ const App = () => (
           <Route path="/vendor/services" element={<VendorServicesPage />} />
           <Route path="/vendor/pricing" element={<VendorPricingPage />} />
           <Route path="/vendor/go-live" element={<VendorGoLivePage />} />
+          <Route path="/vendor/messages" element={<VendorMessagesPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

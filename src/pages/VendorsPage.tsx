@@ -1,12 +1,12 @@
 
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
-import VendorsTab from "@/components/host/VendorsTab";
+import VendorCRM from "@/components/host/VendorCRM";
 
 export default function VendorsPage() {
   return (
     <HostPanelLayout>
       <div className="max-w-7xl mx-auto py-8">
-        <VendorsTab />
+        <VendorCRM />
       </div>
     </HostPanelLayout>
   );

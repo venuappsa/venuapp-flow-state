@@ -35,7 +35,7 @@ export default function VendorPanelPage() {
           
           // Redirect based on setup stage
           if (data) {
-            const profileData = data as unknown as VendorProfile;
+            const profileData = data as VendorProfile;
             const setupStage = profileData.setup_stage || 'welcome';
             
             switch(setupStage) {

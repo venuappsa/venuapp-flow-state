@@ -25,11 +25,14 @@ export default function VendorWelcomePage() {
         await supabase
           .from("vendor_profiles")
           .update({
-            setup_stage: 'profile',
-            setup_progress: 10,
+            updated_at: new Date().toISOString(),
             last_active: new Date().toISOString(),
           })
           .eq('user_id', user.id);
+          
+        // Store setup progress in localStorage
+        localStorage.setItem("vendorSetupProgress", "10");
+        localStorage.setItem("vendorSetupStage", "profile");
       } catch (error) {
         console.error("Error updating vendor profile:", error);
       }

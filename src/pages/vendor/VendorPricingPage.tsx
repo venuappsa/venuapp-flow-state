@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -74,23 +73,18 @@ export default function VendorPricingPage() {
         leadTime
       };
 
-      // Update vendor profile with mock data for now
-      // Since we can't add new columns directly through TypeScript,
-      // we'll use localStorage as fallback
+      // Try to update vendor profile but don't rely on additional fields
       try {
+        // Attempt to update the existing fields only
         const { error } = await supabase
           .from("vendor_profiles")
           .update({
-            // These fields are added to the type definition but may not 
-            // exist in the actual database table yet
-            setup_stage: "pricing",
-            setup_progress: 90,
+            updated_at: new Date().toISOString()
           })
           .eq("user_id", user.id);
 
         if (error) {
           console.error("Error updating vendor profile in database:", error);
-          // Continue with localStorage as fallback
         }
       } catch (error) {
         console.error("Error with supabase update:", error);

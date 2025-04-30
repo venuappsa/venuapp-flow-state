@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -174,12 +173,11 @@ export default function VendorServicesPage() {
       localStorage.setItem("vendorServices", JSON.stringify(servicesToSave));
 
       try {
-        // Update vendor profile with mock data for now
+        // Update vendor profile with only existing fields
         await supabase
           .from("vendor_profiles")
           .update({
-            // These fields are added to the type definition but may not exist in the actual database table yet
-            setup_progress: 75
+            updated_at: new Date().toISOString()
           })
           .eq("user_id", user.id);
       } catch (error) {

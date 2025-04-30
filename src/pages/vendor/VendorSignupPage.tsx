@@ -86,8 +86,6 @@ export default function VendorSignupPage() {
             contact_name: formData.contactName,
             contact_email: formData.email,
             contact_phone: formData.phone,
-            setup_stage: "welcome",
-            setup_progress: 10,
             status: "pending"
           });
         
@@ -107,6 +105,10 @@ export default function VendorSignupPage() {
           role: "merchant"
         });
         
+      // Store setup progress in localStorage
+      localStorage.setItem("vendorSetupProgress", "10");
+      localStorage.setItem("vendorSetupStage", "welcome");
+      
       navigate("/vendor/welcome");
     } catch (error: any) {
       console.error("Error creating vendor profile:", error);

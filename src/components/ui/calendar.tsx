@@ -6,18 +6,21 @@ import { DayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  dayClassName?: (day: Date) => string;
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  dayClassName,
   ...props
 }: CalendarProps) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -55,6 +58,15 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        Day: (props) => {
+          const customClassName = dayClassName ? dayClassName(props.date) : "";
+          return (
+            <button
+              {...props}
+              className={cn(props.className, customClassName)}
+            />
+          );
+        },
       }}
       {...props}
     />

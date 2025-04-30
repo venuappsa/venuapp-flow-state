@@ -1,6 +1,6 @@
 
 describe('Basic Route Tests', () => {
-  it('should confirm login route exists', () => {
+  it('should confirm auth route exists', () => {
     cy.visit('/auth');
     cy.url().should('include', '/auth');
     cy.get('h1').should('contain', 'Venuapp');

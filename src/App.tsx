@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
@@ -90,7 +91,7 @@ const AppRoutes = () => {
 
 function App() {
   const { theme } = useTheme()
-  const { user, isLoading } = useUser();
+  const { user, loading: isLoading } = useUser();
   const [isConnected, setIsConnected] = useState(true);
   const breakpoint = useBreakpoint();
   const navigate = useNavigate();

@@ -5,7 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   CalendarPlus, 
-  ChevronRight
+  ChevronRight,
+  Clock,
+  Users,
+  MessageSquare,
+  Store
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -77,36 +81,147 @@ export default function DashboardTab() {
     navigate(`/host/events/${eventId}`);
   };
 
+  // Calculate stats for dashboard cards
+  const activeEventsCount = dummyEvents.filter(event => event.status === 'upcoming').length;
+  const pendingQuotesCount = 8; // Mock data
+  const upcomingTasksCount = 12; // Mock data
+  const vendorsAssignedCount = dummyEvents.reduce((total, event) => total + (event.vendors || 0), 0);
+
   return (
     <div className="space-y-8">
       <div className="mb-8">
         <NoticeBoard />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {dashboardStats.map((stat, index) => (
-          <Card 
-            key={index} 
-            className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => handleStatsCardClick(stat)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="bg-gray-100 p-2 rounded-full">
-                  <stat.icon className="h-5 w-5 text-venu-orange" />
-                </div>
-                <div className={`text-xs px-2 py-1 rounded ${stat.changeType === 'positive' ? 'bg-green-100 text-green-800' : stat.changeType === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700'}`}>
-                  {stat.change}
-                </div>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Host Dashboard</h2>
+        <Button 
+          onClick={() => navigate("/host/events/new")}
+          size={isMobile ? "sm" : "default"}
+          className="gap-2"
+        >
+          <CalendarPlus className="h-4 w-4" />
+          <span>Create New Event</span>
+        </Button>
+      </div>
+
+      {/* Event Planning Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Active Events Card */}
+        <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate("/host/events")}>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="bg-blue-100 p-2 rounded-full">
+                <CalendarPlus className="h-5 w-5 text-blue-600" />
               </div>
-              <div className="mt-2">
-                <h3 className="font-medium text-gray-500 text-sm">{stat.title}</h3>
-                <div className="text-2xl font-bold mt-1">{stat.value}</div>
-                <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
+            </div>
+            <div className="mt-2">
+              <h3 className="font-medium text-gray-500 text-sm">Active Events</h3>
+              <div className="text-2xl font-bold mt-1">{activeEventsCount}</div>
+              <p className="text-xs text-gray-500 mt-1">Events in planning or live</p>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="p-0 h-auto mt-2 text-blue-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/host/events");
+                }}
+              >
+                <span className="mr-1">View all</span>
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Vendors Assigned Card */}
+        <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate("/host/vendors")}>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="bg-green-100 p-2 rounded-full">
+                <Store className="h-5 w-5 text-green-600" />
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+            <div className="mt-2">
+              <h3 className="font-medium text-gray-500 text-sm">Vendors Assigned</h3>
+              <div className="text-2xl font-bold mt-1">{vendorsAssignedCount}</div>
+              <p className="text-xs text-gray-500 mt-1">Total vendors across events</p>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="p-0 h-auto mt-2 text-green-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/host/vendors");
+                }}
+              >
+                <span className="mr-1">Manage vendors</span>
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pending Quotes Card */}
+        <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate("/host/events")}>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="bg-orange-100 p-2 rounded-full">
+                <MessageSquare className="h-5 w-5 text-orange-600" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <h3 className="font-medium text-gray-500 text-sm">Pending Quotes</h3>
+              <div className="text-2xl font-bold mt-1">{pendingQuotesCount}</div>
+              <p className="text-xs text-gray-500 mt-1">Awaiting vendor responses</p>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="p-0 h-auto mt-2 text-orange-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/host/events");
+                }}
+              >
+                <span className="mr-1">Review quotes</span>
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Tasks Card */}
+        <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate("/host/events")}>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="bg-purple-100 p-2 rounded-full">
+                <Clock className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <h3 className="font-medium text-gray-500 text-sm">Upcoming Tasks</h3>
+              <div className="text-2xl font-bold mt-1">{upcomingTasksCount}</div>
+              <p className="text-xs text-gray-500 mt-1">Tasks needing attention</p>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="p-0 h-auto mt-2 text-purple-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/host/events");
+                }}
+              >
+                <span className="mr-1">View tasks</span>
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="space-y-6 mb-28">

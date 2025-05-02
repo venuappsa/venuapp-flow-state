@@ -50,6 +50,13 @@ import {
   PaystackSubscriptionPage as PaystackManagePage
 } from "@/pages";
 
+// Import new event pages
+import EventCreationPage from "@/pages/host/EventCreationPage";
+import EventEditPage from "@/pages/host/EventEditPage";
+import EventVendorsPage from "@/pages/host/EventVendorsPage";
+import EventTasksPage from "@/pages/host/EventTasksPage";
+import EventMessagesPage from "@/pages/host/EventMessagesPage";
+
 // Admin pages imports
 import AdminPanel from "@/pages/AdminPanel";
 import AdminEventsPage from "@/pages/admin/AdminEventsPage";
@@ -111,8 +118,13 @@ const AppRoutes = () => {
         <Route path="venues/create" element={<VenueCreate />} />
         <Route path="venues/:venueId" element={<VenueManagementPage />} />
         <Route path="events" element={<EventsPage />} />
+        <Route path="events/new" element={<EventCreationPage />} />
         <Route path="events/:eventId" element={<EventManagementPage />} />
+        <Route path="events/:eventId/edit" element={<EventEditPage />} />
         <Route path="events/:eventId/timeline" element={<EventTimelinePage />} />
+        <Route path="events/:eventId/vendors" element={<EventVendorsPage />} />
+        <Route path="events/:eventId/tasks" element={<EventTasksPage />} />
+        <Route path="events/:eventId/messages" element={<EventMessagesPage />} />
         <Route path="vendors" element={<VendorsPage />} />
         <Route path="invitations" element={<InvitationsPage />} />
         <Route path="finance" element={<FinancePage />} />

@@ -9,7 +9,7 @@ import { Message } from "@/types/vendor";
 interface MessageThreadProps {
   messages: Message[];
   currentUserId: string;
-  currentUserRole: "host" | "vendor";
+  currentUserRole: "host" | "vendor" | "admin";
   contactName: string;
   contactAvatar?: string;
   onSendMessage: (content: string) => void;

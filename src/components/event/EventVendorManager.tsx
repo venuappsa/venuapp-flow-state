@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Plus, X, UserPlus, Mail, Phone } from 'lucide-react';
+import { Search, Plus, X, UserPlus, Mail, Phone, Store } from 'lucide-react';
 
 // Mock vendor categories
 const vendorCategories = [

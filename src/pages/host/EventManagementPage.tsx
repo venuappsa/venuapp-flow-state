@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
@@ -13,6 +12,9 @@ import { Pencil, Calendar, Users, Store, MessageSquare, Clock } from "lucide-rea
 import TaskManager from "@/components/event/TaskManager";
 import EventVendorManager from "@/components/event/EventVendorManager";
 import EventMessaging from "@/components/event/EventMessaging";
+
+// Make sure each dummy event in your data has a description property
+// If you're not importing dummyEvents from another file, you'll need to add the description property to each event
 
 export default function EventManagementPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -34,6 +36,11 @@ export default function EventManagementPage() {
         </div>
       </HostPanelLayout>
     );
+  }
+
+  // If an event doesn't have a description, add a default one
+  if (!event.description) {
+    event.description = "No description provided for this event.";
   }
 
   const formatEventDate = (dateString: string) => {

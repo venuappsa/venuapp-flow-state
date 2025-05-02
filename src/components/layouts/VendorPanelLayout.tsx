@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -16,16 +15,20 @@ export default function VendorPanelLayout({ children }: VendorPanelLayoutProps) 
   const { user, loading: userLoading } = useUser();
   const { data: roles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (!userLoading && !user) {
       navigate('/auth/login');
       return;
     }
-    
+
     if (!rolesLoading && user && roles.length > 0) {
-      // Check if user has vendor/merchant role
       const isMerchant = roles.some(role => role === 'merchant');
+
+      console.log("VendorPanelLayout mounted - User:", user?.id);
+      console.log("VendorPanelLayout - User roles:", roles);
+      console.log("VendorPanelLayout - Is merchant:", isMerchant);
+
       if (!isMerchant) {
         navigate('/');
       }

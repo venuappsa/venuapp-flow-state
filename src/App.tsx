@@ -33,6 +33,26 @@ const AdminPlatformSettingsPage = lazy(() => import("./pages/admin/AdminPlatform
 // Vendor pages
 const VendorSignupPage = lazy(() => import("./pages/vendor/VendorSignupPage"));
 const VendorMessagesPage = lazy(() => import("./pages/VendorMessagesPage"));
+const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
+const VendorProfilePage = lazy(() => import("./pages/vendor/VendorProfilePage"));
+const VendorServicesPage = lazy(() => import("./pages/vendor/VendorServicesPage"));
+const VendorPricingPage = lazy(() => import("./pages/vendor/VendorPricingPage"));
+const VendorBookingsPage = lazy(() => import("./pages/vendor/VendorBookingsPage"));
+const VendorAvailabilityPage = lazy(() => import("./pages/vendor/VendorAvailabilityPage"));
+const VendorReviewsPage = lazy(() => import("./pages/vendor/VendorReviewsPage"));
+const VendorGoLivePage = lazy(() => import("./pages/vendor/VendorGoLivePage"));
+const VendorSettingsPage = lazy(() => import("./pages/vendor/VendorSettingsPage"));
+const VendorSupportPage = lazy(() => import("./pages/vendor/VendorSupportPage"));
+
+// Host pages
+const HostEventsPage = lazy(() => import("./pages/host/HostEventsPage"));
+const HostGuestsPage = lazy(() => import("./pages/host/HostGuestsPage"));
+const HostFinancePage = lazy(() => import("./pages/host/HostFinancePage"));
+const HostAnalyticsPage = lazy(() => import("./pages/host/HostAnalyticsPage"));
+const HostMessagesPage = lazy(() => import("./pages/host/HostMessagesPage"));
+const HostNotificationsPage = lazy(() => import("./pages/host/HostNotificationsPage"));
+const HostKnowledgePage = lazy(() => import("./pages/host/HostKnowledgePage"));
+const HostSettingsPage = lazy(() => import("./pages/host/HostSettingsPage"));
 
 export default function App() {
   return (
@@ -45,8 +65,10 @@ export default function App() {
           
           {/* Auth routes */}
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/auth/login" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/auth/register" element={<Navigate to="/register" replace />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           
@@ -64,9 +86,16 @@ export default function App() {
             <Route path="dashboard" element={<HostDashboardPage />} />
             <Route path="venues" element={<VenuesPage />} />
             <Route path="vendors" element={<VendorsPage />} />
+            <Route path="events" element={<HostEventsPage />} />
+            <Route path="guests" element={<HostGuestsPage />} />
+            <Route path="finance" element={<HostFinancePage />} />
+            <Route path="analytics" element={<HostAnalyticsPage />} />
+            <Route path="messages" element={<HostMessagesPage />} />
+            <Route path="notifications" element={<HostNotificationsPage />} />
+            <Route path="knowledge" element={<HostKnowledgePage />} />
+            <Route path="settings" element={<HostSettingsPage />} />
             <Route path="account" element={<AccountSettingsPage />} />
             <Route path="subscription" element={<SubscriptionPage />} />
-            <Route path="messages" element={<MessagesPage />} />
           </Route>
 
           {/* Admin panel routes */}
@@ -98,8 +127,17 @@ export default function App() {
             }
           >
             <Route index element={<Navigate to="/vendor/dashboard" replace />} />
-            <Route path="dashboard" element={<VendorMessagesPage />} /> {/* Temporary using MessagesPage as dashboard */}
+            <Route path="dashboard" element={<VendorDashboardPage />} />
+            <Route path="profile" element={<VendorProfilePage />} />
+            <Route path="services" element={<VendorServicesPage />} />
+            <Route path="pricing" element={<VendorPricingPage />} />
+            <Route path="bookings" element={<VendorBookingsPage />} />
+            <Route path="availability" element={<VendorAvailabilityPage />} />
+            <Route path="reviews" element={<VendorReviewsPage />} />
+            <Route path="go-live" element={<VendorGoLivePage />} />
             <Route path="messages" element={<VendorMessagesPage />} />
+            <Route path="settings" element={<VendorSettingsPage />} />
+            <Route path="support" element={<VendorSupportPage />} />
             <Route path="signup" element={<VendorSignupPage />} />
           </Route>
 
@@ -113,4 +151,3 @@ export default function App() {
     </>
   );
 }
-

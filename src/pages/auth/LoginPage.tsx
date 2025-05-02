@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -22,10 +23,15 @@ const loginFormSchema = z.object({
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
+  
+  // Get next path from URL parameters or location state
+  const nextPath = searchParams.get('next') || location.state?.from?.pathname || null;
+  const requiredRole = searchParams.get('required') || null;
   
   // If user is already logged in, redirect to appropriate dashboard
   React.useEffect(() => {
@@ -65,8 +71,24 @@ export default function LoginPage() {
       const roles = userRoles?.map(r => r.role) || [];
       console.log("LoginPage: User roles retrieved:", roles);
       
-      // Determine redirect based on actual roles
-      const redirectPath = getRedirectPageForRoles(roles);
+      // Check if user has the required role (if specified)
+      if (requiredRole && !roles.includes(requiredRole)) {
+        toast({
+          title: "Access denied",
+          description: `You don't have the required role: ${requiredRole}`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Determine redirect based on roles and nextPath
+      let redirectPath = nextPath;
+      
+      // If no specific next path, determine based on roles
+      if (!redirectPath) {
+        redirectPath = getRedirectPageForRoles(roles);
+      }
+      
       console.log("LoginPage: Redirecting to", redirectPath);
       
       toast({
@@ -118,9 +140,29 @@ export default function LoginPage() {
   };
   
   // For demo purposes - quick login with predefined credentials
-  const handleQuickLogin = async (role: "admin" | "host") => {
-    form.setValue("email", role === "admin" ? "admin@example.com" : "host@example.com");
-    form.setValue("password", "password123");
+  const handleQuickLogin = async (role: "admin" | "host" | "vendor") => {
+    let email, password;
+    
+    switch(role) {
+      case "admin":
+        email = "admin@example.com";
+        password = "password123";
+        break;
+      case "host":
+        email = "host@example.com";
+        password = "password123";
+        break;
+      case "vendor":
+        email = "merchant@example.com";
+        password = "password123";
+        break;
+      default:
+        email = "host@example.com";
+        password = "password123";
+    }
+    
+    form.setValue("email", email);
+    form.setValue("password", password);
     await form.handleSubmit(onSubmit)();
   };
   
@@ -142,6 +184,16 @@ export default function LoginPage() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{loginError}</AlertDescription>
+            </Alert>
+          )}
+          
+          {requiredRole && (
+            <Alert className="mb-4 bg-amber-50 border-amber-200">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-800">Role Required</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                This page requires the {requiredRole} role to access.
+              </AlertDescription>
             </Alert>
           )}
           
@@ -206,7 +258,7 @@ export default function LoginPage() {
           
           <div className="mt-6 space-y-2">
             <p className="text-xs text-center text-gray-500">Quick demo login:</p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -224,6 +276,15 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 Host
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex-1"
+                onClick={() => handleQuickLogin("vendor")}
+                disabled={isLoading}
+              >
+                Vendor
               </Button>
             </div>
           </div>

@@ -24,12 +24,20 @@ const AuthProtected = ({
   
   // For debugging
   useEffect(() => {
-    console.log("AuthProtected: user:", user?.id);
-    console.log("AuthProtected: roles:", roles);
-    console.log("AuthProtected: userLoading:", userLoading);
-    console.log("AuthProtected: rolesLoading:", rolesLoading);
-    console.log("AuthProtected: requiredRoles:", requiredRoles);
-  }, [user, roles, userLoading, rolesLoading, requiredRoles]);
+    console.group("AuthProtected Debug Info");
+    console.log("Path:", location.pathname);
+    console.log("User ID:", user?.id);
+    console.log("User Roles:", roles);
+    console.log("Required Roles:", requiredRoles);
+    console.log("Loading States - User:", userLoading, "Roles:", rolesLoading, "Checking:", checkingRoles);
+    console.log("Retry Count:", retryCount);
+    
+    const hasRequiredRole = requiredRoles.length === 0 || 
+      (Array.isArray(roles) && requiredRoles.some(role => roles.includes(role)));
+    
+    console.log("Has Required Role:", hasRequiredRole);
+    console.groupEnd();
+  }, [user, roles, userLoading, rolesLoading, requiredRoles, location.pathname, retryCount, checkingRoles]);
   
   // If roles are empty but user exists, retry fetching roles a few times
   useEffect(() => {
@@ -64,7 +72,9 @@ const AuthProtected = ({
   // If user is not logged in, redirect to login
   if (!user) {
     console.log("AuthProtected: No user found, redirecting to login");
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    // Include the current path as the 'next' parameter for redirect after login
+    const loginRedirectUrl = `${redirectTo}${redirectTo.includes('?') ? '&' : '?'}next=${encodeURIComponent(location.pathname)}`;
+    return <Navigate to={loginRedirectUrl} state={{ from: location }} replace />;
   }
   
   // If specific roles are required, check if user has at least one of them
@@ -78,7 +88,9 @@ const AuthProtected = ({
     
     if (!hasRequiredRole) {
       console.log("AuthProtected: User lacks required role, redirecting to:", redirectTo);
-      return <Navigate to={redirectTo} state={{ from: location }} replace />;
+      // Add information about the required role to the redirect URL
+      const roleRedirectUrl = `${redirectTo}${redirectTo.includes('?') ? '&' : '?'}required=${requiredRoles.join(',')}&next=${encodeURIComponent(location.pathname)}`;
+      return <Navigate to={roleRedirectUrl} state={{ from: location }} replace />;
     }
   }
   

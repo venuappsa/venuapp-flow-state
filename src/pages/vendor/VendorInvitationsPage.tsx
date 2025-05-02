@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Calendar, FileUp, FileCheck, X, Check } from "lucide-react";
-import { VendorInvite, RequiredDocument, Event, DocumentType } from "@/types/vendor";
+import { VendorInvite, RequiredDocument, Event, DocumentType, VendorInviteStatus, DocumentStatus } from "@/types/vendor";
 import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
 import { Input } from "@/components/ui/input";
 import {
@@ -203,7 +203,7 @@ export default function VendorInvitationsPage() {
             if (doc.id === documentToUpload.id) {
               return {
                 ...doc,
-                status: "uploaded",
+                status: "uploaded" as DocumentStatus,
                 file_name: selectedFile.name,
                 upload_date: new Date().toISOString()
               };
@@ -251,7 +251,7 @@ export default function VendorInvitationsPage() {
       if (inv.id === invite.id) {
         return {
           ...inv,
-          status: "accepted",
+          status: "accepted" as VendorInviteStatus,
           updated_at: new Date().toISOString()
         };
       }
@@ -272,7 +272,7 @@ export default function VendorInvitationsPage() {
       if (inv.id === invite.id) {
         return {
           ...inv,
-          status: "rejected",
+          status: "rejected" as VendorInviteStatus,
           updated_at: new Date().toISOString()
         };
       }

@@ -141,20 +141,29 @@ export interface Event {
   durationHours?: number;
 }
 
-// New interface for vendor invitations
+// Updated interface for document status to use literal types
+export type DocumentStatus = 'pending' | 'uploaded' | 'approved' | 'rejected';
+
+// Updated interface for vendor invitation status to use literal types
+export type VendorInviteStatus = 'pending' | 'accepted' | 'rejected' | 'confirmed' | 'paid';
+
+// Updated interface for payment status to use literal types
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
+
+// Interface for vendor invitations
 export interface VendorInvite {
   id: string;
   vendor_id: string;
   host_id: string;
   event_id: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'confirmed' | 'paid';
+  status: VendorInviteStatus;
   created_at: string;
   updated_at: string;
   required_documents: RequiredDocument[];
   invitation_message?: string;
   response_message?: string;
   payment_amount?: number;
-  payment_status?: 'pending' | 'paid' | 'failed';
+  payment_status?: PaymentStatus;
   payment_date?: string;
 }
 
@@ -166,7 +175,7 @@ export interface RequiredDocument {
   name: string;
   description?: string;
   is_required: boolean;
-  status: 'pending' | 'uploaded' | 'approved' | 'rejected';
+  status: DocumentStatus;
   file_path?: string;
   file_name?: string;
   upload_date?: string;

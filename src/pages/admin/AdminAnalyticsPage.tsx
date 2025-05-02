@@ -4,8 +4,7 @@ import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer } from "@/components/ui/chart";
-import { ResponsiveBar } from "recharts";
-import { Bar, Line, Pie } from "recharts";
+import { BarChart, LineChart, PieChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Line, Pie, Cell } from "recharts";
 import { generateMockAnalyticsData, generateDetailedAnalyticsData } from "@/data/analyticsData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,8 +16,8 @@ import {
   Building, 
   CalendarDays,
   BarChart3,
-  PieChart,
-  LineChart 
+  PieChart as PieChartIcon,
+  LineChart as LineChartIcon 
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -126,7 +125,7 @@ export default function AdminAnalyticsPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium">
                 <div className="flex items-center gap-2">
-                  <LineChart className="h-5 w-5 text-muted-foreground" />
+                  <LineChartIcon className="h-5 w-5 text-muted-foreground" />
                   Revenue Trend
                 </div>
               </CardTitle>
@@ -140,10 +139,16 @@ export default function AdminAnalyticsPage() {
               </div>
             ) : (
               <ChartContainer config={chartConfig} className="aspect-[4/3]">
-                <Line 
+                <LineChart 
+                  width={500}
+                  height={300}
                   data={analyticsData.revenueData}
-                  margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
                 >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
@@ -170,7 +175,7 @@ export default function AdminAnalyticsPage() {
                       dot={{ r: 4 }}
                     />
                   ) : null}
-                </Line>
+                </LineChart>
               </ChartContainer>
             )}
           </CardContent>
@@ -196,12 +201,17 @@ export default function AdminAnalyticsPage() {
               </div>
             ) : (
               <ChartContainer config={chartConfig} className="aspect-[4/3]">
-                <Bar 
+                <BarChart
+                  width={500}
+                  height={300}
                   data={getActiveVendorsData()}
-                  margin={{ top: 20, right: 20, bottom: 40, left: 40 }}
-                  barSize={40}
                   layout="vertical"
                 >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" width={150} />
+                  <Tooltip />
+                  <Legend />
                   <Bar
                     dataKey="sales"
                     name="Sales"
@@ -209,7 +219,7 @@ export default function AdminAnalyticsPage() {
                     radius={[4, 4, 0, 0]}
                     label={{ position: 'right', fill: '#888', fontSize: 12 }}
                   />
-                </Bar>
+                </BarChart>
               </ChartContainer>
             )}
           </CardContent>
@@ -221,7 +231,7 @@ export default function AdminAnalyticsPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium">
                 <div className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5 text-muted-foreground" />
+                  <PieChartIcon className="h-5 w-5 text-muted-foreground" />
                   Quote Requests by Category
                 </div>
               </CardTitle>
@@ -235,21 +245,24 @@ export default function AdminAnalyticsPage() {
               </div>
             ) : (
               <ChartContainer config={chartConfig} className="aspect-[4/3]">
-                <Pie 
-                  data={analyticsData.vendorCategoryData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {analyticsData.vendorCategoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
+                <PieChart width={500} height={300}>
+                  <Pie 
+                    data={analyticsData.vendorCategoryData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    nameKey="name"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {analyticsData.vendorCategoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
               </ChartContainer>
             )}
           </CardContent>

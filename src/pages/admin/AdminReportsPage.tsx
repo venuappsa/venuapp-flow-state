@@ -12,6 +12,7 @@ import { CheckCircle, Download, FileDown, Filter, Loader2, CalendarIcon } from '
 import { useToast } from '@/components/ui/use-toast';
 import { format, subDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { DateRange } from "react-day-picker";
 
 // Mock data for events
 const mockEvents = [
@@ -115,7 +116,7 @@ export default function AdminReportsPage() {
   const [activeTab, setActiveTab] = useState('events');
   
   // State for filters
-  const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: subDays(new Date(), 30),
     to: new Date()
   });
@@ -164,6 +165,16 @@ export default function AdminReportsPage() {
     return "Select a date range";
   };
 
+  // Handle date range change with type safety
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    if (range) {
+      setDateRange(range);
+      if (range.from && range.to) {
+        setDateOpen(false);
+      }
+    }
+  };
+
   return (
     <AdminPanelLayout>
       <div className="flex justify-between items-center mb-8">
@@ -206,12 +217,7 @@ export default function AdminReportsPage() {
                       mode="range"
                       defaultMonth={dateRange.from}
                       selected={dateRange}
-                      onSelect={(range) => {
-                        setDateRange(range);
-                        if (range.from && range.to) {
-                          setDateOpen(false);
-                        }
-                      }}
+                      onSelect={handleDateRangeChange}
                       numberOfMonths={2}
                     />
                   </PopoverContent>

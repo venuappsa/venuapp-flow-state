@@ -9,6 +9,7 @@ export interface SubscriptionData {
   subscription_tier?: string;
   subscription_end?: string;
   subscription_status?: "active" | "paused" | "expired" | "trial" | "none";
+  payment_gateway?: "stripe" | "paystack";
   isLoading: boolean;
   error: string | null;
 }
@@ -20,6 +21,7 @@ export function useSubscription() {
     subscription_tier: undefined,
     subscription_end: undefined,
     subscription_status: undefined,
+    payment_gateway: undefined,
     isLoading: true,
     error: null,
   });
@@ -58,6 +60,7 @@ export function useSubscription() {
         subscription_tier: data.subscription_tier,
         subscription_end: data.subscription_end,
         subscription_status: data.subscription_status,
+        payment_gateway: data.payment_gateway,
         isLoading: false,
         error: null,
       });
@@ -112,10 +115,101 @@ export function useSubscription() {
     }
   };
 
+  // New function for Paystack checkout
+  const createPaystackCheckout = async (planName: string, amount: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to subscribe to a plan",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("paystack-checkout", {
+        body: { 
+          planId: planName, // Using planName as planId for Paystack
+          planName, 
+          amount 
+        },
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      
+      if (error) {
+        console.error("Error creating Paystack checkout:", error);
+        toast({
+          title: "Checkout Error",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      console.error("Exception creating Paystack checkout:", err);
+      toast({
+        title: "Checkout Error",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   // Redirect to main site pricing page instead of checkout
   const redirectToPricing = () => {
     // Navigate to homepage pricing section
     window.location.href = "/#pricing";
+  };
+
+  // Function to open customer portal based on payment gateway
+  const openCustomerPortal = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to manage your subscription",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const portalEndpoint = subscriptionData.payment_gateway === "paystack" 
+        ? "paystack-portal" 
+        : "customer-portal";
+      
+      const { data, error } = await supabase.functions.invoke(portalEndpoint, {
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      
+      if (error) {
+        console.error(`Error opening ${subscriptionData.payment_gateway} portal:`, error);
+        toast({
+          title: "Portal Error",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      console.error("Exception opening customer portal:", err);
+      toast({
+        title: "Portal Error",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
   };
 
   useEffect(() => {
@@ -127,6 +221,9 @@ export function useSubscription() {
   return {
     ...subscriptionData,
     checkSubscription,
-    createCheckout
+    createCheckout,
+    createPaystackCheckout,
+    redirectToPricing,
+    openCustomerPortal
   };
 }

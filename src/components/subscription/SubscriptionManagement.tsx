@@ -13,6 +13,8 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import PlanFeatureComparison from "@/components/subscription/PlanFeatureComparison";
 import SubscriptionUsage from "@/components/subscription/SubscriptionUsage";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 export function SubscriptionManagement() {
   const { 
@@ -20,9 +22,12 @@ export function SubscriptionManagement() {
     subscription_tier, 
     subscription_end, 
     subscription_status,
+    payment_gateway,
     isLoading,
     checkSubscription,
-    createCheckout
+    createCheckout,
+    createPaystackCheckout,
+    openCustomerPortal
   } = useSubscription();
   
   const [pauseHistory, setPauseHistory] = useState<any[]>([]);
@@ -30,6 +35,7 @@ export function SubscriptionManagement() {
   const [isPausing, setIsPausing] = useState(false);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({});
+  const [selectedGateway, setSelectedGateway] = useState<"stripe" | "paystack">(payment_gateway || "stripe");
   
   // For this quarter's pause metrics
   const [currentQuarterUsed, setCurrentQuarterUsed] = useState(0);
@@ -44,6 +50,22 @@ export function SubscriptionManagement() {
     fetchmenUsed: 3,
     productsUsed: 15
   });
+
+  // Price mapping for different plans
+  const priceMap = {
+    Basic: {
+      stripe: "price_1OT7NbGVnlGQn0rKkm5MNuMp",
+      amount: "499"
+    },
+    Premium: {
+      stripe: "price_1OT7NuGVnlGQn0rKYTeHQsrE",
+      amount: "999"
+    },
+    Enterprise: {
+      stripe: "price_1OT7OPGVnlGQn0rKqTNCYLhc",
+      amount: "2499"
+    }
+  };
   
   // Since the subscription_pauses table doesn't exist yet, we'll just show a temporary placeholder
   // This would normally be filled with data from the database
@@ -104,14 +126,10 @@ export function SubscriptionManagement() {
     }
   };
   
-  const openCustomerPortal = async () => {
+  const handleOpenCustomerPortal = async () => {
     setIsPortalLoading(true);
     try {
-      // In a production app, this would call the customer-portal edge function
-      toast({
-        title: "Coming Soon",
-        description: "Customer portal will be available soon.",
-      });
+      await openCustomerPortal();
     } catch (err) {
       console.error("Error opening customer portal:", err);
       toast({
@@ -131,11 +149,27 @@ export function SubscriptionManagement() {
     }));
   };
 
+  const handlePlanSelect = (planName: string) => {
+    if (selectedGateway === "stripe") {
+      const planId = priceMap[planName as keyof typeof priceMap]?.stripe;
+      createCheckout(planId, planName);
+    } else {
+      const amount = priceMap[planName as keyof typeof priceMap]?.amount;
+      createPaystackCheckout(planName, amount);
+    }
+  };
+
   useEffect(() => {
     if (subscription_status === 'active') {
       fetchPauseHistory();
     }
   }, [subscription_status]);
+
+  useEffect(() => {
+    if (payment_gateway) {
+      setSelectedGateway(payment_gateway);
+    }
+  }, [payment_gateway]);
 
   if (isLoading) {
     return (
@@ -159,9 +193,28 @@ export function SubscriptionManagement() {
             To access subscription management features, you need to subscribe to a plan first.
           </p>
           
+          <div className="mb-6">
+            <p className="text-sm font-medium mb-2">Choose Payment Gateway</p>
+            <RadioGroup 
+              defaultValue={selectedGateway}
+              value={selectedGateway}
+              onValueChange={(value) => setSelectedGateway(value as "stripe" | "paystack")}
+              className="flex space-x-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="stripe" id="stripe" />
+                <Label htmlFor="stripe">Stripe</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="paystack" id="paystack" />
+                <Label htmlFor="paystack">Paystack</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          
           {/* Show plan comparison for non-subscribers */}
           <PlanFeatureComparison 
-            onPlanSelect={createCheckout}
+            onPlanSelect={handlePlanSelect}
           />
         </CardContent>
         <CardFooter>
@@ -204,6 +257,13 @@ export function SubscriptionManagement() {
                 </div>
               </div>
               
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Payment Gateway</span>
+                <Badge variant="outline" className="capitalize">
+                  {payment_gateway || "Unknown"}
+                </Badge>
+              </div>
+              
               {subscription_end && (
                 <div className="flex items-center justify-between">
                   <span className="font-medium">Renewal Date</span>
@@ -227,7 +287,7 @@ export function SubscriptionManagement() {
             </Button>
             
             <Button 
-              onClick={openCustomerPortal}
+              onClick={handleOpenCustomerPortal}
               disabled={isPortalLoading}
               size="sm"
             >
@@ -315,8 +375,27 @@ export function SubscriptionManagement() {
           <p className="text-gray-600">You can upgrade or change your plan anytime</p>
         </div>
 
+        <div className="mb-6">
+          <p className="text-sm font-medium mb-2">Choose Payment Gateway</p>
+          <RadioGroup 
+            defaultValue={selectedGateway}
+            value={selectedGateway}
+            onValueChange={(value) => setSelectedGateway(value as "stripe" | "paystack")}
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="stripe" id="stripe-select" />
+              <Label htmlFor="stripe-select">Stripe</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="paystack" id="paystack-select" />
+              <Label htmlFor="paystack-select">Paystack</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
         <PlanFeatureComparison 
-          onPlanSelect={createCheckout}
+          onPlanSelect={handlePlanSelect}
         />
       </div>
     </div>

@@ -1,9 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle, CreditCard } from "lucide-react";
 import { UnifiedPricingPlans } from "@/data/unifiedPricingPlans";
 
 interface SubscriptionPlanDialogProps {
@@ -26,9 +28,26 @@ export default function SubscriptionPlanDialog({
 }: SubscriptionPlanDialogProps) {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { subscribed, subscription_tier, createCheckout } = useSubscription();
+  const { subscribed, subscription_tier, payment_gateway, createCheckout, createPaystackCheckout } = useSubscription();
+  const [selectedGateway, setSelectedGateway] = useState<"stripe" | "paystack">("stripe");
 
   const plans = UnifiedPricingPlans;
+
+  // Price mapping for different plans
+  const priceMap = {
+    Basic: {
+      stripe: "price_1OT7NbGVnlGQn0rKkm5MNuMp",
+      amount: "499"
+    },
+    Premium: {
+      stripe: "price_1OT7NuGVnlGQn0rKYTeHQsrE",
+      amount: "999"
+    },
+    Enterprise: {
+      stripe: "price_1OT7OPGVnlGQn0rKqTNCYLhc",
+      amount: "2499"
+    }
+  };
 
   const handleSubscribe = (planName: string) => {
     if (!user) {
@@ -37,7 +56,14 @@ export default function SubscriptionPlanDialog({
       return;
     }
 
-    createCheckout(planName, planName);
+    if (selectedGateway === "stripe") {
+      const planId = priceMap[planName as keyof typeof priceMap]?.stripe;
+      createCheckout(planId, planName);
+    } else {
+      const amount = priceMap[planName as keyof typeof priceMap]?.amount;
+      createPaystackCheckout(planName, amount);
+    }
+    
     onOpenChange(false);
   };
 
@@ -71,6 +97,31 @@ export default function SubscriptionPlanDialog({
             Select the plan that best fits your needs. You can change or cancel anytime.
           </DialogDescription>
         </DialogHeader>
+
+        <div className="py-4">
+          <div className="mb-6">
+            <p className="text-sm font-medium mb-2">Payment Method</p>
+            <RadioGroup 
+              defaultValue="stripe" 
+              value={selectedGateway}
+              onValueChange={(value) => setSelectedGateway(value as "stripe" | "paystack")} 
+              className="flex space-x-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="stripe" id="stripe" />
+                <Label htmlFor="stripe" className="flex items-center">
+                  <CreditCard className="h-4 w-4 mr-1" /> Stripe
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="paystack" id="paystack" />
+                <Label htmlFor="paystack" className="flex items-center">
+                  <CreditCard className="h-4 w-4 mr-1" /> Paystack
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </div>
 
         <div className="py-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

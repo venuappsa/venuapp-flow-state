@@ -27,6 +27,9 @@ import MessagesPage from "./pages/MessagesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import EventTimelinePage from "./pages/EventTimelinePage";
 import AdminPayoutsPage from "./pages/AdminPayoutsPage";
+import SubscriptionManagementPage from "./pages/SubscriptionManagementPage";
+import PaystackSubscriptionPage from "./pages/PaystackSubscriptionPage";
+import SubscribePage from "./pages/SubscribePage";
 
 // Auth pages imports
 import AuthLayout from "./pages/auth/AuthLayout";
@@ -57,7 +60,7 @@ import VendorAvailabilityPage from "./pages/vendor/VendorAvailabilityPage";
 import VendorGoLivePage from "./pages/vendor/VendorGoLivePage";
 import VendorPanelPage from "./pages/vendor/VendorPanelPage";
 import VendorMessagesPage from "./pages/vendor/VendorMessagesPage";
-import VendorReviewsPage from "./pages/vendor/VendorReviewsPage"; // Added new import
+import VendorReviewsPage from "./pages/vendor/VendorReviewsPage";
 import HostVendorMessagesPage from "./pages/VendorMessagesPage";
 
 const queryClient = new QueryClient();
@@ -110,6 +113,9 @@ const App = () => (
           <Route path="/admin/settings" element={<AdminPanel />} />
           <Route path="/admin/payouts" element={<AdminPayoutsPage />} />
           
+          {/* Subscription routes */}
+          <Route path="/subscribe" element={<SubscribePage />} />
+          
           {/* Host panel routes */}
           <Route path="/host" element={<HostPanel />} />
           <Route path="/host/dashboard" element={<HostDashboardPage />} />
@@ -133,6 +139,8 @@ const App = () => (
           <Route path="/host/knowledge" element={<KnowledgeBasePage />} />
           <Route path="/host/messages" element={<HostVendorMessagesPage />} />
           <Route path="/host/notifications" element={<NotificationsPage />} />
+          <Route path="/host/subscription" element={<SubscriptionManagementPage />} />
+          <Route path="/host/subscription/paystack-manage" element={<PaystackSubscriptionPage />} />
 
           {/* Vendor panel routes */}
           <Route path="/vendor" element={<VendorPanelPage />} />
@@ -145,7 +153,7 @@ const App = () => (
           <Route path="/vendor/availability" element={<VendorAvailabilityPage />} />
           <Route path="/vendor/go-live" element={<VendorGoLivePage />} />
           <Route path="/vendor/messages" element={<VendorMessagesPage />} />
-          <Route path="/vendor/reviews" element={<VendorReviewsPage />} /> {/* Added new route */}
+          <Route path="/vendor/reviews" element={<VendorReviewsPage />} /> 
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

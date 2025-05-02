@@ -188,48 +188,6 @@ export type Database = {
           },
         ]
       }
-      merchant_pricing_plans: {
-        Row: {
-          created_at: string
-          description: string | null
-          features: Json
-          host_id: string
-          id: string
-          is_highlighted: boolean
-          name: string
-          plan_type: string
-          price: number
-          price_unit: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          features?: Json
-          host_id: string
-          id?: string
-          is_highlighted?: boolean
-          name: string
-          plan_type: string
-          price: number
-          price_unit?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          features?: Json
-          host_id?: string
-          id?: string
-          is_highlighted?: boolean
-          name?: string
-          plan_type?: string
-          price?: number
-          price_unit?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string | null
@@ -456,6 +414,48 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      vendor_pricing_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          features: Json
+          host_id: string
+          id: string
+          is_highlighted: boolean
+          name: string
+          plan_type: string
+          price: number
+          price_unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          host_id: string
+          id?: string
+          is_highlighted?: boolean
+          name: string
+          plan_type: string
+          price: number
+          price_unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          host_id?: string
+          id?: string
+          is_highlighted?: boolean
+          name?: string
+          plan_type?: string
+          price?: number
+          price_unit?: string
+          updated_at?: string
         }
         Relationships: []
       }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -96,6 +97,7 @@ export default function VendorPricingManager({
     
     setIsLoading(true);
     try {
+      // Updated to use vendor_pricing_plans table
       const { data, error } = await supabase
         .from('vendor_pricing_plans')
         .select('*')
@@ -106,8 +108,8 @@ export default function VendorPricingManager({
       
       const plans = data.map(plan => ({
         ...plan,
-        features: plan.features as unknown as PricingFeature[] // Type assertion to address the type error
-      }));
+        features: plan.features as unknown as PricingFeature[]
+      })) as PricingPlan[];
       
       setPricingPlans(plans);
       if (onPlanChange) onPlanChange(plans);
@@ -173,18 +175,18 @@ export default function VendorPricingManager({
       const planData = {
         ...data,
         host_id: user.id,
-        features: features as unknown as any // Convert to any to satisfy Supabase JSON type
+        features: features as unknown as any
       };
       
       let result;
       if (currentPlan?.id) {
-        // Update existing plan
+        // Update existing plan - updated to use vendor_pricing_plans
         result = await supabase
           .from('vendor_pricing_plans')
           .update(planData)
           .eq('id', currentPlan.id);
       } else {
-        // Create new plan
+        // Create new plan - updated to use vendor_pricing_plans
         result = await supabase
           .from('vendor_pricing_plans')
           .insert(planData);
@@ -213,6 +215,7 @@ export default function VendorPricingManager({
     if (!confirm("Are you sure you want to delete this pricing plan?")) return;
     
     try {
+      // Updated to use vendor_pricing_plans
       const { error } = await supabase
         .from('vendor_pricing_plans')
         .delete()

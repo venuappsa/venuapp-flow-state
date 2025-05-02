@@ -76,6 +76,7 @@ const AppRoutes = () => {
       
       <Route path="host">
         <Route path="" element={<HostDashboardPage />} />
+        <Route path="dashboard" element={<HostDashboardPage />} />
         <Route path="subscription" element={<SubscriptionManagementPage />} />
         <Route path="subscription/paystack-manage" element={<PaystackManagePage />} />
         <Route path="profile" element={<HostProfilePage />} />

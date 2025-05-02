@@ -115,7 +115,7 @@ export function useSubscription() {
     }
   };
 
-  // New function for Paystack checkout
+  // Function for Paystack checkout
   const createPaystackCheckout = async (planName: string, amount: string) => {
     if (!user) {
       toast({

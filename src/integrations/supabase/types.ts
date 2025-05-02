@@ -257,11 +257,86 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          payment_gateway: string | null
+          paystack_customer_code: string | null
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          payment_gateway?: string | null
+          paystack_customer_code?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          payment_gateway?: string | null
+          paystack_customer_code?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscription_pauses: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          start_date?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscription_transactions: {
         Row: {
           amount: number
+          billing_mode: string | null
           host_id: string
           id: string
+          payment_gateway: string | null
+          paystack_reference: string | null
           plan_name: string
           status: string
           stripe_customer_id: string | null
@@ -270,8 +345,11 @@ export type Database = {
         }
         Insert: {
           amount: number
+          billing_mode?: string | null
           host_id: string
           id?: string
+          payment_gateway?: string | null
+          paystack_reference?: string | null
           plan_name: string
           status?: string
           stripe_customer_id?: string | null
@@ -280,8 +358,11 @@ export type Database = {
         }
         Update: {
           amount?: number
+          billing_mode?: string | null
           host_id?: string
           id?: string
+          payment_gateway?: string | null
+          paystack_reference?: string | null
           plan_name?: string
           status?: string
           stripe_customer_id?: string | null

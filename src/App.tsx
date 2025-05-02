@@ -1,166 +1,151 @@
+import React, { useEffect, useState } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
+import { ThemeProvider } from "@/components/theme-provider"
+import { useTheme } from 'next-themes';
+import { Toaster } from "@/components/ui/toaster"
+import { useUser } from "@/hooks/useUser";
+import { checkSupabaseConnection } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollToTop } from "@/components/utils/ScrollToTop";
+import { useBreakpoint } from "@/hooks/useResponsive";
+import {
+  Home as HomePage,
+  About as AboutPage,
+  Contact as ContactPage,
+  Terms as TermsPage,
+  Privacy as PrivacyPage,
+  Pricing as PricingPage,
+  KnowledgeBase as KnowledgeBasePage,
+  NotFound as NotFoundPage,
+  Auth as AuthPage,
+  HostDashboard as HostDashboardPage,
+  HostProfile as HostProfilePage,
+  Merchants as MerchantsPage,
+  Venues as VenuesPage,
+  VenueCreate,
+  VenueManagement as VenueManagementPage,
+  Events as EventsPage,
+  EventManagement as EventManagementPage,
+  EventTimeline as EventTimelinePage,
+  Vendors as VendorsPage,
+  Invitations as InvitationsPage,
+  Finance as FinancePage,
+  Analytics as AnalyticsPage,
+  Messages as MessagesPage,
+  Notifications as NotificationsPage,
+  Settings as SettingsPage,
+  FinanceSettings as FinanceSettingsPage,
+  Fetchman as FetchmanPage,
+  Subscribe as SubscribePage,
+  SubscriptionManagement as SubscriptionManagementPage,
+  PaystackSubscriptionPage as PaystackManagePage
+} from "@/pages";
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import AuthPage from "./pages/AuthPage";
-import AdminPanel from "./pages/AdminPanel";
-import HostPanel from "./pages/HostPanel";
-import VenueCreate from "./pages/VenueCreate";
-import VendorRules from "./pages/VendorRules";
-import EventManagementPage from "./pages/EventManagementPage";
-import EventsPage from "./pages/EventsPage";
-import VendorsPage from "./pages/VendorsPage";
-import FinancePage from "./pages/FinancePage";
-import FinanceSettingsPage from "./pages/FinanceSettingsPage";
-import VenuesPage from "./pages/VenuesPage";
-import VenueManagementPage from "./pages/VenueManagementPage";
-import GuestPage from "./pages/GuestPage";
-import MerchantsPage from "./pages/MerchantsPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import SettingsPage from "./pages/SettingsPage";
-import KnowledgeBasePage from "./pages/KnowledgeBasePage";
-import MessagesPage from "./pages/MessagesPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import EventTimelinePage from "./pages/EventTimelinePage";
-import AdminPayoutsPage from "./pages/AdminPayoutsPage";
-import SubscriptionManagementPage from "./pages/SubscriptionManagementPage";
-import PaystackSubscriptionPage from "./pages/PaystackSubscriptionPage";
-import SubscribePage from "./pages/SubscribePage";
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/knowledge" element={<KnowledgeBasePage />} />
+      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/subscribe" element={<SubscribePage />} />
+      <Route path="*" element={<NotFoundPage />} />
+      
+      <Route path="host">
+        <Route path="" element={<HostDashboardPage />} />
+        <Route path="subscription" element={<SubscriptionManagementPage />} />
+        <Route path="subscription/paystack-manage" element={<PaystackManagePage />} />
+        <Route path="profile" element={<HostProfilePage />} />
+        <Route path="merchants" element={<MerchantsPage />} />
+        <Route path="venues" element={<VenuesPage />} />
+        <Route path="venues/create" element={<VenueCreate />} />
+        <Route path="venues/:venueId" element={<VenueManagementPage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="events/:eventId" element={<EventManagementPage />} />
+        <Route path="events/:eventId/timeline" element={<EventTimelinePage />} />
+        <Route path="vendors" element={<VendorsPage />} />
+        <Route path="invitations" element={<InvitationsPage />} />
+        <Route path="finance" element={<FinancePage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="messages" element={<MessagesPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="finance/settings" element={<FinanceSettingsPage />} />
+        <Route path="fetchman/:venueId?" element={<FetchmanPage />} />
+        <Route path="knowledge" element={<KnowledgeBasePage />} />
+      </Route>
+    </Routes>
+  );
+};
 
-// Auth pages imports
-import AuthLayout from "./pages/auth/AuthLayout";
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
-import TwoFactorAuthPage from "./pages/auth/TwoFactorAuthPage";
-import AuthTestReport from "./pages/auth/TestReport";
+function App() {
+  const { theme } = useTheme()
+  const { user, isLoading } = useUser();
+  const [isConnected, setIsConnected] = useState(true);
+  const breakpoint = useBreakpoint();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-// Profile and User Management imports
-import AdminProfilePage from "./pages/AdminProfilePage";
-import HostProfilePage from "./pages/HostProfilePage";
-import AdminUsersPage from "./pages/AdminUsersPage";
+  useEffect(() => {
+    const checkConnection = async () => {
+      const connectionStatus = await checkSupabaseConnection();
+      setIsConnected(connectionStatus);
+    };
 
-// Dashboard and Invitation pages
-import HostDashboardPage from "./pages/HostDashboardPage";
-import InvitationsPage from "./pages/InvitationsPage";
+    checkConnection();
+  }, []);
 
-// Vendor pages imports
-import VendorSignupPage from "./pages/vendor/VendorSignupPage";
-import VendorWelcomePage from "./pages/vendor/VendorWelcomePage";
-import VendorDashboardPage from "./pages/vendor/VendorDashboardPage";
-import VendorProfilePage from "./pages/vendor/VendorProfilePage";
-import VendorServicesPage from "./pages/vendor/VendorServicesPage";
-import VendorPricingPage from "./pages/vendor/VendorPricingPage";
-import VendorBookingsPage from "./pages/vendor/VendorBookingsPage";
-import VendorAvailabilityPage from "./pages/vendor/VendorAvailabilityPage";
-import VendorGoLivePage from "./pages/vendor/VendorGoLivePage";
-import VendorPanelPage from "./pages/vendor/VendorPanelPage";
-import VendorMessagesPage from "./pages/vendor/VendorMessagesPage";
-import VendorReviewsPage from "./pages/vendor/VendorReviewsPage";
-import HostVendorMessagesPage from "./pages/VendorMessagesPage";
+  useEffect(() => {
+    if (!isConnected) {
+      console.error('Supabase connection failed. Redirecting to /knowledge.');
+      navigate('/knowledge', { replace: true });
+    }
+  }, [isConnected, navigate]);
 
-const queryClient = new QueryClient();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const redirect = params.get('redirect');
 
-// Create a wrapper component to use AuthLayout with Outlet
-const AuthLayoutWrapper = () => (
-  <AuthLayout>
-    <Outlet />
-  </AuthLayout>
-);
+    if (user && redirect) {
+      navigate(redirect, { replace: true });
+    }
+  }, [user, navigate, location]);
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Skeleton className="w-[300px] h-[400px]" />
+      </div>
+    );
+  }
+
+  return (
+    <div data-theme={theme} className="bg-background text-foreground">
+      <ScrollToTop />
+      <AppRoutes />
       <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          
-          {/* Auth routes */}
-          <Route path="/auth" element={<AuthLayoutWrapper />}>
-            <Route index element={<LoginPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} />
-            <Route path="forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="2fa" element={<TwoFactorAuthPage />} />
-            <Route path="test-report" element={<AuthTestReport />} />
-          </Route>
-          
-          {/* Legacy auth page (to be removed) */}
-          <Route path="/auth-old" element={<AuthPage />} />
+    </div>
+  );
+}
 
-          {/* Vendor Signup (Public) */}
-          <Route path="/vendor-signup" element={<VendorSignupPage />} />
-          
-          {/* Admin panel routes */}
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/profile" element={<AdminProfilePage />} />
-          <Route path="/admin/users" element={<AdminUsersPage />} />
-          <Route path="/admin/hosts" element={<AdminPanel />} />
-          <Route path="/admin/events" element={<AdminPanel />} />
-          <Route path="/admin/merchants" element={<AdminPanel />} />
-          <Route path="/admin/subscriptions" element={<AdminPanel />} />
-          <Route path="/admin/reports" element={<AdminPanel />} />
-          <Route path="/admin/verifications" element={<AdminPanel />} />
-          <Route path="/admin/notifications" element={<AdminPanel />} />
-          <Route path="/admin/support" element={<AdminPanel />} />
-          <Route path="/admin/platform" element={<AdminPanel />} />
-          <Route path="/admin/settings" element={<AdminPanel />} />
-          <Route path="/admin/payouts" element={<AdminPayoutsPage />} />
-          
-          {/* Subscription routes */}
-          <Route path="/subscribe" element={<SubscribePage />} />
-          
-          {/* Host panel routes */}
-          <Route path="/host" element={<HostPanel />} />
-          <Route path="/host/dashboard" element={<HostDashboardPage />} />
-          <Route path="/host/profile" element={<HostProfilePage />} />
-          <Route path="/host/venues" element={<VenuesPage />} />
-          <Route path="/host/venues/new" element={<VenueCreate />} />
-          <Route path="/host/venues/:venueId" element={<VenueManagementPage />} />
-          <Route path="/host/rules" element={<VendorRules />} />
-          <Route path="/host/events" element={<EventsPage />} />
-          <Route path="/host/events/new" element={<EventManagementPage />} />
-          <Route path="/host/events/:eventId" element={<EventManagementPage />} />
-          <Route path="/host/events/:eventId/timeline" element={<EventTimelinePage />} />
-          <Route path="/host/merchants" element={<MerchantsPage />} />
-          <Route path="/host/vendors" element={<VendorsPage />} />
-          <Route path="/host/invitations" element={<InvitationsPage />} />
-          <Route path="/host/finance" element={<FinancePage />} />
-          <Route path="/host/finance/settings" element={<FinanceSettingsPage />} />
-          <Route path="/host/guests" element={<GuestPage />} />
-          <Route path="/host/analytics" element={<AnalyticsPage />} />
-          <Route path="/host/settings" element={<SettingsPage />} />
-          <Route path="/host/knowledge" element={<KnowledgeBasePage />} />
-          <Route path="/host/messages" element={<HostVendorMessagesPage />} />
-          <Route path="/host/notifications" element={<NotificationsPage />} />
-          <Route path="/host/subscription" element={<SubscriptionManagementPage />} />
-          <Route path="/host/subscription/paystack-manage" element={<PaystackSubscriptionPage />} />
+function RootApp() {
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
+      <Router>
+        <App />
+      </Router>
+    </ThemeProvider>
+  );
+}
 
-          {/* Vendor panel routes */}
-          <Route path="/vendor" element={<VendorPanelPage />} />
-          <Route path="/vendor/welcome" element={<VendorWelcomePage />} />
-          <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
-          <Route path="/vendor/profile" element={<VendorProfilePage />} />
-          <Route path="/vendor/services" element={<VendorServicesPage />} />
-          <Route path="/vendor/pricing" element={<VendorPricingPage />} />
-          <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
-          <Route path="/vendor/availability" element={<VendorAvailabilityPage />} />
-          <Route path="/vendor/go-live" element={<VendorGoLivePage />} />
-          <Route path="/vendor/messages" element={<VendorMessagesPage />} />
-          <Route path="/vendor/reviews" element={<VendorReviewsPage />} /> 
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+export default RootApp;

@@ -13,8 +13,8 @@ const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const HostDashboardPage = lazy(() => import("./pages/HostDashboardPage"));
-const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
-const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
+const AccountSettingsPage = lazy(() => import("./pages/SettingsPage"));
+const SubscriptionPage = lazy(() => import("./pages/SubscribePage"));
 
 export default function App() {
   return (

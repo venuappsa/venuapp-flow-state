@@ -58,6 +58,10 @@ import AdminEventTimelinePage from "@/pages/admin/AdminEventTimelinePage";
 import AdminEventResourcesPage from "@/pages/admin/AdminEventResourcesPage";
 import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
 import AdminNotificationSettingsPage from "@/pages/admin/AdminNotificationSettingsPage";
+import AdminPlatformSettingsPage from "@/pages/admin/AdminPlatformSettingsPage";
+
+// Vendor pages imports
+import VendorNotificationSettingsPage from "@/pages/vendor/VendorNotificationSettingsPage";
 
 // Public vendor pages imports
 import VendorListingPage from "@/pages/public/VendorListingPage";
@@ -128,6 +132,12 @@ const AppRoutes = () => {
         <Route path="events/:id/resources" element={<AdminEventResourcesPage />} />
         <Route path="settings" element={<AdminSettingsPage />} />
         <Route path="settings/notifications" element={<AdminNotificationSettingsPage />} />
+        <Route path="settings/platform" element={<AdminPlatformSettingsPage />} />
+      </Route>
+      
+      {/* Vendor routes */}
+      <Route path="vendor">
+        <Route path="settings/notifications" element={<VendorNotificationSettingsPage />} />
       </Route>
     </Routes>
   );

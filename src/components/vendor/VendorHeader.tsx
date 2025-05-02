@@ -14,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Bell,
   HelpCircle,
   LifeBuoy,
   LogOut,
@@ -22,6 +21,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 
 const VendorHeader = () => {
   const { user } = useUser();
@@ -63,11 +63,7 @@ const VendorHeader = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button variant="outline" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-            <span className="sr-only">Notifications</span>
-          </Button>
+          <NotificationBell />
 
           <Button variant="outline" size="icon">
             <HelpCircle className="h-5 w-5" />

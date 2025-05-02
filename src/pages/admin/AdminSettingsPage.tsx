@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Mail, Moon, Settings, Upload } from "lucide-react";
+import { Bell, CreditCard, Globe, Mail, Moon, Settings, Upload } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useTheme } from "next-themes";
 
@@ -87,6 +87,9 @@ export default function AdminSettingsPage() {
             </TabsTrigger>
             <TabsTrigger value="notifications" onClick={() => navigate("/admin/settings/notifications")}>
               <Bell className="h-4 w-4 mr-2" /> Notifications
+            </TabsTrigger>
+            <TabsTrigger value="platform" onClick={() => navigate("/admin/settings/platform")}>
+              <Globe className="h-4 w-4 mr-2" /> Platform
             </TabsTrigger>
           </TabsList>
           

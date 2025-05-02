@@ -25,7 +25,16 @@ export default function NotificationBell({ className }: NotificationBellProps) {
 
   const handleNotificationClick = (id: string) => {
     markAsRead(id);
+    
+    // If there's a link, you could navigate to it here
+    const notification = notifications.find(n => n.id === id);
+    if (notification?.link) {
+      window.location.href = notification.link;
+    }
   };
+
+  // Show only the 5 most recent notifications
+  const recentNotifications = notifications.slice(0, 5);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -50,8 +59,8 @@ export default function NotificationBell({ className }: NotificationBellProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className="h-[300px] overflow-auto">
-          {notifications.length > 0 ? (
-            notifications.map((notification) => (
+          {recentNotifications.length > 0 ? (
+            recentNotifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
                 onSelect={() => handleNotificationClick(notification.id)}

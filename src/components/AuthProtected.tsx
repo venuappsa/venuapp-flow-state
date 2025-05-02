@@ -14,7 +14,7 @@ interface AuthProtectedProps {
 const AuthProtected = ({ 
   children, 
   requiredRoles = [], 
-  redirectTo = "/login" 
+  redirectTo = "/auth" 
 }: AuthProtectedProps) => {
   const location = useLocation();
   const { user, loading } = useUser();

@@ -1,4 +1,3 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -166,7 +165,7 @@ export default function Navbar() {
             >
               Subscribe
             </Link>
-            {/* Secure Panel Button shows "Login" when logged out, otherwise "Go to Secure Panel" */}
+            {/* Updated login link to point to /auth instead of /login */}
             <SecurePanelButton showWelcome className="flex flex-col items-center" />
           </div>
         )}
@@ -189,4 +188,3 @@ export default function Navbar() {
     </nav>
   );
 }
-

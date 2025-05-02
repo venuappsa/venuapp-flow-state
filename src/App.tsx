@@ -9,6 +9,7 @@ import VenuesPage from "./pages/VenuesPage";
 import SoftLaunchBanner from "./components/banners/SoftLaunchBanner";
 import { Toaster } from "@/components/ui/toaster";
 import FeedbackWidget from "@/components/feedback/FeedbackWidget";
+import { Auth as AuthPage } from "./pages/index";
 
 // Use lazy loading for pages that don't need to be immediately available
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
@@ -27,6 +28,9 @@ export default function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<HomePage />} />
+          
+          {/* Auth routes */}
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />

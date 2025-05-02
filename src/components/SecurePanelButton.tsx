@@ -18,7 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SecurePanelButtonProps {
   showWelcome?: boolean;
-  className?: string; // Added className prop
+  className?: string;
 }
 
 export default function SecurePanelButton({ showWelcome = false, className }: SecurePanelButtonProps) {
@@ -52,6 +52,18 @@ export default function SecurePanelButton({ showWelcome = false, className }: Se
       setIsSigningOut(false);
     }
   };
+
+  if (!user) {
+    return (
+      <Button 
+        onClick={() => navigate("/auth")} 
+        variant="default" 
+        className={`bg-venu-orange hover:bg-venu-dark-orange text-white ${className || ''}`}
+      >
+        Login
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

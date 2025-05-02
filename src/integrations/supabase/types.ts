@@ -19,6 +19,7 @@ export type Database = {
           invitation_date: string
           notes: string | null
           response_date: string | null
+          response_deadline: string | null
           status: string
           updated_at: string
           vendor_id: string
@@ -32,6 +33,7 @@ export type Database = {
           invitation_date?: string
           notes?: string | null
           response_date?: string | null
+          response_deadline?: string | null
           status?: string
           updated_at?: string
           vendor_id: string
@@ -45,6 +47,7 @@ export type Database = {
           invitation_date?: string
           notes?: string | null
           response_date?: string | null
+          response_deadline?: string | null
           status?: string
           updated_at?: string
           vendor_id?: string
@@ -108,6 +111,30 @@ export type Database = {
           status?: string
           updated_at?: string
           venue_id?: string | null
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          content: string
+          created_at: string
+          feedback_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          feedback_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -337,6 +364,36 @@ export type Database = {
           },
         ]
       }
+      system_announcements: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_public: boolean
+          publish_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          publish_date?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          publish_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -466,8 +523,10 @@ export type Database = {
           contact_name: string | null
           contact_phone: string | null
           created_at: string
+          documents_uploaded: boolean | null
           id: string
           is_suspended: boolean
+          review_requested_at: string | null
           subscription_renewal: string | null
           subscription_status: Database["public"]["Enums"]["subscription_status"]
           updated_at: string
@@ -480,8 +539,10 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          documents_uploaded?: boolean | null
           id?: string
           is_suspended?: boolean
+          review_requested_at?: string | null
           subscription_renewal?: string | null
           subscription_status?: Database["public"]["Enums"]["subscription_status"]
           updated_at?: string
@@ -494,8 +555,10 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          documents_uploaded?: boolean | null
           id?: string
           is_suspended?: boolean
+          review_requested_at?: string | null
           subscription_renewal?: string | null
           subscription_status?: Database["public"]["Enums"]["subscription_status"]
           updated_at?: string
@@ -609,7 +672,11 @@ export type Database = {
     Enums: {
       app_role: "admin" | "host" | "merchant" | "customer" | "fetchman"
       subscription_status: "active" | "expired" | "trial" | "none"
-      verification_status: "pending" | "verified" | "declined"
+      verification_status:
+        | "pending"
+        | "verified"
+        | "declined"
+        | "ready_for_review"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -727,7 +794,12 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "host", "merchant", "customer", "fetchman"],
       subscription_status: ["active", "expired", "trial", "none"],
-      verification_status: ["pending", "verified", "declined"],
+      verification_status: [
+        "pending",
+        "verified",
+        "declined",
+        "ready_for_review",
+      ],
     },
   },
 } as const

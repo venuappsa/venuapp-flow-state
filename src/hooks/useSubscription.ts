@@ -37,7 +37,11 @@ export function useSubscription() {
     try {
       setSubscriptionData(prev => ({ ...prev, isLoading: true, error: null }));
       
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const { data, error } = await supabase.functions.invoke("check-subscription", {
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
       
       if (error) {
         console.error("Error checking subscription:", error);
@@ -79,7 +83,10 @@ export function useSubscription() {
     
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { planId, planName }
+        body: { planId, planName },
+        headers: {
+          "Content-Type": "application/json",
+        }
       });
       
       if (error) {

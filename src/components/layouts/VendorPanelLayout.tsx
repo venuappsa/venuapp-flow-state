@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -18,6 +19,7 @@ export default function VendorPanelLayout({ children }: VendorPanelLayoutProps) 
 
   useEffect(() => {
     if (!userLoading && !user) {
+      console.log("VendorPanelLayout - No user found, redirecting to login");
       navigate('/auth/login');
       return;
     }
@@ -30,6 +32,7 @@ export default function VendorPanelLayout({ children }: VendorPanelLayoutProps) 
       console.log("VendorPanelLayout - Is merchant:", isMerchant);
 
       if (!isMerchant) {
+        console.log("VendorPanelLayout - User is not a merchant, redirecting to home");
         navigate('/');
       }
     }

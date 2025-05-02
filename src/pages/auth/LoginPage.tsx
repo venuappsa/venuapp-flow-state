@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/hooks/useUser";
 import { LogIn, Mail, KeyRound, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 
 const loginFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -30,12 +30,8 @@ export default function LoginPage() {
   // If user is already logged in, redirect to appropriate dashboard
   React.useEffect(() => {
     if (user) {
-      // For demo purposes, redirect based on email
-      if (user.email?.includes("admin")) {
-        navigate("/admin");
-      } else {
-        navigate("/host");
-      }
+      console.log("LoginPage: User already logged in, fetching roles for redirection");
+      handleUserRoleRedirect(user.id);
     }
   }, [user, navigate]);
   
@@ -46,6 +42,45 @@ export default function LoginPage() {
       password: ""
     }
   });
+  
+  // Function to fetch user roles and redirect based on those roles
+  const handleUserRoleRedirect = async (userId: string) => {
+    try {
+      console.log("LoginPage: Fetching roles for user", userId);
+      const { data: userRoles, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+      
+      if (error) {
+        console.error("Error fetching user roles:", error);
+        toast({
+          title: "Could not retrieve user roles",
+          description: "Please try again or contact support",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const roles = userRoles?.map(r => r.role) || [];
+      console.log("LoginPage: User roles retrieved:", roles);
+      
+      // Determine redirect based on actual roles
+      const redirectPath = getRedirectPageForRoles(roles);
+      console.log("LoginPage: Redirecting to", redirectPath);
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back to Venuapp"
+      });
+      
+      navigate(redirectPath);
+    } catch (error: any) {
+      console.error("Error in role-based redirect:", error);
+      // Default to host dashboard if role check fails
+      navigate("/host");
+    }
+  };
   
   const onSubmit = async (data: z.infer<typeof loginFormSchema>) => {
     setIsLoading(true);
@@ -62,23 +97,16 @@ export default function LoginPage() {
         return;
       }
       
-      // Successfully logged in, simulate redirect to 2FA page for demo
+      // Successfully logged in
       if (authData.user) {
-        // For the demo, if email contains specific roles, simulate 2FA and then redirect
+        console.log("LoginPage: Successful login for user:", authData.user.id);
+        
+        // For the demo, if email contains 2fa, simulate 2FA
         if (data.email.includes("2fa")) {
           navigate("/auth/2fa", { state: { email: data.email } });
         } else {
-          toast({
-            title: "Login successful",
-            description: "Welcome back to Venuapp"
-          });
-          
-          // Redirect based on role
-          if (data.email.includes("admin")) {
-            navigate("/admin");
-          } else {
-            navigate("/host");
-          }
+          // Otherwise, fetch user roles and redirect
+          await handleUserRoleRedirect(authData.user.id);
         }
       }
     } catch (error: any) {
@@ -90,10 +118,10 @@ export default function LoginPage() {
   };
   
   // For demo purposes - quick login with predefined credentials
-  const handleQuickLogin = (role: "admin" | "host") => {
+  const handleQuickLogin = async (role: "admin" | "host") => {
     form.setValue("email", role === "admin" ? "admin@example.com" : "host@example.com");
     form.setValue("password", "password123");
-    form.handleSubmit(onSubmit)();
+    await form.handleSubmit(onSubmit)();
   };
   
   return (

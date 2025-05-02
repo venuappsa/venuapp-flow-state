@@ -19,6 +19,8 @@ export const useUser = () => {
     let lastUpdateTime = 0;
     const MIN_UPDATE_INTERVAL = 800; // ms
     
+    console.log("useUser: Setting up auth state listener");
+    
     // Set up auth state listener first before checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       console.log("useUser: onAuthStateChange event:", event, "session:", newSession?.user?.id);

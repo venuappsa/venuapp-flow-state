@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -28,6 +29,45 @@ export default function AuthPage() {
   // Get the redirect path from location state, or default to "/"
   const from = location.state?.from || "/";
 
+  // Function to fetch user roles and redirect based on those roles
+  const handleUserRoleRedirect = async (userId: string) => {
+    try {
+      console.log("AuthPage: Fetching roles for user", userId);
+      const { data: userRoles, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+      
+      if (error) {
+        console.error("Error fetching user roles:", error);
+        toast({
+          title: "Could not retrieve user roles",
+          description: "Please try again or contact support",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const roles = userRoles?.map(r => r.role) || [];
+      console.log("AuthPage: User roles retrieved:", roles);
+      
+      // Determine redirect based on actual roles
+      const redirectPath = getRedirectPageForRoles(roles);
+      console.log("AuthPage: Redirecting to", redirectPath);
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back to Venuapp"
+      });
+      
+      navigate(redirectPath);
+    } catch (error: any) {
+      console.error("Error in role-based redirect:", error);
+      // Default to host dashboard if role check fails
+      navigate("/host");
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -40,18 +80,11 @@ export default function AuthPage() {
 
       if (error) throw error;
 
-      toast({
-        title: "Login successful",
-        description: "Welcome back to Venuapp",
-      });
+      console.log("AuthPage: Successful login for user:", data.user.id);
+      
+      // Fetch user roles and redirect based on them
+      await handleUserRoleRedirect(data.user.id);
 
-      // Determine where to redirect based on user role
-      // Simplified logic - in a real app you would check user roles
-      if (email.includes("admin")) {
-        navigate("/admin");
-      } else {
-        navigate("/host");
-      }
     } catch (error: any) {
       console.error("Error logging in:", error);
       toast({

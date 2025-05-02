@@ -26,6 +26,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import FetchmanSidebar from "@/components/fetchman/FetchmanSidebar";
 
 const FetchmanHeader = () => {
   const { user, forceClearUser } = useUser();

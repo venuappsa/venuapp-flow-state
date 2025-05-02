@@ -2,35 +2,10 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Calendar, ArrowUpRight, MessageSquare } from "lucide-react";
+import { Download, Calendar, ArrowUpRight } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-// Create a basic layout similar to the other role layouts
-const FetchmanLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm py-4 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img
-            src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
-            alt="Venuapp Logo"
-            className="h-8 w-8 object-contain"
-          />
-          <h1 className="text-xl font-semibold text-venu-orange">Venuapp Fetchman</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <MessageSquare className="h-5 w-5 text-gray-500" />
-          <Calendar className="h-5 w-5 text-gray-500" />
-          <div className="h-8 w-8 rounded-full bg-venu-orange text-white flex items-center justify-center">
-            FB
-          </div>
-        </div>
-      </header>
-      <main className="container mx-auto py-8 px-4">{children}</main>
-    </div>
-  );
-};
+import FetchmanPanelLayout from "@/components/layouts/FetchmanPanelLayout";
 
 export default function FetchmanEarningsPage() {
   // Mock earnings data
@@ -63,7 +38,7 @@ export default function FetchmanEarningsPage() {
   };
 
   return (
-    <FetchmanLayout>
+    <FetchmanPanelLayout>
       <div className="space-y-8 max-w-6xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold mb-2">Earnings</h1>
@@ -227,6 +202,6 @@ export default function FetchmanEarningsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </FetchmanLayout>
+    </FetchmanPanelLayout>
   );
 }

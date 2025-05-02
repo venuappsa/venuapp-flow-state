@@ -1,246 +1,210 @@
 
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, Check, X, User, Plus, Phone, MessageSquare } from "lucide-react";
-
-// Create a basic layout similar to the other role layouts
-const FetchmanLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm py-4 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img
-            src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
-            alt="Venuapp Logo"
-            className="h-8 w-8 object-contain"
-          />
-          <h1 className="text-xl font-semibold text-venu-orange">Venuapp Fetchman</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <MessageSquare className="h-5 w-5 text-gray-500" />
-          <Calendar className="h-5 w-5 text-gray-500" />
-          <div className="h-8 w-8 rounded-full bg-venu-orange text-white flex items-center justify-center">
-            FB
-          </div>
-        </div>
-      </header>
-      <main className="container mx-auto py-8 px-4">{children}</main>
-    </div>
-  );
-};
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapPin, Clock, User } from "lucide-react";
+import FetchmanPanelLayout from "@/components/layouts/FetchmanPanelLayout";
 
 export default function FetchmanAssignmentsPage() {
-  // Mock data for assignments
-  const assignments = [
+  const currentAssignments = [
     {
       id: "1",
-      title: "Wedding Cake Delivery",
-      vendor: "Sweet Delights Bakery",
-      event: "Johnson Wedding",
-      pickupAddress: "123 Baker Street, Sandton",
-      deliveryAddress: "Grand Hyatt Hotel, Rosebank",
-      pickupTime: "2025-05-15T13:00:00Z",
-      deliveryTime: "2025-05-15T15:00:00Z",
-      status: "pending",
-      customerName: "Emily Johnson",
-      customerPhone: "+27 82 123 4567",
-      paymentAmount: 150
+      orderNumber: "F8742",
+      customer: "Sarah Johnson",
+      location: "Sandton City Mall",
+      pickupTime: "13:30",
+      status: "in-progress"
     },
     {
       id: "2",
-      title: "Audio Equipment Transport",
-      vendor: "Sound Masters",
-      event: "Corporate Conference",
-      pickupAddress: "45 Tech Avenue, Midrand",
-      deliveryAddress: "Sandton Convention Centre",
-      pickupTime: "2025-05-16T08:00:00Z",
-      deliveryTime: "2025-05-16T10:00:00Z",
-      status: "accepted",
-      customerName: "David Brown",
-      customerPhone: "+27 83 765 4321",
-      paymentAmount: 200
+      orderNumber: "F8743",
+      customer: "Michael Brown",
+      location: "Rosebank Mall",
+      pickupTime: "14:15",
+      status: "pending"
     },
     {
       id: "3",
-      title: "Floral Arrangements Delivery",
-      vendor: "Bloom Floral Design",
-      event: "Smith Anniversary",
-      pickupAddress: "78 Garden Road, Fourways",
-      deliveryAddress: "Thaba Eco Hotel, Johannesburg South",
-      pickupTime: "2025-05-17T09:00:00Z",
-      deliveryTime: "2025-05-17T11:00:00Z",
-      status: "completed",
-      customerName: "Anna Smith",
-      customerPhone: "+27 84 987 6543",
-      paymentAmount: 120
-    },
-    {
-      id: "4",
-      title: "Catering Equipment Return",
-      vendor: "Gourmet Catering Co.",
-      event: "Wilson Birthday",
-      pickupAddress: "Waterfall Estate Clubhouse",
-      deliveryAddress: "10 Culinary Street, Bryanston",
-      pickupTime: "2025-05-18T21:00:00Z",
-      deliveryTime: "2025-05-18T22:30:00Z",
-      status: "pending",
-      customerName: "John Wilson",
-      customerPhone: "+27 82 345 6789",
-      paymentAmount: 180
+      orderNumber: "F8744",
+      customer: "Emma Davis",
+      location: "Hyde Park Corner",
+      pickupTime: "15:00",
+      status: "pending"
     }
   ];
 
-  const formatDateTime = (dateTimeString: string) => {
-    const date = new Date(dateTimeString);
-    return date.toLocaleString('en-ZA', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-      case "accepted":
-        return <Badge className="bg-blue-100 text-blue-800">Accepted</Badge>;
-      case "completed":
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
-      case "cancelled":
-        return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const availableAssignments = [
+    {
+      id: "4",
+      orderNumber: "F8745",
+      customer: "David Wilson",
+      location: "Mall of Africa",
+      pickupTime: "16:30",
+      earnings: 120
+    },
+    {
+      id: "5",
+      orderNumber: "F8746",
+      customer: "Olivia Martin",
+      location: "Menlyn Park",
+      pickupTime: "17:15",
+      earnings: 150
     }
-  };
+  ];
 
   return (
-    <FetchmanLayout>
+    <FetchmanPanelLayout>
       <div className="space-y-8 max-w-6xl mx-auto">
         <div>
-          <h1 className="text-2xl font-bold mb-2">Delivery Assignments</h1>
-          <p className="text-gray-500">Manage your pickup and delivery tasks</p>
+          <h1 className="text-2xl font-bold mb-2">Assignments</h1>
+          <p className="text-gray-500">Manage your delivery assignments</p>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-          <div className="flex space-x-2">
-            <Button variant="outline" className="text-yellow-700 border-yellow-200 bg-yellow-50">
-              Pending ({assignments.filter(a => a.status === "pending").length})
-            </Button>
-            <Button variant="outline" className="text-blue-700 border-blue-200 bg-blue-50">
-              Accepted ({assignments.filter(a => a.status === "accepted").length})
-            </Button>
-            <Button variant="outline" className="text-green-700 border-green-200 bg-green-50">
-              Completed ({assignments.filter(a => a.status === "completed").length})
-            </Button>
-          </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Find New Tasks
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6">
-          {assignments.map((assignment) => (
-            <Card key={assignment.id} className="overflow-hidden">
-              <CardHeader className="pb-2 flex flex-row items-start justify-between">
-                <div>
-                  <CardTitle>{assignment.title}</CardTitle>
-                  <CardDescription>
-                    {assignment.vendor} • {assignment.event}
-                  </CardDescription>
-                </div>
-                {getStatusBadge(assignment.status)}
+        <Tabs defaultValue="current">
+          <TabsList className="mb-6">
+            <TabsTrigger value="current">Current Assignments</TabsTrigger>
+            <TabsTrigger value="available">Available Assignments</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="current">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {currentAssignments.map((assignment) => (
+                <Card key={assignment.id}>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">Order #{assignment.orderNumber}</CardTitle>
+                      <Badge 
+                        className={assignment.status === "in-progress" ? 
+                          "bg-blue-100 text-blue-800" : 
+                          "bg-yellow-100 text-yellow-800"}
+                      >
+                        {assignment.status === "in-progress" ? "In Progress" : "Pending"}
+                      </Badge>
+                    </div>
+                    <CardDescription>{assignment.customer}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <MapPin className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium">Pickup Location</p>
+                          <p className="text-sm text-gray-500">{assignment.location}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium">Pickup Time</p>
+                          <p className="text-sm text-gray-500">{assignment.pickupTime}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex mt-4">
+                        <Button className="w-full">
+                          {assignment.status === "in-progress" ? "Mark as Delivered" : "Start Delivery"}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="available">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {availableAssignments.map((assignment) => (
+                <Card key={assignment.id}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Order #{assignment.orderNumber}</CardTitle>
+                    <CardDescription>{assignment.customer}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <MapPin className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium">Pickup Location</p>
+                          <p className="text-sm text-gray-500">{assignment.location}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium">Pickup Time</p>
+                          <p className="text-sm text-gray-500">{assignment.pickupTime}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <User className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium">Earnings</p>
+                          <p className="text-sm text-gray-500">R {assignment.earnings}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex mt-4">
+                        <Button className="w-full">Accept Assignment</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="completed">
+            <Card>
+              <CardHeader>
+                <CardTitle>Completed Assignments</CardTitle>
+                <CardDescription>Your recently completed deliveries</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-sm font-medium text-gray-500">Pickup</div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm">{assignment.pickupAddress}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm">{formatDateTime(assignment.pickupTime)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-1">
-                      <div className="text-sm font-medium text-gray-500">Delivery</div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm">{assignment.deliveryAddress}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm">{formatDateTime(assignment.deliveryTime)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-sm font-medium text-gray-500">Contact Person</div>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm">{assignment.customerName}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm">{assignment.customerPhone}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-2">
-                      <div className="text-sm font-medium text-gray-500">Payment</div>
-                      <div className="text-xl font-bold">R {assignment.paymentAmount}</div>
-                      
-                      {assignment.status === "pending" && (
-                        <div className="flex gap-2 mt-2">
-                          <Button className="flex-1">
-                            <Check className="mr-2 h-4 w-4" />
-                            Accept
-                          </Button>
-                          <Button variant="outline" className="flex-1">
-                            <X className="mr-2 h-4 w-4" />
-                            Decline
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {assignment.status === "accepted" && (
-                        <div className="flex gap-2 mt-2">
-                          <Button className="flex-1">
-                            Mark Completed
-                          </Button>
-                          <Button variant="outline" className="flex-1">
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Contact
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {assignment.status === "completed" && (
-                        <div className="mt-2">
-                          <Badge className="bg-green-100 text-green-800 py-1">
-                            <Check className="mr-2 h-3 w-3" />
-                            Completed on {new Date().toLocaleDateString()}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+              <CardContent className="p-0">
+                <div className="rounded-md overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left py-3 px-4">Order</th>
+                        <th className="text-left py-3 px-4">Customer</th>
+                        <th className="text-left py-3 px-4">Location</th>
+                        <th className="text-left py-3 px-4">Date</th>
+                        <th className="text-right py-3 px-4">Earnings</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">#F8735</td>
+                        <td className="py-3 px-4">John D.</td>
+                        <td className="py-3 px-4">Sandton City Mall</td>
+                        <td className="py-3 px-4">May 1, 2025</td>
+                        <td className="py-3 px-4 text-right">R 120</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">#F8732</td>
+                        <td className="py-3 px-4">Lisa M.</td>
+                        <td className="py-3 px-4">Rosebank Mall</td>
+                        <td className="py-3 px-4">May 1, 2025</td>
+                        <td className="py-3 px-4 text-right">R 85</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">#F8730</td>
+                        <td className="py-3 px-4">Robert K.</td>
+                        <td className="py-3 px-4">Hyde Park Corner</td>
+                        <td className="py-3 px-4">Apr 30, 2025</td>
+                        <td className="py-3 px-4 text-right">R 150</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
-    </FetchmanLayout>
+    </FetchmanPanelLayout>
   );
 }

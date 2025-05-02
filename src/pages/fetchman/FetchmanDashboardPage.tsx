@@ -5,35 +5,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import FetchmanControlSliders from "@/components/fetchman/FetchmanControlSliders";
 import FetchmanStats from "@/components/fetchman/FetchmanStats";
 import FetchmanShiftPlanTable from "@/components/fetchman/FetchmanShiftPlan";
-import { AlertCircle, Calendar, MessageSquare, Settings } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { calculateFetchmanEstimate, calculateFetchmanCost, generateFetchmanStaffingPlan } from "@/utils/fetchmanCalculator";
-
-// Create a basic layout similar to the other role layouts
-const FetchmanLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm py-4 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img
-            src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
-            alt="Venuapp Logo"
-            className="h-8 w-8 object-contain"
-          />
-          <h1 className="text-xl font-semibold text-venu-orange">Venuapp Fetchman</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <MessageSquare className="h-5 w-5 text-gray-500" />
-          <Calendar className="h-5 w-5 text-gray-500" />
-          <Settings className="h-5 w-5 text-gray-500" />
-          <div className="h-8 w-8 rounded-full bg-venu-orange text-white flex items-center justify-center">
-            FB
-          </div>
-        </div>
-      </header>
-      <main className="container mx-auto py-8 px-4">{children}</main>
-    </div>
-  );
-};
+import FetchmanPanelLayout from "@/components/layouts/FetchmanPanelLayout";
 
 export default function FetchmanDashboardPage() {
   // Initialize state for fetchman calculator
@@ -48,7 +22,7 @@ export default function FetchmanDashboardPage() {
   const staffingPlan = generateFetchmanStaffingPlan(fetchmenCount, hours);
 
   return (
-    <FetchmanLayout>
+    <FetchmanPanelLayout>
       <div className="max-w-6xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">Fetchman Dashboard</h1>
@@ -205,6 +179,6 @@ export default function FetchmanDashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </FetchmanLayout>
+    </FetchmanPanelLayout>
   );
 }

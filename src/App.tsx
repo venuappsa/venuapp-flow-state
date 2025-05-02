@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
@@ -76,6 +75,8 @@ import VendorNotificationSettingsPage from "@/pages/vendor/VendorNotificationSet
 // Public vendor pages imports
 import VendorListingPage from "@/pages/public/VendorListingPage";
 import VendorProfilePage from "@/pages/public/VendorProfilePage";
+import VendorPublicProfilePage from "./pages/public/VendorPublicProfilePage";
+import VendorInvitationsPage from "./pages/vendor/VendorInvitationsPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -105,6 +106,8 @@ const AppRoutes = () => {
       {/* Public vendor routes */}
       <Route path="/vendors" element={<VendorListingPage />} />
       <Route path="/vendors/:id" element={<VendorProfilePage />} />
+      <Route path="/vendors/:vendorId" element={<VendorPublicProfilePage />} />
+      <Route path="/vendor/invites" element={<VendorInvitationsPage />} />
       
       {/* Host routes */}
       <Route path="host">

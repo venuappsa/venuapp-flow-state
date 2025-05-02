@@ -1,3 +1,4 @@
+
 export interface Message {
   id: string;
   content: string;
@@ -139,3 +140,46 @@ export interface Event {
   multiLevel?: boolean;
   durationHours?: number;
 }
+
+// New interface for vendor invitations
+export interface VendorInvite {
+  id: string;
+  vendor_id: string;
+  host_id: string;
+  event_id: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'confirmed' | 'paid';
+  created_at: string;
+  updated_at: string;
+  required_documents: RequiredDocument[];
+  invitation_message?: string;
+  response_message?: string;
+  payment_amount?: number;
+  payment_status?: 'pending' | 'paid' | 'failed';
+  payment_date?: string;
+}
+
+// Interface for required documents
+export interface RequiredDocument {
+  id: string;
+  invite_id: string;
+  document_type: DocumentType;
+  name: string;
+  description?: string;
+  is_required: boolean;
+  status: 'pending' | 'uploaded' | 'approved' | 'rejected';
+  file_path?: string;
+  file_name?: string;
+  upload_date?: string;
+  review_date?: string;
+  review_notes?: string;
+}
+
+// Document types
+export type DocumentType = 
+  | 'business_registration'
+  | 'tax_clearance'
+  | 'proof_of_address'
+  | 'health_safety'
+  | 'public_liability'
+  | 'bank_letter'
+  | 'custom';

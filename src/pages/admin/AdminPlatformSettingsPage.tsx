@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Button } from "@/components/ui/button";
@@ -16,31 +16,20 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Settings } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { usePlatformSettings } from "@/contexts/PlatformSettingsContext";
+import SoftLaunchBanner from "@/components/banners/SoftLaunchBanner";
 
 export default function AdminPlatformSettingsPage() {
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
+  const { settings, updateSettings, saveSettings } = usePlatformSettings();
   
-  const [platformSettings, setPlatformSettings] = useState({
-    platformName: "Venuapp",
-    primaryColor: "purple",
-    enableVendorDiscovery: true,
-    enableReviewsSystem: true,
-    enablePublicQuoteRequests: true,
-    isSoftLaunchActive: false,
-    maintenanceMode: false
-  });
-
   const handleSettingChange = (key: string, value: string | boolean) => {
-    setPlatformSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    updateSettings({ [key]: value });
   };
 
   const handleSaveSettings = () => {
-    // In a real app, this would save to a database
-    localStorage.setItem('platformSettings', JSON.stringify(platformSettings));
+    saveSettings();
     
     addNotification({
       title: "Platform settings saved",
@@ -78,7 +67,7 @@ export default function AdminPlatformSettingsPage() {
                 <Label htmlFor="platform-name">Platform Name</Label>
                 <Input
                   id="platform-name"
-                  value={platformSettings.platformName}
+                  value={settings.platformName}
                   onChange={(e) => handleSettingChange("platformName", e.target.value)}
                   className="mt-1"
                 />
@@ -87,7 +76,7 @@ export default function AdminPlatformSettingsPage() {
               <div>
                 <Label htmlFor="primary-color">Primary Color Theme</Label>
                 <Select 
-                  value={platformSettings.primaryColor} 
+                  value={settings.primaryColor} 
                   onValueChange={(value) => handleSettingChange("primaryColor", value)}
                 >
                   <SelectTrigger className="mt-1">
@@ -101,7 +90,7 @@ export default function AdminPlatformSettingsPage() {
                 </Select>
                 
                 <div className="mt-2 flex gap-2">
-                  <div className={`h-6 w-6 rounded-full ${platformSettings.primaryColor === 'blue' ? 'bg-blue-500' : platformSettings.primaryColor === 'green' ? 'bg-green-500' : 'bg-purple-500'}`}></div>
+                  <div className={`h-6 w-6 rounded-full ${settings.primaryColor === 'blue' ? 'bg-blue-500' : settings.primaryColor === 'green' ? 'bg-green-500' : 'bg-purple-500'}`}></div>
                   <span className="text-sm text-muted-foreground">Preview</span>
                 </div>
               </div>
@@ -121,7 +110,7 @@ export default function AdminPlatformSettingsPage() {
                 </div>
                 <Switch
                   id="vendor-discovery"
-                  checked={platformSettings.enableVendorDiscovery}
+                  checked={settings.enableVendorDiscovery}
                   onCheckedChange={(checked) => handleSettingChange("enableVendorDiscovery", checked)}
                 />
               </div>
@@ -135,7 +124,7 @@ export default function AdminPlatformSettingsPage() {
                 </div>
                 <Switch
                   id="reviews-system"
-                  checked={platformSettings.enableReviewsSystem}
+                  checked={settings.enableReviewsSystem}
                   onCheckedChange={(checked) => handleSettingChange("enableReviewsSystem", checked)}
                 />
               </div>
@@ -149,7 +138,7 @@ export default function AdminPlatformSettingsPage() {
                 </div>
                 <Switch
                   id="quote-requests"
-                  checked={platformSettings.enablePublicQuoteRequests}
+                  checked={settings.enablePublicQuoteRequests}
                   onCheckedChange={(checked) => handleSettingChange("enablePublicQuoteRequests", checked)}
                 />
               </div>
@@ -169,7 +158,7 @@ export default function AdminPlatformSettingsPage() {
                 </div>
                 <Switch
                   id="soft-launch"
-                  checked={platformSettings.isSoftLaunchActive}
+                  checked={settings.isSoftLaunchActive}
                   onCheckedChange={(checked) => handleSettingChange("isSoftLaunchActive", checked)}
                 />
               </div>
@@ -183,7 +172,7 @@ export default function AdminPlatformSettingsPage() {
                 </div>
                 <Switch
                   id="maintenance-mode"
-                  checked={platformSettings.maintenanceMode}
+                  checked={settings.maintenanceMode}
                   onCheckedChange={(checked) => handleSettingChange("maintenanceMode", checked)}
                 />
               </div>
@@ -194,13 +183,13 @@ export default function AdminPlatformSettingsPage() {
             Save Platform Settings
           </Button>
           
-          {platformSettings.isSoftLaunchActive && (
+          {settings.isSoftLaunchActive && (
             <div className="bg-amber-50 border border-amber-200 p-4 rounded-md text-amber-800 text-sm">
               <strong>Note:</strong> Soft launch mode is currently enabled. A banner will be displayed to users.
             </div>
           )}
           
-          {platformSettings.maintenanceMode && (
+          {settings.maintenanceMode && (
             <div className="bg-red-50 border border-red-200 p-4 rounded-md text-red-800 text-sm">
               <strong>Warning:</strong> Maintenance mode is currently enabled. Only administrators will be able to access the platform.
             </div>

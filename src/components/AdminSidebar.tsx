@@ -24,7 +24,14 @@ import {
   MessageSquare,
   GanttChart,
   BarChart3,
-  FileText
+  FileText,
+  DollarSign,
+  CheckSquare,
+  Globe,
+  Megaphone,
+  FileQuestion,
+  LifeBuoy,
+  AlertCircle
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -61,21 +68,73 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
     user?.email?.split("@")[0] || 
     "Admin";
 
-  const navItems = [
-    { href: "/admin", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    { href: "/admin/users", label: "Users", icon: <Users size={18} /> },
-    { href: "/admin/hosts", label: "Hosts", icon: <Building size={18} /> },
-    { href: "/admin/events", label: "Events", icon: <CalendarRange size={18} /> },
-    { href: "/admin/merchants", label: "Merchants", icon: <Store size={18} /> },
-    { href: "/admin/vendors/performance", label: "Vendor Performance", icon: <Shield size={18} /> },
-    { href: "/admin/subscriptions", label: "Subscriptions", icon: <CreditCard size={18} /> },
-    { href: "/admin/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
-    { href: "/admin/reports", label: "Reports", icon: <FileText size={18} /> },
-    { href: "/admin/messages", label: "Messages", icon: <MessageSquare size={18} />, badge: 3 },
-    { href: "/admin/notifications", label: "Notifications", icon: <Bell size={18} />, badge: unreadCount },
-    { href: "/admin/support", label: "Support", icon: <MessageSquare size={18} /> },
-    { href: "/admin/platform", label: "Platform", icon: <GanttChart size={18} /> },
-    { href: "/admin/settings", label: "Settings", icon: <Settings size={18} /> },
+  // Organize navigation items into categories
+  const navigationCategories = [
+    {
+      category: "Overview",
+      items: [
+        { href: "/admin", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+      ]
+    },
+    {
+      category: "User Management",
+      items: [
+        { href: "/admin/users", label: "Users", icon: <Users size={18} /> },
+        { href: "/admin/hosts", label: "Hosts", icon: <Building size={18} /> },
+        { href: "/admin/merchants", label: "Merchants", icon: <Store size={18} /> },
+        { href: "/admin/verification", label: "Verification Center", icon: <Shield size={18} />, badge: 7 },
+      ]
+    },
+    {
+      category: "Event Management",
+      items: [
+        { href: "/admin/events", label: "Events", icon: <CalendarRange size={18} /> },
+        { href: "/admin/vendors/performance", label: "Vendor Performance", icon: <CheckSquare size={18} /> },
+      ]
+    },
+    {
+      category: "Finance",
+      items: [
+        { href: "/admin/subscriptions", label: "Subscriptions", icon: <CreditCard size={18} /> },
+        { href: "/admin/payments", label: "Payments & Payouts", icon: <DollarSign size={18} /> },
+      ]
+    },
+    {
+      category: "Analytics & Reporting",
+      items: [
+        { href: "/admin/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
+        { href: "/admin/reports", label: "Reports", icon: <FileText size={18} /> },
+      ]
+    },
+    {
+      category: "Communication",
+      items: [
+        { href: "/admin/messages", label: "Messages", icon: <MessageSquare size={18} />, badge: 3 },
+        { href: "/admin/notifications", label: "Notifications", icon: <Bell size={18} />, badge: unreadCount },
+        { href: "/admin/announcements", label: "Announcements", icon: <Megaphone size={18} /> },
+      ]
+    },
+    {
+      category: "Content",
+      items: [
+        { href: "/admin/cms", label: "Content Management", icon: <FileQuestion size={18} /> },
+        { href: "/admin/website", label: "Website", icon: <Globe size={18} /> },
+      ]
+    },
+    {
+      category: "Support",
+      items: [
+        { href: "/admin/support", label: "Support Tickets", icon: <LifeBuoy size={18} /> },
+        { href: "/admin/system", label: "System Status", icon: <AlertCircle size={18} /> },
+      ]
+    },
+    {
+      category: "Configuration",
+      items: [
+        { href: "/admin/platform", label: "Platform", icon: <GanttChart size={18} /> },
+        { href: "/admin/settings", label: "Settings", icon: <Settings size={18} /> },
+      ]
+    },
   ];
   
   return (
@@ -98,25 +157,37 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
       </div>
       
       <ScrollArea className="flex-1">
-        <nav className="grid gap-1 p-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={onNavItemClick}
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors relative",
-                pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+        <nav className="px-2 py-4">
+          {navigationCategories.map((category, index) => (
+            <div key={category.category} className="mb-4">
+              <h4 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {category.category}
+              </h4>
+              <div className="grid gap-1">
+                {category.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    onClick={onNavItemClick}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors relative",
+                      pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    {item.icon}
+                    {item.label}
+                    {item.badge && item.badge > 0 && (
+                      <span className="absolute right-2 top-2 bg-venu-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+              {index < navigationCategories.length - 1 && (
+                <Separator className="my-4 mx-3" />
               )}
-            >
-              {item.icon}
-              {item.label}
-              {item.badge && item.badge > 0 && (
-                <span className="absolute right-2 top-2 bg-venu-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {item.badge}
-                </span>
-              )}
-            </Link>
+            </div>
           ))}
         </nav>
       </ScrollArea>

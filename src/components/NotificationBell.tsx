@@ -14,6 +14,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface NotificationBellProps {
   className?: string;
@@ -22,14 +23,17 @@ interface NotificationBellProps {
 export default function NotificationBell({ className }: NotificationBellProps) {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleNotificationClick = (id: string) => {
     markAsRead(id);
+    setOpen(false);
     
-    // If there's a link, you could navigate to it here
+    // Find the notification to get its link
     const notification = notifications.find(n => n.id === id);
     if (notification?.link) {
-      window.location.href = notification.link;
+      // Using navigate instead of window.location.href for SPA navigation
+      navigate(notification.link);
     }
   };
 

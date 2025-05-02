@@ -21,7 +21,9 @@ import {
   LogOut,
   Shield,
   MessageSquare,
-  GanttChart
+  GanttChart,
+  BarChart3,
+  FileText
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -63,9 +65,10 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
     { href: "/admin/hosts", label: "Hosts", icon: <Building size={18} /> },
     { href: "/admin/events", label: "Events", icon: <CalendarRange size={18} /> },
     { href: "/admin/merchants", label: "Merchants", icon: <Store size={18} /> },
+    { href: "/admin/vendors/performance", label: "Vendor Performance", icon: <Shield size={18} /> },
     { href: "/admin/subscriptions", label: "Subscriptions", icon: <CreditCard size={18} /> },
-    { href: "/admin/reports", label: "Reports", icon: <FileBarChart size={18} /> },
-    { href: "/admin/verifications", label: "Verifications", icon: <Shield size={18} /> },
+    { href: "/admin/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
+    { href: "/admin/reports", label: "Reports", icon: <FileText size={18} /> },
     { href: "/admin/notifications", label: "Notifications", icon: <Bell size={18} /> },
     { href: "/admin/support", label: "Support", icon: <MessageSquare size={18} /> },
     { href: "/admin/platform", label: "Platform", icon: <GanttChart size={18} /> },

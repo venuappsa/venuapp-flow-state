@@ -1,353 +1,282 @@
 
-import React, { useState } from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer } from "@/components/ui/chart";
-import { BarChart, LineChart, PieChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Line, Pie, Cell } from "recharts";
-import { generateMockAnalyticsData, generateDetailedAnalyticsData } from "@/data/analyticsData";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Users, 
-  Building, 
-  CalendarDays,
-  BarChart3,
-  PieChart as PieChartIcon,
-  LineChart as LineChartIcon 
-} from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-// Generate mock data
-const analyticsData = generateMockAnalyticsData("Pro");
-const detailedData = generateDetailedAnalyticsData("Pro");
+import { Calendar, Download } from "lucide-react";
+import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export default function AdminAnalyticsPage() {
-  const [timeRange, setTimeRange] = useState("month");
-  const [isLoading, setIsLoading] = useState(false);
+  // Mock data for user growth
+  const userGrowthData = [
+    { month: "Jan", hosts: 10, vendors: 24, customers: 150 },
+    { month: "Feb", hosts: 15, vendors: 32, customers: 220 },
+    { month: "Mar", hosts: 22, vendors: 45, customers: 320 },
+    { month: "Apr", hosts: 28, vendors: 52, customers: 410 },
+    { month: "May", hosts: 35, vendors: 64, customers: 510 },
+    { month: "Jun", hosts: 42, vendors: 72, customers: 590 },
+    { month: "Jul", hosts: 48, vendors: 80, customers: 650 },
+    { month: "Aug", hosts: 55, vendors: 88, customers: 720 },
+    { month: "Sep", hosts: 62, vendors: 94, customers: 810 },
+    { month: "Oct", hosts: 70, vendors: 102, customers: 890 },
+  ];
 
-  // Switch data based on time range
-  const handleTimeRangeChange = (value: string) => {
-    setIsLoading(true);
-    setTimeRange(value);
-    
-    // Simulate loading state
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-  };
+  // Mock data for revenue
+  const revenueData = [
+    { month: "Jan", subscriptions: 15000, commissions: 8500, total: 23500 },
+    { month: "Feb", subscriptions: 17500, commissions: 9200, total: 26700 },
+    { month: "Mar", subscriptions: 21000, commissions: 12000, total: 33000 },
+    { month: "Apr", subscriptions: 24500, commissions: 13800, total: 38300 },
+    { month: "May", subscriptions: 26000, commissions: 15500, total: 41500 },
+    { month: "Jun", subscriptions: 28500, commissions: 17200, total: 45700 },
+    { month: "Jul", subscriptions: 31000, commissions: 18900, total: 49900 },
+    { month: "Aug", subscriptions: 32500, commissions: 20100, total: 52600 },
+    { month: "Sep", subscriptions: 35000, commissions: 22800, total: 57800 },
+    { month: "Oct", subscriptions: 38500, commissions: 25400, total: 63900 },
+  ];
 
-  // Convert revenue data for charts
-  const getActiveVendorsData = () => {
-    return analyticsData.vendorPerformanceData.slice(0, 5);
-  };
+  // Mock data for user types
+  const userTypesData = [
+    { name: "Hosts", value: 85, color: "#8884d8" },
+    { name: "Vendors", value: 175, color: "#82ca9d" },
+    { name: "Customers", value: 890, color: "#ffc658" },
+    { name: "Fetchmen", value: 45, color: "#ff7300" },
+  ];
 
-  // Define chart colors
-  const chartConfig = {
-    revenue: {
-      label: "Revenue",
-      color: "#8b5cf6" // Violet
-    },
-    target: {
-      label: "Target",
-      color: "#94a3b8" // Gray
-    },
-    tickets: {
-      label: "Tickets",
-      color: "#3b82f6" // Blue
-    },
-    vendors: {
-      label: "Vendors",
-      color: "#22c55e" // Green
-    },
-    food: {
-      label: "Food",
-      color: "#f59e0b" // Yellow
-    },
-    other: {
-      label: "Other",
-      color: "#64748b" // Slate
-    }
-  };
+  // Mock data for events
+  const eventsData = [
+    { month: "Jan", total: 28, completed: 22, cancelled: 6 },
+    { month: "Feb", total: 35, completed: 30, cancelled: 5 },
+    { month: "Mar", total: 42, completed: 38, cancelled: 4 },
+    { month: "Apr", total: 50, completed: 45, cancelled: 5 },
+    { month: "May", total: 60, completed: 55, cancelled: 5 },
+    { month: "Jun", total: 72, completed: 68, cancelled: 4 },
+    { month: "Jul", total: 80, completed: 75, cancelled: 5 },
+    { month: "Aug", total: 88, completed: 82, cancelled: 6 },
+    { month: "Sep", total: 95, completed: 90, cancelled: 5 },
+    { month: "Oct", total: 105, completed: 98, cancelled: 7 },
+  ];
 
   return (
     <AdminPanelLayout>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-        <Select value={timeRange} onValueChange={handleTimeRangeChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Time Range" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="month">This Month</SelectItem>
-            <SelectItem value="quarter">This Quarter</SelectItem>
-            <SelectItem value="year">This Year</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
+            <p className="text-gray-500">Track platform performance metrics</p>
+          </div>
+          <div className="mt-4 md:mt-0 flex space-x-2">
+            <Select defaultValue="this-year">
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="this-month">This Month</SelectItem>
+                <SelectItem value="last-month">Last Month</SelectItem>
+                <SelectItem value="this-quarter">This Quarter</SelectItem>
+                <SelectItem value="this-year">This Year</SelectItem>
+                <SelectItem value="all-time">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline">
+              <Calendar className="mr-2 h-4 w-4" />
+              Custom Range
+            </Button>
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </div>
+        </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
-        <SummaryCard 
-          title="Total Vendors"
-          value="127"
-          change="+12%"
-          increased={true}
-          icon={<Users className="h-5 w-5" />}
-          isLoading={isLoading}
-        />
-        <SummaryCard 
-          title="Total Hosts"
-          value="56"
-          change="+8%"
-          increased={true}
-          icon={<Building className="h-5 w-5" />}
-          isLoading={isLoading}
-        />
-        <SummaryCard 
-          title="Total Events"
-          value="342"
-          change="-3%"
-          increased={false}
-          icon={<CalendarDays className="h-5 w-5" />}
-          isLoading={isLoading}
-        />
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid gap-6 grid-cols-1 xl:grid-cols-2 mb-6">
-        {/* Revenue Trend Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium">
-                <div className="flex items-center gap-2">
-                  <LineChartIcon className="h-5 w-5 text-muted-foreground" />
-                  Revenue Trend
-                </div>
-              </CardTitle>
-            </div>
-            <CardDescription>Monthly revenue over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="w-full aspect-[4/3]">
-                <Skeleton className="w-full h-full" />
-              </div>
-            ) : (
-              <ChartContainer config={chartConfig} className="aspect-[4/3]">
-                <LineChart 
-                  width={500}
-                  height={300}
-                  data={analyticsData.revenueData}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#8b5cf6"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 8 }}
-                    fillOpacity={1}
-                    fill="url(#colorRevenue)"
-                  />
-                  {timeRange === "quarter" || timeRange === "year" ? (
-                    <Line
-                      type="monotone"
-                      dataKey="target"
-                      stroke="#94a3b8"
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={{ r: 4 }}
-                    />
-                  ) : null}
-                </LineChart>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Total Users</CardTitle>
+              <CardDescription>Platform-wide</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">1,195</p>
+              <p className="text-sm text-green-600">↑ 12% from last month</p>
+            </CardContent>
+          </Card>
           
-        {/* Active Vendors Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-muted-foreground" />
-                  Active Vendors This Month
-                </div>
-              </CardTitle>
-            </div>
-            <CardDescription>Bookings per vendor</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="w-full aspect-[4/3]">
-                <Skeleton className="w-full h-full" />
-              </div>
-            ) : (
-              <ChartContainer config={chartConfig} className="aspect-[4/3]">
-                <BarChart
-                  width={500}
-                  height={300}
-                  data={getActiveVendorsData()}
-                  layout="vertical"
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" width={150} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar
-                    dataKey="sales"
-                    name="Sales"
-                    fill="#8b5cf6"
-                    radius={[4, 4, 0, 0]}
-                    label={{ position: 'right', fill: '#888', fontSize: 12 }}
-                  />
-                </BarChart>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Revenue</CardTitle>
+              <CardDescription>This month</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">R 63,900</p>
+              <p className="text-sm text-green-600">↑ 10.5% from last month</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Events</CardTitle>
+              <CardDescription>This month</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">105</p>
+              <p className="text-sm text-green-600">↑ 9.4% from last month</p>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Quote Requests Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium">
-                <div className="flex items-center gap-2">
-                  <PieChartIcon className="h-5 w-5 text-muted-foreground" />
-                  Quote Requests by Category
-                </div>
-              </CardTitle>
-            </div>
-            <CardDescription>Distribution across vendor categories</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="w-full aspect-[4/3]">
-                <Skeleton className="w-full h-full" />
-              </div>
-            ) : (
-              <ChartContainer config={chartConfig} className="aspect-[4/3]">
-                <PieChart width={500} height={300}>
-                  <Pie 
-                    data={analyticsData.vendorCategoryData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {analyticsData.vendorCategoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Growth Opportunities */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">Growth Opportunities</CardTitle>
-            <CardDescription>Potential revenue increases</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="w-full h-16" />
-                <Skeleton className="w-full h-16" />
-                <Skeleton className="w-full h-16" />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {analyticsData.opportunities.map((opportunity, i) => (
-                  <div key={i} className="flex flex-col space-y-2 bg-muted/50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-medium">{opportunity.title}</h4>
-                      <span className="text-green-600 font-semibold">+${opportunity.potential.toLocaleString()}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="users">User Growth</TabsTrigger>
+            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="engagement">Engagement</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="users" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>User Growth Over Time</CardTitle>
+                  <CardDescription>Tracking user acquisition by role</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={userGrowthData}
+                        margin={{
+                          top: 20,
+                          right: 30,
+                          left: 20,
+                          bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="hosts" name="Hosts" stroke="#8884d8" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="vendors" name="Vendors" stroke="#82ca9d" />
+                        <Line type="monotone" dataKey="customers" name="Customers" stroke="#ffc658" />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Distribution</CardTitle>
+                  <CardDescription>Breakdown by user type</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={userTypesData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {userTypesData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="revenue" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue Overview</CardTitle>
+                <CardDescription>Monthly revenue breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={revenueData}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="subscriptions" name="Subscription Revenue" fill="#8884d8" />
+                      <Bar dataKey="commissions" name="Commission Revenue" fill="#82ca9d" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="events" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Events Overview</CardTitle>
+                <CardDescription>Monthly events statistics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={eventsData}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="completed" name="Completed Events" fill="#82ca9d" />
+                      <Bar dataKey="cancelled" name="Cancelled Events" fill="#ff8042" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="engagement" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Engagement</CardTitle>
+                <CardDescription>Feature engagement metrics</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center py-20">
+                <p className="text-gray-500">Engagement analytics coming soon</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminPanelLayout>
   );
 }
-
-// Summary card component for dashboard metrics
-const SummaryCard = ({ 
-  title, 
-  value, 
-  change, 
-  increased, 
-  icon, 
-  isLoading 
-}: { 
-  title: string;
-  value: string;
-  change: string;
-  increased: boolean;
-  icon: React.ReactNode;
-  isLoading: boolean;
-}) => {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-8 w-24 mb-1" />
-        ) : (
-          <>
-            <div className="text-2xl font-bold">{value}</div>
-            <div className="flex items-center pt-1">
-              {increased ? (
-                <ArrowUpRight className="mr-1 h-4 w-4 text-green-600" />
-              ) : (
-                <ArrowDownRight className="mr-1 h-4 w-4 text-red-600" />
-              )}
-              <span className={increased ? "text-green-600" : "text-red-600"}>
-                {change}
-              </span>
-              <span className="text-muted-foreground text-xs ml-2">from last 30 days</span>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-// Chart colors
-const COLORS = ['#8b5cf6', '#3b82f6', '#22c55e', '#f59e0b', '#ef4444'];

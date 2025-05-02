@@ -29,6 +29,16 @@ const AdminProfilePage = lazy(() => import("./pages/AdminProfilePage"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
 const AdminPayoutsPage = lazy(() => import("./pages/AdminPayoutsPage"));
 const AdminPlatformSettingsPage = lazy(() => import("./pages/admin/AdminPlatformSettingsPage"));
+const AdminHostsPage = lazy(() => import("./pages/admin/AdminHostsPage"));
+const AdminEventsPage = lazy(() => import("./pages/admin/AdminEventsPage"));
+const AdminMerchantsPage = lazy(() => import("./pages/admin/AdminMerchantsPage"));
+const AdminVendorPerformancePage = lazy(() => import("./pages/admin/AdminVendorPerformancePage"));
+const AdminSubscriptionsPage = lazy(() => import("./pages/admin/AdminSubscriptionsPage"));
+const AdminAnalyticsPage = lazy(() => import("./pages/admin/AdminAnalyticsPage"));
+const AdminReportsPage = lazy(() => import("./pages/admin/AdminReportsPage"));
+const AdminNotificationsPage = lazy(() => import("./pages/admin/AdminNotificationsPage"));
+const AdminSupportPage = lazy(() => import("./pages/admin/AdminSupportPage"));
+const AdminPlatformPage = lazy(() => import("./pages/admin/AdminPlatformPage"));
 
 // Vendor pages
 const VendorSignupPage = lazy(() => import("./pages/vendor/VendorSignupPage"));
@@ -57,9 +67,16 @@ const HostMessagesPage = lazy(() => import("./pages/host/HostMessagesPage"));
 const HostNotificationsPage = lazy(() => import("./pages/host/HostNotificationsPage"));
 const HostKnowledgePage = lazy(() => import("./pages/host/HostKnowledgePage"));
 const HostSettingsPage = lazy(() => import("./pages/host/HostSettingsPage"));
+const EventManagementPage = lazy(() => import("./pages/host/EventManagementPage"));
+const EventCreationPage = lazy(() => import("./pages/host/EventCreationPage"));
+const EventEditPage = lazy(() => import("./pages/host/EventEditPage"));
 
 // Fetchman pages
 const FetchmanDashboardPage = lazy(() => import("./pages/fetchman/FetchmanDashboardPage"));
+const FetchmanAssignmentsPage = lazy(() => import("./pages/fetchman/FetchmanAssignmentsPage"));
+const FetchmanSchedulePage = lazy(() => import("./pages/fetchman/FetchmanSchedulePage"));
+const FetchmanEarningsPage = lazy(() => import("./pages/fetchman/FetchmanEarningsPage"));
+const FetchmanSettingsPage = lazy(() => import("./pages/fetchman/FetchmanSettingsPage"));
 
 export default function App() {
   return (
@@ -94,6 +111,9 @@ export default function App() {
             <Route path="venues" element={<VenuesPage />} />
             <Route path="vendors" element={<VendorsPage />} />
             <Route path="events" element={<HostEventsPage />} />
+            <Route path="events/new" element={<EventCreationPage />} />
+            <Route path="events/:eventId" element={<EventManagementPage />} />
+            <Route path="events/:eventId/edit" element={<EventEditPage />} />
             <Route path="guests" element={<HostGuestsPage />} />
             <Route path="finance" element={<HostFinancePage />} />
             <Route path="analytics" element={<HostAnalyticsPage />} />
@@ -119,7 +139,17 @@ export default function App() {
             <Route path="dashboard" element={<AdminPanel />} />
             <Route path="profile" element={<AdminProfilePage />} />
             <Route path="users" element={<AdminUsersPage />} />
+            <Route path="hosts" element={<AdminHostsPage />} />
+            <Route path="events" element={<AdminEventsPage />} />
+            <Route path="merchants" element={<AdminMerchantsPage />} />
+            <Route path="vendors/performance" element={<AdminVendorPerformancePage />} />
             <Route path="payouts" element={<AdminPayoutsPage />} />
+            <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
+            <Route path="notifications" element={<AdminNotificationsPage />} />
+            <Route path="support" element={<AdminSupportPage />} />
+            <Route path="platform" element={<AdminPlatformPage />} />
             <Route path="settings" element={<AdminPlatformSettingsPage />} />
           </Route>
 
@@ -164,6 +194,10 @@ export default function App() {
           >
             <Route index element={<Navigate to="/fetchman/dashboard" replace />} />
             <Route path="dashboard" element={<FetchmanDashboardPage />} />
+            <Route path="assignments" element={<FetchmanAssignmentsPage />} />
+            <Route path="schedule" element={<FetchmanSchedulePage />} />
+            <Route path="earnings" element={<FetchmanEarningsPage />} />
+            <Route path="settings" element={<FetchmanSettingsPage />} />
           </Route>
 
           {/* Not found route */}

@@ -50,3 +50,14 @@ export const getRedirectPageForRoles = (roles: string[]): string => {
   console.log("No matching roles found, defaulting to homepage");
   return "/";
 };
+
+/**
+ * Custom hook to use role-based redirection
+ * @param roles Array of user roles
+ * @returns The path to redirect the user to
+ */
+export const useRoleRedirect = (roles: string[] = []): string => {
+  return getRedirectPageForRoles(roles);
+};
+
+export default useRoleRedirect;

@@ -1,365 +1,179 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useForm } from "react-hook-form";
-import { CalendarIcon, Edit, Plus, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { useNotifications } from "@/contexts/NotificationContext";
-
-// Mock event data
-const mockEvents = [
-  {
-    id: "1",
-    name: "Summer Music Festival",
-    date: new Date(2025, 6, 15),
-    location: "Pretoria Botanical Gardens",
-    vendorsAssigned: 5,
-  },
-  {
-    id: "2",
-    name: "Corporate Tech Conference",
-    date: new Date(2025, 7, 22),
-    location: "Cape Town Convention Center",
-    vendorsAssigned: 8,
-  },
-  {
-    id: "3",
-    name: "Wedding Expo",
-    date: new Date(2025, 8, 10),
-    location: "Sandton Convention Center",
-    vendorsAssigned: 12,
-  },
-  {
-    id: "4",
-    name: "Food & Wine Festival",
-    date: new Date(2025, 9, 5),
-    location: "Johannesburg Exhibition Centre",
-    vendorsAssigned: 15,
-  },
-];
-
-interface EventFormData {
-  name: string;
-  date: Date;
-  location: string;
-  description: string;
-}
+import { Search, Filter, Calendar, Eye, Check, X } from "lucide-react";
+import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 
 export default function AdminEventsPage() {
-  const navigate = useNavigate();
-  const [events, setEvents] = useState(mockEvents);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<any | null>(null);
-  const { addNotification, sendEmail } = useNotifications();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const { register, handleSubmit, reset, setValue, watch } = useForm<EventFormData>();
-  const selectedDate = watch("date");
+  // Mock data for events
+  const events = [
+    {
+      id: "1",
+      name: "Wedding Expo 2025",
+      host: "EventCo Planners",
+      date: "2025-06-15",
+      venue: "Grand Convention Center",
+      status: "upcoming",
+      attendees: 500,
+      revenue: 15000,
+      featured: true,
+    },
+    {
+      id: "2",
+      name: "Corporate Retreat Summit",
+      host: "Celebration Events",
+      date: "2025-07-21",
+      venue: "Mountain View Resort",
+      status: "upcoming",
+      attendees: 120,
+      revenue: 22000,
+      featured: false,
+    },
+    {
+      id: "3",
+      name: "Music Festival Weekend",
+      host: "Party Professionals",
+      date: "2025-05-30",
+      venue: "Central Park Arena",
+      status: "pending",
+      attendees: 2000,
+      revenue: 75000,
+      featured: true,
+    },
+    {
+      id: "4",
+      name: "Tech Conference 2025",
+      host: "Premiere Events",
+      date: "2025-04-12",
+      venue: "Tech Hub Center",
+      status: "completed",
+      attendees: 850,
+      revenue: 42500,
+      featured: true,
+    },
+    {
+      id: "5",
+      name: "Summer Fashion Show",
+      host: "Event Elegance",
+      date: "2025-08-18",
+      venue: "Downtown Gallery",
+      status: "upcoming",
+      attendees: 300,
+      revenue: 18000,
+      featured: false,
+    },
+  ];
 
-  const handleCreateOrUpdateEvent = (data: EventFormData) => {
-    if (editingEvent) {
-      // Update existing event
-      setEvents((prev) =>
-        prev.map((event) =>
-          event.id === editingEvent.id
-            ? {
-                ...event,
-                name: data.name,
-                date: data.date,
-                location: data.location,
-              }
-            : event
-        )
-      );
-      
-      addNotification({
-        title: "Event Updated",
-        message: `"${data.name}" has been updated successfully.`,
-        type: "success",
-      });
-      
-      // Simulate sending email notification
-      sendEmail(
-        "admin@venuapp.com",
-        "Event Updated",
-        `The event "${data.name}" has been updated.`
-      );
+  const filteredEvents = events.filter(
+    event =>
+      event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.host.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.venue.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    } else {
-      // Create new event
-      const newEvent = {
-        id: (events.length + 1).toString(),
-        name: data.name,
-        date: data.date,
-        location: data.location,
-        vendorsAssigned: 0,
-      };
-      
-      setEvents((prev) => [...prev, newEvent]);
-      
-      addNotification({
-        title: "Event Created",
-        message: `"${data.name}" has been created successfully.`,
-        type: "success",
-      });
-      
-      // Simulate sending email notification
-      sendEmail(
-        "admin@venuapp.com",
-        "New Event Created",
-        `A new event "${data.name}" has been created.`
-      );
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "upcoming":
+        return <Badge className="bg-blue-100 text-blue-800">Upcoming</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case "completed":
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
-    
-    reset();
-    setEditingEvent(null);
-    setIsDialogOpen(false);
-  };
-
-  const handleEditEvent = (event: any) => {
-    setEditingEvent(event);
-    setValue("name", event.name);
-    setValue("date", event.date);
-    setValue("location", event.location);
-    setValue("description", event.description || "");
-    setIsDialogOpen(true);
-  };
-
-  const handleDeleteEvent = (id: string) => {
-    const eventToDelete = events.find((event) => event.id === id);
-    setEvents((prev) => prev.filter((event) => event.id !== id));
-    
-    addNotification({
-      title: "Event Deleted",
-      message: `"${eventToDelete?.name}" has been deleted.`,
-      type: "info",
-    });
-    
-    sendEmail(
-      "admin@venuapp.com",
-      "Event Deleted",
-      `The event "${eventToDelete?.name}" has been deleted.`
-    );
-  };
-
-  const openDialogForNewEvent = () => {
-    setEditingEvent(null);
-    reset({
-      name: "",
-      date: new Date(),
-      location: "",
-      description: "",
-    });
-    setIsDialogOpen(true);
   };
 
   return (
     <AdminPanelLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Event Management</h1>
-          <Button onClick={openDialogForNewEvent}>
-            <Plus className="mr-2 h-4 w-4" /> Create Event
-          </Button>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Event Management</h1>
+            <p className="text-gray-500">Monitor and manage events across the platform</p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Vendors Assigned</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell className="font-medium">{event.name}</TableCell>
-                  <TableCell>{format(event.date, "PPP")}</TableCell>
-                  <TableCell>{event.location}</TableCell>
-                  <TableCell>{event.vendorsAssigned}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/admin/events/${event.id}/vendors`)}
-                      >
-                        Assign Vendors
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEditEvent(event)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="text-red-500">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete the event "{event.name}".
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteEvent(event.id)}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {events.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No events found. Create your first event.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-
-      {/* Event Create/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <DialogTitle>{editingEvent ? "Edit Event" : "Create Event"}</DialogTitle>
-            <DialogDescription>
-              {editingEvent
-                ? "Edit the details of your event."
-                : "Fill in the details to create a new event."}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit(handleCreateOrUpdateEvent)}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>All Events</CardTitle>
+            <CardDescription>View and manage events</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row justify-between mb-6">
+              <div className="relative max-w-md mb-4 md:mb-0">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                 <Input
-                  id="name"
-                  className="col-span-3"
-                  {...register("name", { required: true })}
+                  placeholder="Search events..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Date</Label>
-                <div className="col-span-3">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !selectedDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => setValue("date", date || new Date())}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="location" className="text-right">
-                  Location
-                </Label>
-                <Input
-                  id="location"
-                  className="col-span-3"
-                  {...register("location", { required: true })}
-                />
-              </div>
-
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  className="col-span-3"
-                  {...register("description")}
-                />
+              <div className="space-x-2">
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                </Button>
+                <Button variant="outline">
+                  Export
+                </Button>
               </div>
             </div>
 
-            <DialogFooter>
-              <Button type="submit">
-                {editingEvent ? "Update" : "Create"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+            <div className="rounded-md border">
+              <Table>
+                <TableCaption>List of events on the platform</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Event Name</TableHead>
+                    <TableHead>Host</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Venue</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Attendees</TableHead>
+                    <TableHead>Revenue (R)</TableHead>
+                    <TableHead>Featured</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEvents.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell className="font-medium">{event.name}</TableCell>
+                      <TableCell>{event.host}</TableCell>
+                      <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
+                      <TableCell>{event.venue}</TableCell>
+                      <TableCell>{getStatusBadge(event.status)}</TableCell>
+                      <TableCell>{event.attendees}</TableCell>
+                      <TableCell>{event.revenue.toLocaleString()}</TableCell>
+                      <TableCell>{event.featured ? <Check className="h-4 w-4 text-green-500" /> : <X className="h-4 w-4 text-red-500" />}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon">
+                            <Calendar className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </AdminPanelLayout>
   );
 }

@@ -43,6 +43,10 @@ const VendorReviewsPage = lazy(() => import("./pages/vendor/VendorReviewsPage"))
 const VendorGoLivePage = lazy(() => import("./pages/vendor/VendorGoLivePage"));
 const VendorSettingsPage = lazy(() => import("./pages/vendor/VendorSettingsPage"));
 const VendorSupportPage = lazy(() => import("./pages/vendor/VendorSupportPage"));
+const VendorKnowledgePage = lazy(() => import("./pages/vendor/VendorKnowledgePage"));
+const VendorFinancePage = lazy(() => import("./pages/vendor/VendorFinancePage"));
+const VendorAnalyticsPage = lazy(() => import("./pages/vendor/VendorAnalyticsPage"));
+const VendorNotificationsPage = lazy(() => import("./pages/vendor/VendorNotificationsPage"));
 
 // Host pages
 const HostEventsPage = lazy(() => import("./pages/host/HostEventsPage"));
@@ -53,6 +57,9 @@ const HostMessagesPage = lazy(() => import("./pages/host/HostMessagesPage"));
 const HostNotificationsPage = lazy(() => import("./pages/host/HostNotificationsPage"));
 const HostKnowledgePage = lazy(() => import("./pages/host/HostKnowledgePage"));
 const HostSettingsPage = lazy(() => import("./pages/host/HostSettingsPage"));
+
+// Fetchman pages
+const FetchmanDashboardPage = lazy(() => import("./pages/fetchman/FetchmanDashboardPage"));
 
 export default function App() {
   return (
@@ -139,6 +146,24 @@ export default function App() {
             <Route path="settings" element={<VendorSettingsPage />} />
             <Route path="support" element={<VendorSupportPage />} />
             <Route path="signup" element={<VendorSignupPage />} />
+            <Route path="knowledge" element={<VendorKnowledgePage />} />
+            <Route path="finance" element={<VendorFinancePage />} />
+            <Route path="analytics" element={<VendorAnalyticsPage />} />
+            <Route path="notifications" element={<VendorNotificationsPage />} />
+          </Route>
+
+          {/* Fetchman panel routes */}
+          <Route 
+            path="/fetchman" 
+            element={
+              <AuthProtected 
+                requiredRoles={["fetchman"]} 
+                redirectTo="/auth?next=/fetchman&required=fetchman"
+              />
+            }
+          >
+            <Route index element={<Navigate to="/fetchman/dashboard" replace />} />
+            <Route path="dashboard" element={<FetchmanDashboardPage />} />
           </Route>
 
           {/* Not found route */}

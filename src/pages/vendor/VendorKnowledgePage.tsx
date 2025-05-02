@@ -1,18 +1,18 @@
 
 import React from "react";
-import HostPanelLayout from "@/components/layouts/HostPanelLayout";
+import VendorPanelLayout from "@/components/layouts/VendorPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Download, BookOpen, Video, FileText, HelpCircle } from "lucide-react";
 
-export default function HostKnowledgePage() {
+export default function VendorKnowledgePage() {
   const articleCategories = [
     { id: "getting-started", title: "Getting Started" },
-    { id: "event-planning", title: "Event Planning" },
-    { id: "vendor-management", title: "Vendor Management" },
-    { id: "guest-management", title: "Guest Management" },
+    { id: "service-management", title: "Service Management" },
+    { id: "booking-management", title: "Booking Management" },
+    { id: "pricing-tools", title: "Pricing Tools" },
     { id: "finance", title: "Finance" },
     { id: "analytics", title: "Analytics" },
   ];
@@ -20,40 +20,40 @@ export default function HostKnowledgePage() {
   const mockArticles = [
     { 
       id: 1, 
-      title: "Getting Started with Venuapp", 
-      excerpt: "Learn how to set up your account and create your first event.",
+      title: "Getting Started as a Vendor", 
+      excerpt: "Learn how to set up your vendor profile and showcase your services.",
       category: "getting-started",
       icon: <BookOpen className="h-5 w-5" />,
       readTime: "5 min read"
     },
     { 
       id: 2, 
-      title: "How to Invite Vendors to Your Event", 
-      excerpt: "Step-by-step guide to inviting vendors and managing their responses.",
-      category: "vendor-management",
+      title: "Managing Your Services", 
+      excerpt: "A comprehensive guide to adding and managing services you offer.",
+      category: "service-management",
       icon: <FileText className="h-5 w-5" />,
       readTime: "7 min read"
     },
     { 
       id: 3, 
-      title: "Managing Guest Lists and RSVPs", 
-      excerpt: "Learn how to create and manage guest lists for your events.",
-      category: "guest-management",
+      title: "Handling Booking Requests", 
+      excerpt: "Learn how to efficiently manage booking requests from hosts.",
+      category: "booking-management",
       icon: <BookOpen className="h-5 w-5" />,
       readTime: "6 min read"
     },
     { 
       id: 4, 
-      title: "Understanding Event Analytics", 
-      excerpt: "A comprehensive guide to interpreting your event analytics.",
-      category: "analytics",
+      title: "Optimizing Your Pricing Strategy", 
+      excerpt: "Tips and strategies for setting competitive pricing for your services.",
+      category: "pricing-tools",
       icon: <FileText className="h-5 w-5" />,
       readTime: "10 min read"
     },
     { 
       id: 5, 
-      title: "Financial Reporting for Events", 
-      excerpt: "Learn how to generate and understand financial reports for your events.",
+      title: "Getting Paid and Managing Finances", 
+      excerpt: "Learn about the payment process and financial tracking tools.",
       category: "finance",
       icon: <FileText className="h-5 w-5" />,
       readTime: "8 min read"
@@ -63,30 +63,28 @@ export default function HostKnowledgePage() {
   const mockVideos = [
     {
       id: 1,
-      title: "Venuapp Platform Tour",
-      duration: "5:32",
+      title: "Vendor Platform Tour",
+      duration: "4:23",
       thumbnail: "/lovable-uploads/2577f88d-c4f8-45d2-a150-fa973a1ae957.png"
     },
     {
       id: 2,
-      title: "How to Create the Perfect Event",
-      duration: "8:47",
+      title: "How to Get More Bookings",
+      duration: "7:15",
       thumbnail: "/lovable-uploads/9d0f57b8-df3f-4b8c-9311-d4546047a3ca.png"
     },
     {
       id: 3,
-      title: "Managing Vendors Effectively",
-      duration: "6:23",
+      title: "Maximizing Your Profile Visibility",
+      duration: "5:47",
       thumbnail: "/lovable-uploads/60e514f6-8668-4b57-b0f1-fe2ea1d0b808.png"
     }
   ];
 
   return (
-    <HostPanelLayout>
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-venu-purple to-venu-dark-purple mb-6">
-          Knowledge Base
-        </h1>
+    <VendorPanelLayout>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Knowledge Base</h1>
         
         <div className="mb-6">
           <div className="relative max-w-lg mb-6">
@@ -112,7 +110,7 @@ export default function HostKnowledgePage() {
           </TabsList>
           
           <TabsContent value="articles">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {mockArticles.map((article) => (
                 <Card key={article.id}>
                   <CardHeader className="pb-2">
@@ -167,46 +165,46 @@ export default function HostKnowledgePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Frequently Asked Questions</CardTitle>
-                <CardDescription>Find answers to common questions about using Venuapp</CardDescription>
+                <CardDescription>Find answers to common questions about being a vendor on Venuapp</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-3">
-                  <h3 className="font-medium">How do I create my first event?</h3>
+                  <h3 className="font-medium">How do I receive booking requests?</h3>
                   <p className="text-sm text-muted-foreground">
-                    To create your first event, navigate to the Events tab and click on the "New Event" button. 
-                    Follow the guided steps to set up your event details, venue, and schedule.
+                    Booking requests will appear in your dashboard and you'll receive email notifications. 
+                    You can accept or decline requests directly from your dashboard.
                   </p>
                 </div>
                 
                 <div className="space-y-3">
-                  <h3 className="font-medium">How do I invite vendors to my event?</h3>
+                  <h3 className="font-medium">How do I get paid for my services?</h3>
                   <p className="text-sm text-muted-foreground">
-                    You can invite vendors from the Vendors tab by clicking "Invite Vendors". You can send direct invitations 
-                    via email or generate a unique QR code that vendors can scan to join your event.
+                    Payments are processed securely through our integrated payment system. Once a booking is completed,
+                    funds will be transferred to your linked bank account within 7 business days.
                   </p>
                 </div>
                 
                 <div className="space-y-3">
-                  <h3 className="font-medium">How are payments processed?</h3>
+                  <h3 className="font-medium">How do I update my availability?</h3>
                   <p className="text-sm text-muted-foreground">
-                    Payments are processed securely through our integrated payment provider. You can track all 
-                    transactions in the Finance section and set up automatic payouts to your bank account.
+                    You can update your availability in the "Availability" section of your dashboard.
+                    You can set regular hours or block specific dates.
                   </p>
                 </div>
                 
                 <div className="space-y-3">
-                  <h3 className="font-medium">How can I contact support?</h3>
+                  <h3 className="font-medium">What fees does Venuapp charge?</h3>
                   <p className="text-sm text-muted-foreground">
-                    You can contact our support team through the Help tab or by emailing support@venuapp.com. 
-                    Our team is available 24/7 to assist you with any issues or questions.
+                    Venuapp charges a 10% service fee on each booking. This fee covers payment processing,
+                    marketing, and platform maintenance.
                   </p>
                 </div>
                 
                 <div className="space-y-3">
-                  <h3 className="font-medium">How do I upgrade my subscription?</h3>
+                  <h3 className="font-medium">How can I improve my visibility to hosts?</h3>
                   <p className="text-sm text-muted-foreground">
-                    To upgrade your subscription, go to your account settings and select "Subscription". 
-                    From there, you can view and select from our available subscription plans.
+                    Complete your profile with high-quality photos, detailed service descriptions,
+                    competitive pricing, and encourage satisfied clients to leave reviews.
                   </p>
                 </div>
               </CardContent>
@@ -224,14 +222,14 @@ export default function HostKnowledgePage() {
                     <CardTitle>Contact Support</CardTitle>
                   </div>
                   <CardDescription>
-                    Reach out to our dedicated support team for personalized assistance
+                    Reach out to our dedicated vendor support team for assistance
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm font-medium mb-1">Email</p>
-                      <p className="text-sm text-muted-foreground">support@venuapp.com</p>
+                      <p className="text-sm text-muted-foreground">vendor-support@venuapp.com</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium mb-1">Live Chat</p>
@@ -255,7 +253,7 @@ export default function HostKnowledgePage() {
                     <CardTitle>Resources</CardTitle>
                   </div>
                   <CardDescription>
-                    Download guides, templates, and resources for your events
+                    Download guides and templates to help grow your business
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -263,7 +261,7 @@ export default function HostKnowledgePage() {
                     <li className="flex items-center justify-between p-3 border rounded-md">
                       <div className="flex items-center gap-3">
                         <FileText className="h-5 w-5" />
-                        <span>Event Planning Guide</span>
+                        <span>Vendor Success Guide</span>
                       </div>
                       <Button variant="ghost" size="icon">
                         <Download className="h-4 w-4" />
@@ -272,7 +270,7 @@ export default function HostKnowledgePage() {
                     <li className="flex items-center justify-between p-3 border rounded-md">
                       <div className="flex items-center gap-3">
                         <FileText className="h-5 w-5" />
-                        <span>Vendor Contract Template</span>
+                        <span>Service Description Template</span>
                       </div>
                       <Button variant="ghost" size="icon">
                         <Download className="h-4 w-4" />
@@ -281,7 +279,7 @@ export default function HostKnowledgePage() {
                     <li className="flex items-center justify-between p-3 border rounded-md">
                       <div className="flex items-center gap-3">
                         <FileText className="h-5 w-5" />
-                        <span>Guest List Template</span>
+                        <span>Pricing Calculator</span>
                       </div>
                       <Button variant="ghost" size="icon">
                         <Download className="h-4 w-4" />
@@ -294,6 +292,6 @@ export default function HostKnowledgePage() {
           </TabsContent>
         </Tabs>
       </div>
-    </HostPanelLayout>
+    </VendorPanelLayout>
   );
 }

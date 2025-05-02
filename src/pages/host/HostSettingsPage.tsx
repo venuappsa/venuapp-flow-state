@@ -1,116 +1,117 @@
 
-import React from "react";
+import React, { useState } from "react";
 import HostPanelLayout from "@/components/layouts/HostPanelLayout";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save, CreditCard, Bell, Shield, Users, Settings, Lock } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export default function HostSettingsPage() {
+  const [accountForm, setAccountForm] = useState({
+    firstName: "John",
+    lastName: "Smith",
+    email: "john.smith@example.com",
+    company: "Event Masters",
+  });
+  
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailUpdates: true,
+    smsUpdates: false,
+    bookingNotifications: true,
+    marketingEmails: false,
+    eventReminders: true,
+    vendorMessages: true,
+  });
+  
+  const handleAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAccountForm({
+      ...accountForm,
+      [e.target.name]: e.target.value,
+    });
+  };
+  
+  const handleNotificationToggle = (key: string) => {
+    setNotificationSettings({
+      ...notificationSettings,
+      [key]: !notificationSettings[key as keyof typeof notificationSettings],
+    });
+  };
+  
   return (
     <HostPanelLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-venu-purple to-venu-dark-purple mb-6">
           Settings
         </h1>
         
-        <Tabs defaultValue="profile" className="mb-8">
-          <TabsList className="mb-6">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              Notifications
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Security
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Billing
-            </TabsTrigger>
-            <TabsTrigger value="preferences" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Preferences
-            </TabsTrigger>
+        <Tabs defaultValue="account" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="account">Account</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="billing">Billing & Subscription</TabsTrigger>
+            <TabsTrigger value="security">Security & Privacy</TabsTrigger>
+            <TabsTrigger value="preferences">Preferences</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="profile">
+          <TabsContent value="account">
             <Card>
               <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your account profile information</CardDescription>
+                <CardTitle>Account Information</CardTitle>
+                <CardDescription>
+                  Update your personal and account information
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex flex-col sm:flex-row gap-6 items-start">
-                  <div className="flex flex-col items-center gap-3">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src="/placeholder-image.jpg" />
-                      <AvatarFallback className="text-xl bg-venu-orange text-white">JD</AvatarFallback>
-                    </Avatar>
-                    <Button variant="outline" size="sm">
-                      <Camera className="mr-2 h-4 w-4" />
-                      Change Photo
-                    </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input 
+                      id="firstName" 
+                      name="firstName" 
+                      value={accountForm.firstName}
+                      onChange={handleAccountChange}
+                    />
                   </div>
-                  
-                  <div className="space-y-4 flex-1">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input id="firstName" defaultValue="John" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" defaultValue="Doe" />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" defaultValue="john@example.com" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" defaultValue="+27 71 234 5678" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Company/Organization</Label>
-                      <Input id="company" defaultValue="Event Horizon Ltd." />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input 
+                      id="lastName" 
+                      name="lastName" 
+                      value={accountForm.lastName}
+                      onChange={handleAccountChange}
+                    />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Tell us about yourself or your organization"
-                    defaultValue="Event planner with over 10 years of experience specializing in corporate events and conferences."
-                    className="min-h-[100px]"
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    value={accountForm.email}
+                    onChange={handleAccountChange}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="website">Website URL</Label>
-                  <Input id="website" placeholder="https://" defaultValue="https://eventhorizon.co.za" />
+                  <Label htmlFor="company">Company/Organization</Label>
+                  <Input 
+                    id="company" 
+                    name="company" 
+                    value={accountForm.company}
+                    onChange={handleAccountChange}
+                  />
                 </div>
                 
-                <Button className="mt-4">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </Button>
+                <Separator />
+                
+                <div>
+                  <Button>Save Changes</Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -119,143 +120,83 @@ export default function HostSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Notification Settings</CardTitle>
-                <CardDescription>Manage how and when you receive notifications</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Email Notifications</h3>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="email-events" className="font-medium">Event Updates</Label>
-                        <p className="text-sm text-muted-foreground">Receive emails about your events</p>
-                      </div>
-                      <Switch id="email-events" defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="email-bookings" className="font-medium">Booking Confirmations</Label>
-                        <p className="text-sm text-muted-foreground">Receive emails about vendor bookings</p>
-                      </div>
-                      <Switch id="email-bookings" defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="email-messages" className="font-medium">New Messages</Label>
-                        <p className="text-sm text-muted-foreground">Get notified about new messages</p>
-                      </div>
-                      <Switch id="email-messages" defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="email-marketing" className="font-medium">Marketing & Promotions</Label>
-                        <p className="text-sm text-muted-foreground">Receive marketing emails and promotions</p>
-                      </div>
-                      <Switch id="email-marketing" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4 border-t pt-6">
-                    <h3 className="text-lg font-medium">Push Notifications</h3>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="push-all" className="font-medium">Allow Push Notifications</Label>
-                        <p className="text-sm text-muted-foreground">Enable browser push notifications</p>
-                      </div>
-                      <Switch id="push-all" defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="push-messages" className="font-medium">Messages</Label>
-                        <p className="text-sm text-muted-foreground">Get alerts for new messages</p>
-                      </div>
-                      <Switch id="push-messages" defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="push-events" className="font-medium">Event Reminders</Label>
-                        <p className="text-sm text-muted-foreground">Get reminders about upcoming events</p>
-                      </div>
-                      <Switch id="push-events" defaultChecked />
-                    </div>
-                  </div>
-                  
-                  <Button className="mt-4">Save Notification Preferences</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="security">
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
-                <CardDescription>Manage your account security and privacy</CardDescription>
+                <CardDescription>
+                  Manage how you receive notifications and updates
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Password</h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
-                    <Input id="current-password" type="password" />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Email Updates</p>
+                      <p className="text-sm text-muted-foreground">Receive updates about your account via email</p>
+                    </div>
+                    <Switch 
+                      checked={notificationSettings.emailUpdates}
+                      onCheckedChange={() => handleNotificationToggle("emailUpdates")}
+                    />
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
-                    <Input id="new-password" type="password" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
-                    <Input id="confirm-password" type="password" />
-                  </div>
-                  
-                  <Button className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    Update Password
-                  </Button>
-                </div>
-                
-                <div className="space-y-4 border-t pt-6">
-                  <h3 className="text-lg font-medium">Two-Factor Authentication</h3>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">Two-Factor Authentication</p>
-                      <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+                      <p className="font-medium">SMS Notifications</p>
+                      <p className="text-sm text-muted-foreground">Receive updates about your account via SMS</p>
                     </div>
-                    <Switch id="2fa" />
+                    <Switch 
+                      checked={notificationSettings.smsUpdates}
+                      onCheckedChange={() => handleNotificationToggle("smsUpdates")}
+                    />
                   </div>
                   
-                  <Button variant="outline">Set Up Two-Factor Authentication</Button>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Booking Notifications</p>
+                      <p className="text-sm text-muted-foreground">Receive notifications when you get new bookings</p>
+                    </div>
+                    <Switch 
+                      checked={notificationSettings.bookingNotifications}
+                      onCheckedChange={() => handleNotificationToggle("bookingNotifications")}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Marketing Emails</p>
+                      <p className="text-sm text-muted-foreground">Receive marketing emails and promotions</p>
+                    </div>
+                    <Switch 
+                      checked={notificationSettings.marketingEmails}
+                      onCheckedChange={() => handleNotificationToggle("marketingEmails")}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Event Reminders</p>
+                      <p className="text-sm text-muted-foreground">Receive reminders about upcoming events</p>
+                    </div>
+                    <Switch 
+                      checked={notificationSettings.eventReminders}
+                      onCheckedChange={() => handleNotificationToggle("eventReminders")}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Vendor Messages</p>
+                      <p className="text-sm text-muted-foreground">Receive notifications when vendors message you</p>
+                    </div>
+                    <Switch 
+                      checked={notificationSettings.vendorMessages}
+                      onCheckedChange={() => handleNotificationToggle("vendorMessages")}
+                    />
+                  </div>
                 </div>
                 
-                <div className="space-y-4 border-t pt-6">
-                  <h3 className="text-lg font-medium">Sessions</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 p-4 rounded-md">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">Current Session</p>
-                          <p className="text-sm text-muted-foreground">Chrome on Windows • Cape Town, South Africa</p>
-                        </div>
-                        <div className="text-sm text-green-600 font-medium">Active Now</div>
-                      </div>
-                    </div>
-                    
-                    <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                      Sign Out All Other Devices
-                    </Button>
-                  </div>
+                <Separator />
+                
+                <div>
+                  <Button>Save Changes</Button>
                 </div>
               </CardContent>
             </Card>
@@ -265,96 +206,143 @@ export default function HostSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Billing & Subscription</CardTitle>
-                <CardDescription>Manage your subscription and payment methods</CardDescription>
+                <CardDescription>
+                  Manage your subscription plan and billing information
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">Current Plan: Professional</p>
-                      <p className="text-sm text-muted-foreground">R499/month • Renews on June 15, 2025</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline">Change Plan</Button>
-                      <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                        Cancel
-                      </Button>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Current Plan</h3>
+                    <div className="bg-venu-orange/10 text-venu-orange p-3 rounded-md flex items-center justify-between">
+                      <div>
+                        <p className="font-bold">Professional Plan</p>
+                        <p className="text-sm">R 499/month, billed annually</p>
+                      </div>
+                      <Button variant="outline">Upgrade Plan</Button>
                     </div>
                   </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Payment Methods</h3>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-3 items-center">
-                        <CreditCard className="h-5 w-5" />
+                  <div>
+                    <h3 className="font-medium mb-2">Payment Method</h3>
+                    <div className="flex items-center gap-3 border p-3 rounded-md">
+                      <div className="bg-gray-200 h-10 w-14 rounded flex items-center justify-center">
+                        VISA
+                      </div>
+                      <div>
+                        <p className="font-medium">Visa ending in 4242</p>
+                        <p className="text-sm text-muted-foreground">Expires 05/2026</p>
+                      </div>
+                      <Button variant="ghost" className="ml-auto">Change</Button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium mb-2">Billing History</h3>
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2">Date</th>
+                          <th className="text-left py-2">Description</th>
+                          <th className="text-right py-2">Amount</th>
+                          <th className="text-right py-2">Invoice</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="py-2">May 1, 2025</td>
+                          <td>Professional Plan (Annual)</td>
+                          <td className="text-right">R 5,988.00</td>
+                          <td className="text-right">
+                            <Button variant="link" className="p-0 h-auto">Download</Button>
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2">May 1, 2024</td>
+                          <td>Professional Plan (Annual)</td>
+                          <td className="text-right">R 5,988.00</td>
+                          <td className="text-right">
+                            <Button variant="link" className="p-0 h-auto">Download</Button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="security">
+            <Card>
+              <CardHeader>
+                <CardTitle>Security & Privacy</CardTitle>
+                <CardDescription>
+                  Manage your account security and privacy settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-3">Change Password</h3>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="currentPassword">Current Password</Label>
+                        <Input id="currentPassword" type="password" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="newPassword">New Password</Label>
+                        <Input id="newPassword" type="password" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                        <Input id="confirmPassword" type="password" />
+                      </div>
+                      <Button>Update Password</Button>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-medium mb-3">Two-Factor Authentication</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Add an extra layer of security to your account by enabling two-factor authentication.
+                    </p>
+                    <Button variant="outline">Enable 2FA</Button>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-medium mb-3">Privacy Settings</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium">Visa ending in 4242</p>
-                          <p className="text-sm text-muted-foreground">Expires 09/2026</p>
+                          <p className="font-medium">Public Profile</p>
+                          <p className="text-sm text-muted-foreground">Allow your profile to be visible to vendors</p>
                         </div>
+                        <Switch defaultChecked />
                       </div>
-                      <div className="text-sm">
-                        <Button variant="ghost" size="sm" className="h-8">Edit</Button>
-                        <Button variant="ghost" size="sm" className="h-8 text-red-600">Remove</Button>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Data Collection</p>
+                          <p className="text-sm text-muted-foreground">Allow us to collect usage data to improve services</p>
+                        </div>
+                        <Switch defaultChecked />
                       </div>
                     </div>
                   </div>
                   
-                  <Button variant="outline">Add Payment Method</Button>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Billing Address</h3>
+                  <Separator />
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="company-name">Company Name</Label>
-                    <Input id="company-name" defaultValue="Event Horizon Ltd." />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="address-line1">Address Line 1</Label>
-                      <Input id="address-line1" defaultValue="123 Main Street" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address-line2">Address Line 2</Label>
-                      <Input id="address-line2" defaultValue="Suite 456" />
+                  <div>
+                    <h3 className="font-medium mb-3">Account Actions</h3>
+                    <div className="space-x-3">
+                      <Button variant="outline">Download My Data</Button>
+                      <Button variant="destructive">Delete Account</Button>
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" defaultValue="Cape Town" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="province">Province</Label>
-                      <Input id="province" defaultValue="Western Cape" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="postal-code">Postal Code</Label>
-                      <Input id="postal-code" defaultValue="8001" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Select defaultValue="za">
-                      <SelectTrigger id="country">
-                        <SelectValue placeholder="Select a country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="za">South Africa</SelectItem>
-                        <SelectItem value="us">United States</SelectItem>
-                        <SelectItem value="uk">United Kingdom</SelectItem>
-                        <SelectItem value="au">Australia</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Button>Save Billing Information</Button>
                 </div>
               </CardContent>
             </Card>
@@ -363,79 +351,74 @@ export default function HostSettingsPage() {
           <TabsContent value="preferences">
             <Card>
               <CardHeader>
-                <CardTitle>System Preferences</CardTitle>
-                <CardDescription>Customize your app experience</CardDescription>
+                <CardTitle>Preferences</CardTitle>
+                <CardDescription>
+                  Customize how you use the platform
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Regional Settings</h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="language">Language</Label>
-                    <Select defaultValue="en">
-                      <SelectTrigger id="language">
-                        <SelectValue placeholder="Select language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="af">Afrikaans</SelectItem>
-                        <SelectItem value="zu">isiZulu</SelectItem>
-                        <SelectItem value="xh">isiXhosa</SelectItem>
-                      </SelectContent>
-                    </Select>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-3">Language</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="border rounded-md p-3 flex items-center gap-3 bg-venu-orange/10 border-venu-orange">
+                        <div className="h-5 w-5 rounded-full overflow-hidden">
+                          <img src="/lovable-uploads/814de6a3-f5ad-4066-9fd5-8a8b46acb410.png" alt="English" className="h-full w-full object-cover" />
+                        </div>
+                        <span>English</span>
+                      </div>
+                      <div className="border rounded-md p-3 flex items-center gap-3">
+                        <div className="h-5 w-5 rounded-full overflow-hidden">
+                          <img src="/lovable-uploads/868a71af-ddc3-4870-a5a0-a5720b9dc63f.png" alt="Afrikaans" className="h-full w-full object-cover" />
+                        </div>
+                        <span>Afrikaans</span>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select defaultValue="africa_johannesburg">
-                      <SelectTrigger id="timezone">
-                        <SelectValue placeholder="Select timezone" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="africa_johannesburg">Africa/Johannesburg (SAST)</SelectItem>
-                        <SelectItem value="utc">UTC</SelectItem>
-                        <SelectItem value="europe_london">Europe/London (GMT/BST)</SelectItem>
-                        <SelectItem value="america_new_york">America/New York (EST/EDT)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-medium mb-3">Timezone</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="timezone">Your Timezone</Label>
+                      <select className="w-full border rounded-md p-2">
+                        <option>Africa/Johannesburg (GMT+2)</option>
+                        <option>UTC (GMT+0)</option>
+                        <option>Europe/London (GMT+1)</option>
+                        <option>America/New_York (GMT-4)</option>
+                      </select>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="date-format">Date Format</Label>
-                    <Select defaultValue="dd_mm_yyyy">
-                      <SelectTrigger id="date-format">
-                        <SelectValue placeholder="Select date format" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="dd_mm_yyyy">DD/MM/YYYY</SelectItem>
-                        <SelectItem value="mm_dd_yyyy">MM/DD/YYYY</SelectItem>
-                        <SelectItem value="yyyy_mm_dd">YYYY/MM/DD</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-medium mb-3">Appearance</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Dark Mode</p>
+                          <p className="text-sm text-muted-foreground">Switch between light and dark mode</p>
+                        </div>
+                        <Switch />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Compact View</p>
+                          <p className="text-sm text-muted-foreground">Enable compact view for more content per screen</p>
+                        </div>
+                        <Switch />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <Button>Save Preferences</Button>
                   </div>
                 </div>
-                
-                <div className="space-y-4 border-t pt-6">
-                  <h3 className="text-lg font-medium">Appearance</h3>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Compact Mode</p>
-                      <p className="text-sm text-muted-foreground">Display more information on screen</p>
-                    </div>
-                    <Switch id="compact-mode" />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Show Quick Stats</p>
-                      <p className="text-sm text-muted-foreground">Display quick statistics on dashboard</p>
-                    </div>
-                    <Switch id="show-stats" defaultChecked />
-                  </div>
-                </div>
-                
-                <Button>Save Preferences</Button>
               </CardContent>
             </Card>
           </TabsContent>

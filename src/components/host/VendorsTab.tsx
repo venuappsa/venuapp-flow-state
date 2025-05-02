@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import { dummyVendors } from "@/data/hostDummyData";
 import VendorDiscovery from "@/components/VendorDiscovery";
 import { Input } from "@/components/ui/input";
-import MerchantInviteQR from "@/components/MerchantInviteQR";
+import VendorInviteQR from "@/components/VendorInviteQR";
 
 const pricePlans = [
   { id: "basic-stall", name: "Basic Stall", price: "R500 per day" },
@@ -210,7 +209,7 @@ export default function VendorsTab() {
             </Select>
           </div>
           
-          <MerchantInviteQR 
+          <VendorInviteQR 
             title="Your Business" 
             priceId={selectedPriceId}
             priceName={selectedPriceName}

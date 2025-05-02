@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
@@ -28,7 +29,6 @@ import {
   Auth as AuthPage,
   HostDashboard as HostDashboardPage,
   HostProfile as HostProfilePage,
-  Merchants as MerchantsPage,
   Venues as VenuesPage,
   VenueCreate,
   VenueManagement as VenueManagementPage,

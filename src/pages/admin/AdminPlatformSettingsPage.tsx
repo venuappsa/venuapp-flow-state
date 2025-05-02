@@ -28,11 +28,13 @@ export default function AdminPlatformSettingsPage() {
   const { settings, updateSettings, saveSettings, isLoading } = usePlatformSettings();
   
   const handleSettingChange = (key: string, value: string | boolean | number | object) => {
-    if (typeof value === 'object') {
+    if (key === "verificationRequirements" || key === "commissionRates") {
+      // Handle nested object updates
+      const currentValue = settings[key as keyof typeof settings] as Record<string, any> || {};
       updateSettings({ 
         [key]: {
-          ...settings[key as keyof typeof settings],
-          ...value 
+          ...currentValue,
+          ...(value as object)
         } 
       });
     } else {

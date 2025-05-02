@@ -4,7 +4,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { usePlatformSettings } from '@/contexts/PlatformSettingsContext';
-import ScrollToTop from '@/components/utils/ScrollToTop';
+import { ScrollToTop } from '@/components/utils/ScrollToTop';
 import AdminPanel from './pages/AdminPanel';
 import AdminProfilePage from './pages/AdminProfilePage';
 import AuthPage from './pages/AuthPage';

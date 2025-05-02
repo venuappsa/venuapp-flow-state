@@ -15,6 +15,7 @@ import { checkSupabaseConnection } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { useBreakpoint } from "@/hooks/useResponsive";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Home as HomePage,
   About as AboutPage,
@@ -47,6 +48,17 @@ import {
   SubscriptionManagement as SubscriptionManagementPage,
   PaystackSubscriptionPage as PaystackManagePage
 } from "@/pages";
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
 
 const AppRoutes = () => {
   return (
@@ -141,11 +153,13 @@ function App() {
 
 function RootApp() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
-      <Router>
-        <App />
-      </Router>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
+        <Router>
+          <App />
+        </Router>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

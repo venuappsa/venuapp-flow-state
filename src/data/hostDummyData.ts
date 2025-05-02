@@ -53,7 +53,8 @@ export const dummyEvents = [
     vendors: 7,
     floorArea: 800,
     multiLevel: false,
-    durationHours: 5
+    durationHours: 5,
+    description: "An exciting summer music festival featuring local and international artists with food stalls and activities."
   },
   {
     id: "event-2",
@@ -69,7 +70,8 @@ export const dummyEvents = [
     vendors: 5,
     floorArea: 600,
     multiLevel: false,
-    durationHours: 8
+    durationHours: 8,
+    description: "A professional gathering of tech industry leaders with keynote speeches, workshops, and networking opportunities."
   },
   {
     id: "event-3",
@@ -85,7 +87,8 @@ export const dummyEvents = [
     vendors: 12,
     floorArea: 450,
     multiLevel: false,
-    durationHours: 6
+    durationHours: 6,
+    description: "Showcase of wedding services, venues, and products for couples planning their special day."
   },
   {
     id: "event-4",
@@ -101,7 +104,8 @@ export const dummyEvents = [
     vendors: 10,
     floorArea: 800,
     multiLevel: true,
-    durationHours: 6
+    durationHours: 6,
+    description: "Ring in the new year with a glamorous celebration featuring live music, premium dining, and countdown festivities."
   },
 ];
 

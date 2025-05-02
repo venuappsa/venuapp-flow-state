@@ -1,4 +1,3 @@
-
 export interface Message {
   id: string;
   content: string;
@@ -122,13 +121,13 @@ export interface Event {
   date: string;
   endDate: string;
   description: string;
-  location: string;
+  location?: string;
   status: 'draft' | 'planning' | 'upcoming' | 'live' | 'completed' | 'cancelled';
-  budget: number;
-  vendorBudget: number;
-  spentBudget: number;
+  budget?: number;
+  vendorBudget?: number;
+  spentBudget?: number;
   capacity: number;
-  category: string;
+  category?: string;
   venueId?: string;
   venueName?: string;
   vendors?: number;

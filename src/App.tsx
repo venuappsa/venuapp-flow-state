@@ -10,6 +10,8 @@ import SoftLaunchBanner from "./components/banners/SoftLaunchBanner";
 import { Toaster } from "@/components/ui/toaster";
 import FeedbackWidget from "@/components/feedback/FeedbackWidget";
 import { Auth as AuthPage } from "./pages/index";
+import TawkToChat from "@/components/TawkToChat";
+import MessagesPage from "@/pages/MessagesPage";
 
 // Use lazy loading for pages that don't need to be immediately available
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
@@ -42,7 +44,7 @@ export default function App() {
             element={
               <AuthProtected 
                 requiredRoles={["host"]} 
-                redirectTo="/login?next=/host&required=host"
+                redirectTo="/auth?next=/host&required=host"
               />
             }
           >
@@ -52,6 +54,7 @@ export default function App() {
             <Route path="vendors" element={<VendorsPage />} />
             <Route path="account" element={<AccountSettingsPage />} />
             <Route path="subscription" element={<SubscriptionPage />} />
+            <Route path="messages" element={<MessagesPage />} />
           </Route>
 
           {/* Not found route */}
@@ -59,6 +62,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <FeedbackWidget />
+      <TawkToChat />
       <Toaster />
     </>
   );

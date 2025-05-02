@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUser } from "@/hooks/useUser";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,13 +20,12 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
-  Menu,
-  MessageSquare,
   Settings,
   Store,
   Users,
   BookOpen,
-  Bell
+  Bell,
+  MessageSquare,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -80,18 +80,22 @@ export function DashboardSidebar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useUser();
+  const { data: userRoles = [] } = useUserRoles(user?.id);
   const { subscribed, subscription_tier, subscription_status } = useSubscription();
   
   const displayName = user?.user_metadata?.full_name || 
     user?.user_metadata?.name || 
     user?.email?.split("@")[0] || 
-    "Host";
+    "User";
   
   const initials = displayName.split(" ")
     .map(name => name.charAt(0))
     .join("")
     .toUpperCase()
     .substring(0, 2);
+    
+  const isHost = userRoles.includes("host");
+  const isVendor = userRoles.includes("merchant");
 
   const handleLogout = async () => {
     try {
@@ -112,19 +116,38 @@ export function DashboardSidebar() {
     }
   };
 
+  // Unified navigation items that show based on user role
   const navItems = [
-    { to: "/host", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    { to: "/host/venues", label: "Venues", icon: <Building size={18} /> },
-    { to: "/host/events", label: "Events", icon: <CalendarRange size={18} /> },
-    { to: "/host/vendors", label: "Vendors", icon: <Store size={18} /> },
-    { to: "/host/guests", label: "Guests", icon: <Users size={18} /> },
-    { to: "/host/finance", label: "Finance", icon: <CreditCard size={18} /> },
-    { to: "/host/analytics", label: "Analytics", icon: <LineChart size={18} /> },
-    { to: "/host/messages", label: "Messages", icon: <MessageSquare size={18} />, badge: 3 },
-    { to: "/host/notifications", label: "Notifications", icon: <Bell size={18} />, badge: 5 },
-    { to: "/host/knowledge", label: "Knowledge Base", icon: <BookOpen size={18} /> },
-    { to: "/host/settings", label: "Settings", icon: <Settings size={18} /> },
+    // Common items for all roles
+    { to: isHost ? "/host" : "/vendor/dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} />, roles: ["all"] },
+    
+    // Host specific items
+    { to: "/host/venues", label: "Venues", icon: <Building size={18} />, roles: ["host"] },
+    { to: "/host/events", label: "Events", icon: <CalendarRange size={18} />, roles: ["host"] },
+    { to: "/host/vendors", label: "Vendors", icon: <Store size={18} />, roles: ["host"] },
+    { to: "/host/guests", label: "Guests", icon: <Users size={18} />, roles: ["host"] },
+    
+    // Vendor specific items
+    { to: "/vendor/services", label: "Services", icon: <Store size={18} />, roles: ["vendor"] },
+    { to: "/vendor/bookings", label: "Bookings", icon: <CalendarRange size={18} />, roles: ["vendor"] },
+    { to: "/vendor/reviews", label: "Reviews", icon: <MessageSquare size={18} />, roles: ["vendor"] },
+    
+    // Common items again
+    { to: isHost ? "/host/finance" : "/vendor/finance", label: "Finance", icon: <CreditCard size={18} />, roles: ["host", "vendor"] },
+    { to: isHost ? "/host/analytics" : "/vendor/analytics", label: "Analytics", icon: <LineChart size={18} />, roles: ["host", "vendor"] },
+    { to: isHost ? "/host/messages" : "/vendor/messages", label: "Messages", icon: <MessageSquare size={18} />, badge: 3, roles: ["host", "vendor"] },
+    { to: isHost ? "/host/notifications" : "/vendor/notifications", label: "Notifications", icon: <Bell size={18} />, badge: 5, roles: ["host", "vendor"] },
+    { to: isHost ? "/host/knowledge" : "/vendor/knowledge", label: "Knowledge Base", icon: <BookOpen size={18} />, roles: ["host", "vendor"] },
+    { to: isHost ? "/host/settings" : "/vendor/settings", label: "Settings", icon: <Settings size={18} />, roles: ["all"] },
   ];
+
+  // Filter items based on role
+  const filteredNavItems = navItems.filter(item => {
+    if (item.roles.includes("all")) return true;
+    if (isHost && item.roles.includes("host")) return true;
+    if (isVendor && item.roles.includes("vendor")) return true;
+    return false;
+  });
 
   return (
     <aside
@@ -191,7 +214,7 @@ export function DashboardSidebar() {
                 ? "bg-amber-100 text-amber-800"
                 : "bg-gray-100 text-gray-800"
             )}>
-              {subscription_tier || "Free"}
+              {isHost ? (subscription_tier || "Host") : "Vendor"}
             </Badge>
           </div>
         )}
@@ -199,7 +222,7 @@ export function DashboardSidebar() {
 
       <ScrollArea className="flex-1 px-3 py-4">
         <div className="space-y-1">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <NavItem
               key={item.to}
               to={item.to}

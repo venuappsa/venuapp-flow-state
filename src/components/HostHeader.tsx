@@ -13,12 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, Menu, Settings, User, Plus, LayoutDashboard, Send } from "lucide-react";
+import { LogOut, Menu, Settings, User, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function HostHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -83,27 +83,6 @@ export default function HostHeader() {
           </Link>
         </div>
 
-        {/* Desktop navigation - hidden on mobile */}
-        <div className="hidden md:flex items-center gap-6 ml-6">
-          <Link to="/host/dashboard" className="text-sm font-medium hover:text-venu-orange transition-colors flex items-center gap-1">
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
-          </Link>
-          <Link to="/host/venues" className="text-sm font-medium hover:text-venu-orange transition-colors">
-            Venues
-          </Link>
-          <Link to="/host/events" className="text-sm font-medium hover:text-venu-orange transition-colors">
-            Events
-          </Link>
-          <Link to="/host/merchants" className="text-sm font-medium hover:text-venu-orange transition-colors">
-            Merchants
-          </Link>
-          <Link to="/host/invitations" className="text-sm font-medium hover:text-venu-orange transition-colors flex items-center gap-1">
-            <Send className="h-4 w-4" />
-            Invitations
-          </Link>
-        </div>
-
         {/* Right side of header - actions, notifications and profile */}
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild className="hidden md:flex">
@@ -113,10 +92,8 @@ export default function HostHeader() {
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center">3</Badge>
-          </Button>
+          {/* Updated notification bell that includes old notice board content */}
+          <NotificationBell />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

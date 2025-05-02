@@ -34,6 +34,7 @@ export default function EventMessaging() {
         content: "Hi there, can we discuss your setup time for the event?",
         created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
         read: true,
+        is_read: true,
         sender_role: "host",
         recipient_role: "vendor"
       },
@@ -44,6 +45,7 @@ export default function EventMessaging() {
         content: "Sure! I can be there 3 hours before to set up. Would that work?",
         created_at: new Date(Date.now() - 3600000 * 47).toISOString(),
         read: true,
+        is_read: true,
         sender_role: "vendor",
         recipient_role: "host"
       },
@@ -54,6 +56,7 @@ export default function EventMessaging() {
         content: "That works perfectly. Thanks for confirming.",
         created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
         read: true,
+        is_read: true,
         sender_role: "host",
         recipient_role: "vendor"
       }
@@ -76,6 +79,7 @@ export default function EventMessaging() {
         content: content,
         created_at: new Date().toISOString(),
         read: false,
+        is_read: false,
         sender_role: "host",
         recipient_role: "vendor"
       };

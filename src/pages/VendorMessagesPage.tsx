@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +114,7 @@ export default function VendorMessagesPage() {
           recipient_role: "vendor",
           content: "Hi there! Do you offer vegan options in your catering menu?",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 48).toISOString()
         },
@@ -124,6 +126,7 @@ export default function VendorMessagesPage() {
           recipient_role: "host",
           content: "Hello! Yes, we have a variety of vegan options including appetizers, main courses, and desserts. Would you like to see our vegan menu?",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 36).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 36).toISOString()
         },
@@ -135,6 +138,7 @@ export default function VendorMessagesPage() {
           recipient_role: "vendor",
           content: "That would be great! We're planning an event for about 50 people, and at least 10 of them are vegan.",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 24).toISOString()
         },
@@ -146,6 +150,7 @@ export default function VendorMessagesPage() {
           recipient_role: "host",
           content: "Yes, we can provide those menu options",
           is_read: false,
+          read: false,
           created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 2).toISOString()
         }
@@ -182,6 +187,7 @@ export default function VendorMessagesPage() {
           recipient_role: "vendor",
           content,
           is_read: false,
+          read: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };

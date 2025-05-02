@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -84,25 +85,25 @@ export default function VendorServicesPage() {
       const mockServices: VendorService[] = [
         {
           id: "1",
-          vendor_id: user.id,
-          title: "Full Event Catering",
+          vendorId: user.id,
+          name: "Full Event Catering",
           description: "Complete food service for your event including appetizers, main course, and desserts",
           category: "Food",
           duration: "Full day",
           price: 2500,
-          price_unit: "per_event",
+          status: "active",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         },
         {
           id: "2",
-          vendor_id: user.id,
-          title: "Appetizers Only",
+          vendorId: user.id,
+          name: "Appetizers Only",
           description: "Selection of premium appetizers for your guests",
           category: "Food",
           duration: "3 hours",
           price: 1200,
-          price_unit: "per_event",
+          status: "active",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
@@ -163,7 +164,7 @@ export default function VendorServicesPage() {
       // Since we don't have a vendor_services table yet, we'll store data in localStorage
       const servicesToSave = values.services.map((service, index) => ({
         id: services[index]?.id || `temp-${Date.now()}-${index}`,
-        vendor_id: user.id,
+        vendorId: user.id,
         ...service,
         created_at: services[index]?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString()

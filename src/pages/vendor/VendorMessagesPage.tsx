@@ -114,6 +114,7 @@ export default function VendorMessagesPage() {
           recipient_role: "vendor",
           content: "Hi there! I'm interested in your catering services for an upcoming event.",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 24).toISOString()
         },
@@ -125,6 +126,7 @@ export default function VendorMessagesPage() {
           recipient_role: "host",
           content: "Hello! I'd be happy to discuss our catering options. What type of event are you planning?",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 23).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 23).toISOString()
         },
@@ -136,6 +138,7 @@ export default function VendorMessagesPage() {
           recipient_role: "vendor",
           content: "It's a corporate event for about 100 people. We're looking for appetizers and a main course.",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 5).toISOString()
         },
@@ -147,6 +150,7 @@ export default function VendorMessagesPage() {
           recipient_role: "vendor",
           content: "When can we discuss your services?",
           is_read: false,
+          read: false,
           created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 2).toISOString()
         }
@@ -193,6 +197,7 @@ export default function VendorMessagesPage() {
         recipient_role: "host",
         content,
         is_read: true,
+        read: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };

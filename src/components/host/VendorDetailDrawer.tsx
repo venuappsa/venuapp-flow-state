@@ -95,6 +95,7 @@ export default function VendorDetailDrawer({
           recipient_role: "vendor",
           content: "Hello, I'm interested in your services for an upcoming event",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 24).toISOString()
         },
@@ -106,6 +107,7 @@ export default function VendorDetailDrawer({
           recipient_role: "host",
           content: "Thanks for reaching out! I'd be happy to discuss what we can offer",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 23).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 23).toISOString()
         },
@@ -117,6 +119,7 @@ export default function VendorDetailDrawer({
           recipient_role: "vendor",
           content: "Great! Let me know your availability next week for a call",
           is_read: true,
+          read: true,
           created_at: new Date(Date.now() - 3600000 * 22).toISOString(),
           updated_at: new Date(Date.now() - 3600000 * 22).toISOString()
         }
@@ -144,6 +147,7 @@ export default function VendorDetailDrawer({
           recipient_role: 'vendor',
           content,
           is_read: false,
+          read: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };

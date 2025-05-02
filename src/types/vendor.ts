@@ -7,10 +7,10 @@ export interface Message {
   created_at: string;
   updated_at?: string;
   read: boolean;
-  // Adding new properties needed by components
+  // Adding properties needed by components
   sender_role?: 'host' | 'vendor' | 'admin';
   recipient_role?: 'host' | 'vendor' | 'admin';
-  is_read?: boolean;
+  is_read?: boolean; // Add this to support both naming conventions
 }
 
 export interface Vendor {
@@ -46,6 +46,11 @@ export interface VendorProfile {
   subscription_status?: string;
   created_at?: string;
   updated_at?: string;
+  // Adding missing properties from VendorProfilePage
+  logo_url?: string;
+  zipcode?: string;
+  country?: string;
+  website?: string;
 }
 
 export interface VendorHostRelationship {
@@ -87,6 +92,11 @@ export interface VendorService {
   status: 'active' | 'draft' | 'archived';
   created_at?: string;
   updated_at?: string;
+  // For compatibility with legacy code using vendor_id
+  vendor_id?: string;
+  // Fields from VendorServicesPage
+  title?: string;
+  price_unit?: string;
 }
 
 export interface AssignedVendor extends Vendor {

@@ -38,10 +38,11 @@ export default function EventManagementPage() {
     );
   }
 
-  // If an event doesn't have a description, add a default one
-  if (!event.description) {
-    event.description = "No description provided for this event.";
-  }
+  // Add description property to event if it doesn't exist
+  const eventWithDescription = {
+    ...event,
+    description: event.description || "No description provided for this event."
+  };
 
   const formatEventDate = (dateString: string) => {
     return format(new Date(dateString), "MMMM d, yyyy");
@@ -64,11 +65,11 @@ export default function EventManagementPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{event.name}</h1>
-              {getStatusBadge(event.status)}
+              <h1 className="text-2xl font-bold">{eventWithDescription.name}</h1>
+              {getStatusBadge(eventWithDescription.status)}
             </div>
             <p className="text-gray-500">
-              {event.venueName} • {formatEventDate(event.date)}
+              {eventWithDescription.venueName} • {formatEventDate(eventWithDescription.date)}
             </p>
           </div>
           
@@ -100,15 +101,15 @@ export default function EventManagementPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm font-medium text-gray-500">Date</div>
-                      <div>{formatEventDate(event.date)}</div>
+                      <div>{formatEventDate(eventWithDescription.date)}</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-500">Venue</div>
-                      <div>{event.venueName || 'No venue selected'}</div>
+                      <div>{eventWithDescription.venueName || 'No venue selected'}</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-500">Status</div>
-                      <div className="capitalize">{event.status}</div>
+                      <div className="capitalize">{eventWithDescription.status}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -125,15 +126,15 @@ export default function EventManagementPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm font-medium text-gray-500">Capacity</div>
-                      <div>{event.capacity} guests</div>
+                      <div>{eventWithDescription.capacity} guests</div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-500">Tickets Sold</div>
-                      <div>{event.ticketsSold} tickets</div>
+                      <div>{eventWithDescription.ticketsSold} tickets</div>
                       <div className="w-full mt-1 bg-gray-200 rounded-full h-1.5">
                         <div 
                           className="bg-venu-orange h-1.5 rounded-full" 
-                          style={{ width: `${(event.ticketsSold / event.capacity) * 100}%` }} 
+                          style={{ width: `${(eventWithDescription.ticketsSold / eventWithDescription.capacity) * 100}%` }} 
                         ></div>
                       </div>
                     </div>
@@ -152,7 +153,7 @@ export default function EventManagementPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-sm font-medium text-gray-500">Total Vendors</div>
-                      <div>{event.vendors || 0} vendors</div>
+                      <div>{eventWithDescription.vendors || 0} vendors</div>
                     </div>
                     <div>
                       <Button 
@@ -221,14 +222,14 @@ export default function EventManagementPage() {
                 </CardContent>
               </Card>
               
-              {/* Event Description */}
+              {/* Event Description Card */}
               <Card className="md:col-span-3">
                 <CardHeader>
                   <CardTitle>Event Description</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">
-                    {event.description || "No description provided for this event."}
+                    {eventWithDescription.description}
                   </p>
                 </CardContent>
               </Card>

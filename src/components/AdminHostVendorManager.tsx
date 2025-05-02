@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,7 +19,7 @@ type RecordType = {
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
-  verification_status: "pending" | "verified" | "declined";
+  verification_status: "pending" | "verified" | "declined" | "ready_for_review";
   is_suspended: boolean;
   subscription_status: "active" | "expired" | "trial" | "none";
   subscription_renewal: string | null;
@@ -88,7 +87,7 @@ export default function AdminHostVendorManager() {
   const [roleFilter, setRoleFilter] = useState<RoleType | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   // Fix: Explicitly type this as "all" | "pending" | "verified" | "declined" to match verification_status type
-  const [verificationFilter, setVerificationFilter] = useState<"all" | "pending" | "verified" | "declined">("all");
+  const [verificationFilter, setVerificationFilter] = useState<"all" | "pending" | "verified" | "declined" | "ready_for_review">("all");
   // Fix: Explicitly type this as "all" | SubscriptionStatusType to match subscription_status type
   const [subscriptionFilter, setSubscriptionFilter] = useState<"all" | SubscriptionStatusType>("all");
   const [suspensionFilter, setSuspensionFilter] = useState<boolean | "all">("all");
@@ -320,7 +319,7 @@ export default function AdminHostVendorManager() {
             value={verificationFilter}
             onChange={(e) => {
               // Fix: Use type assertion to ensure the value is one of the allowed types
-              const value = e.target.value as "all" | "pending" | "verified" | "declined";
+              const value = e.target.value as "all" | "pending" | "verified" | "declined" | "ready_for_review";
               setVerificationFilter(value);
             }}
           >

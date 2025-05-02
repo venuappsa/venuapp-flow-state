@@ -12,6 +12,7 @@ import FeedbackWidget from "@/components/feedback/FeedbackWidget";
 import { Auth as AuthPage } from "./pages/index";
 import TawkToChat from "@/components/TawkToChat";
 import MessagesPage from "@/pages/MessagesPage";
+import NotFound from "@/pages/NotFound";
 
 // Use lazy loading for pages that don't need to be immediately available
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
@@ -21,6 +22,17 @@ const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const HostDashboardPage = lazy(() => import("./pages/HostDashboardPage"));
 const AccountSettingsPage = lazy(() => import("./pages/SettingsPage"));
 const SubscriptionPage = lazy(() => import("./pages/SubscribePage"));
+
+// Admin pages
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const AdminProfilePage = lazy(() => import("./pages/AdminProfilePage"));
+const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
+const AdminPayoutsPage = lazy(() => import("./pages/AdminPayoutsPage"));
+const AdminPlatformSettingsPage = lazy(() => import("./pages/admin/AdminPlatformSettingsPage"));
+
+// Vendor pages
+const VendorSignupPage = lazy(() => import("./pages/vendor/VendorSignupPage"));
+const VendorMessagesPage = lazy(() => import("./pages/VendorMessagesPage"));
 
 export default function App() {
   return (
@@ -57,8 +69,42 @@ export default function App() {
             <Route path="messages" element={<MessagesPage />} />
           </Route>
 
+          {/* Admin panel routes */}
+          <Route 
+            path="/admin" 
+            element={
+              <AuthProtected 
+                requiredRoles={["admin"]} 
+                redirectTo="/auth?next=/admin&required=admin"
+              />
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminPanel />} />
+            <Route path="profile" element={<AdminProfilePage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="payouts" element={<AdminPayoutsPage />} />
+            <Route path="settings" element={<AdminPlatformSettingsPage />} />
+          </Route>
+
+          {/* Vendor panel routes */}
+          <Route 
+            path="/vendor" 
+            element={
+              <AuthProtected 
+                requiredRoles={["merchant"]} 
+                redirectTo="/auth?next=/vendor&required=merchant"
+              />
+            }
+          >
+            <Route index element={<Navigate to="/vendor/dashboard" replace />} />
+            <Route path="dashboard" element={<VendorMessagesPage />} /> {/* Temporary using MessagesPage as dashboard */}
+            <Route path="messages" element={<VendorMessagesPage />} />
+            <Route path="signup" element={<VendorSignupPage />} />
+          </Route>
+
           {/* Not found route */}
-          <Route path="*" element={<div>Not Found</div>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
       <FeedbackWidget />
@@ -67,3 +113,4 @@ export default function App() {
     </>
   );
 }
+

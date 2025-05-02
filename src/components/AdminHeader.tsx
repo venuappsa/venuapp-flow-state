@@ -13,11 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, Menu, Settings, User } from "lucide-react";
+import { LogOut, Menu, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import AdminSidebar from "@/components/AdminSidebar";
 import { supabase } from "@/integrations/supabase/client";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function AdminHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -88,11 +89,11 @@ export default function AdminHeader() {
           <Link to="/admin" className="text-sm font-medium hover:text-venu-orange transition-colors">
             Dashboard
           </Link>
-          <Link to="/admin/users" className="text-sm font-medium hover:text-venu-orange transition-colors">
-            Users
-          </Link>
           <Link to="/admin/events" className="text-sm font-medium hover:text-venu-orange transition-colors">
             Events
+          </Link>
+          <Link to="/admin/users" className="text-sm font-medium hover:text-venu-orange transition-colors">
+            Users
           </Link>
           <Link to="/admin/settings" className="text-sm font-medium hover:text-venu-orange transition-colors">
             Settings
@@ -101,10 +102,7 @@ export default function AdminHeader() {
 
         {/* Right side of header - notifications and profile */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-          </Button>
+          <NotificationBell />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

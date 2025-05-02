@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { useBreakpoint } from "@/hooks/useResponsive";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import {
   Home as HomePage,
   About as AboutPage,
@@ -49,6 +50,19 @@ import {
   PaystackSubscriptionPage as PaystackManagePage
 } from "@/pages";
 
+// Admin pages imports
+import AdminPanel from "@/pages/AdminPanel";
+import AdminEventsPage from "@/pages/admin/AdminEventsPage";
+import AdminEventVendorsPage from "@/pages/admin/AdminEventVendorsPage";
+import AdminEventTimelinePage from "@/pages/admin/AdminEventTimelinePage";
+import AdminEventResourcesPage from "@/pages/admin/AdminEventResourcesPage";
+import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
+import AdminNotificationSettingsPage from "@/pages/admin/AdminNotificationSettingsPage";
+
+// Public vendor pages imports
+import VendorListingPage from "@/pages/public/VendorListingPage";
+import VendorProfilePage from "@/pages/public/VendorProfilePage";
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +88,11 @@ const AppRoutes = () => {
       <Route path="/subscribe" element={<SubscribePage />} />
       <Route path="*" element={<NotFoundPage />} />
       
+      {/* Public vendor routes */}
+      <Route path="/vendors" element={<VendorListingPage />} />
+      <Route path="/vendors/:id" element={<VendorProfilePage />} />
+      
+      {/* Host routes */}
       <Route path="host">
         <Route path="" element={<HostDashboardPage />} />
         <Route path="dashboard" element={<HostDashboardPage />} />
@@ -97,6 +116,18 @@ const AppRoutes = () => {
         <Route path="finance/settings" element={<FinanceSettingsPage />} />
         <Route path="fetchman/:venueId?" element={<FetchmanPage />} />
         <Route path="knowledge" element={<KnowledgeBasePage />} />
+      </Route>
+
+      {/* Admin routes */}
+      <Route path="admin">
+        <Route path="" element={<AdminPanel />} />
+        <Route path="dashboard" element={<AdminPanel />} />
+        <Route path="events" element={<AdminEventsPage />} />
+        <Route path="events/:id/vendors" element={<AdminEventVendorsPage />} />
+        <Route path="events/:id/timeline" element={<AdminEventTimelinePage />} />
+        <Route path="events/:id/resources" element={<AdminEventResourcesPage />} />
+        <Route path="settings" element={<AdminSettingsPage />} />
+        <Route path="settings/notifications" element={<AdminNotificationSettingsPage />} />
       </Route>
     </Routes>
   );
@@ -156,9 +187,11 @@ function RootApp() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
-        <Router>
-          <App />
-        </Router>
+        <NotificationProvider>
+          <Router>
+            <App />
+          </Router>
+        </NotificationProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

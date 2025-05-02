@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -372,7 +371,6 @@ const UniversalMessagingModule: React.FC = () => {
             
             <MessageThread 
               messages={currentMessages.map(m => ({
-                ...m,
                 // Convert from our internal format to MessageThread component format
                 content: m.content,
                 created_at: m.created_at,

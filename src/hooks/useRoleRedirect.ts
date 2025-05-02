@@ -1,7 +1,9 @@
 
+import type { Enums } from "@/integrations/supabase/types";
+
 /**
  * Helper function to determine where to redirect a user based on their roles
- * This function prioritizes admin > host > vendor > customer roles
+ * This function prioritizes admin > host > merchant > customer roles
  * @param roles Array of user roles
  * @returns The path to redirect the user to
  */
@@ -13,25 +15,35 @@ export const getRedirectPageForRoles = (roles: string[]): string => {
     return "/";
   }
 
-  // Role priority: admin > host > vendor > customer
-  if (roles.includes("admin")) {
+  // Safe type check function
+  const hasRole = (role: Enums<"app_role">): boolean => {
+    return roles.includes(role);
+  };
+
+  // Role priority: admin > host > merchant > customer
+  if (hasRole("admin")) {
     console.log("Admin role found, redirecting to admin dashboard");
     return "/admin/dashboard";
   }
   
-  if (roles.includes("host")) {
+  if (hasRole("host")) {
     console.log("Host role found, redirecting to host dashboard");
     return "/host/dashboard";
   }
   
-  if (roles.includes("merchant")) {
+  if (hasRole("merchant")) {
     console.log("Merchant role found, redirecting to vendor dashboard");
     return "/vendor/dashboard";
   }
   
-  if (roles.includes("customer")) {
+  if (hasRole("customer")) {
     console.log("Customer role found, redirecting to homepage");
     return "/";
+  }
+
+  if (hasRole("fetchman")) {
+    console.log("Fetchman role found, redirecting to fetchman dashboard");
+    return "/fetchman/dashboard";  
   }
   
   // Default fallback

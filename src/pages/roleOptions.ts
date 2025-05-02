@@ -6,4 +6,5 @@ export const ROLE_OPTIONS: { value: Enums<"app_role">; label: string }[] = [
   { value: "merchant", label: "Merchant/Vendor" },
   { value: "fetchman", label: "Fetchman" },
   { value: "customer", label: "Customer" },
+  { value: "admin", label: "Administrator" },
 ];

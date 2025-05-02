@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -14,6 +13,7 @@ import { useUser } from "@/hooks/useUser";
 import { LogIn, Mail, KeyRound, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
+import type { Enums } from "@/integrations/supabase/types";
 
 const loginFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -72,7 +72,7 @@ export default function LoginPage() {
       console.log("LoginPage: User roles retrieved:", roles);
       
       // Check if user has the required role (if specified)
-      if (requiredRole && !roles.includes(requiredRole)) {
+      if (requiredRole && !roles.includes(requiredRole as Enums<"app_role">)) {
         toast({
           title: "Access denied",
           description: `You don't have the required role: ${requiredRole}`,

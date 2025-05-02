@@ -13,7 +13,6 @@ export { default as Auth } from './AuthPage';
 // Host pages
 export { default as HostDashboard } from './HostDashboardPage';
 export { default as HostProfile } from './HostProfilePage';
-export { default as Merchants } from './MerchantsPage';
 export { default as Venues } from './VenuesPage';
 export { default as VenueCreate } from './VenueCreate';
 export { default as VenueManagement } from './VenueManagementPage';

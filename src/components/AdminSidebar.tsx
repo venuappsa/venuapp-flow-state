@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -73,7 +72,7 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
     {
       category: "Overview",
       items: [
-        { href: "/admin", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+        { href: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
       ]
     },
     {

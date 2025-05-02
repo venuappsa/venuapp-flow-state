@@ -17,6 +17,7 @@ import AdminHostsPage from './pages/admin/AdminHostsPage';
 import AdminMerchantsPage from './pages/admin/AdminMerchantsPage';
 import AdminEventsPage from './pages/admin/AdminEventsPage';
 import AdminVerificationCenterPage from './pages/admin/AdminVerificationCenterPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import SystemBanners from './components/banners/SystemBanners';
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
 
         {/* Admin Panel Routes */}
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/profile" element={<AdminProfilePage />} />
         <Route path="/admin/settings" element={<AdminPanel />} />
         <Route path="/admin/platform" element={<AdminPlatformSettingsPage />} />

@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FetchmanControlSliders } from "@/components/fetchman/FetchmanControlSliders";
-import { FetchmanStats } from "@/components/fetchman/FetchmanStats";
-import { FetchmanShiftPlan } from "@/components/fetchman/FetchmanShiftPlan";
+import FetchmanControlSliders from "@/components/fetchman/FetchmanControlSliders";
+import FetchmanStats from "@/components/fetchman/FetchmanStats";
+import FetchmanShiftPlanTable from "@/components/fetchman/FetchmanShiftPlan";
 import { AlertCircle, Calendar, MessageSquare, Settings } from "lucide-react";
+import { calculateFetchmanEstimate, calculateFetchmanCost, generateFetchmanStaffingPlan } from "@/utils/fetchmanCalculator";
 
 // Create a basic layout similar to the other role layouts
 const FetchmanLayout = ({ children }: { children: React.ReactNode }) => {
@@ -35,6 +36,17 @@ const FetchmanLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function FetchmanDashboardPage() {
+  // Initialize state for fetchman calculator
+  const [capacity, setCapacity] = useState(500);
+  const [vendors, setVendors] = useState(10);
+  const [hours, setHours] = useState(8);
+  const [rate, setRate] = useState(150);
+
+  // Calculate fetchman statistics based on input
+  const fetchmenCount = calculateFetchmanEstimate(capacity, vendors);
+  const totalCost = calculateFetchmanCost(fetchmenCount, hours);
+  const staffingPlan = generateFetchmanStaffingPlan(fetchmenCount, hours);
+
   return (
     <FetchmanLayout>
       <div className="max-w-6xl mx-auto space-y-8">
@@ -86,14 +98,43 @@ export default function FetchmanDashboardPage() {
           </Card>
         </div>
 
-        {/* Using existing fetchman components */}
+        {/* Using existing fetchman components with the proper props */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <FetchmanStats />
-          <FetchmanControlSliders />
-        </div>
-
-        <div className="mb-6">
-          <FetchmanShiftPlan />
+          <Card>
+            <CardHeader>
+              <CardTitle>Fetchman Estimator</CardTitle>
+              <CardDescription>Adjust parameters to calculate required fetchmen</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FetchmanControlSliders 
+                capacity={capacity}
+                vendors={vendors}
+                hours={hours}
+                rate={rate}
+                onCapacityChange={setCapacity}
+                onVendorsChange={setVendors}
+                onHoursChange={setHours}
+                onRateChange={setRate}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Staffing Summary</CardTitle>
+              <CardDescription>Based on your event parameters</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FetchmanStats 
+                fetchmenCount={fetchmenCount}
+                hours={hours}
+                rate={rate}
+                totalCost={totalCost}
+                hasOvertime={false}
+              />
+              <FetchmanShiftPlanTable staffingPlan={staffingPlan} />
+            </CardContent>
+          </Card>
         </div>
 
         <Card>

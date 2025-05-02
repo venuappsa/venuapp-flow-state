@@ -15,7 +15,7 @@ export default function HostDashboardPage() {
           Host Dashboard
         </h1>
         
-        {subscribed ? null : <SubscriptionStatusBar className="mb-6" />}
+        {subscribed ? null : <SubscriptionStatusBar />}
         
         <UnifiedDashboard />
       </div>

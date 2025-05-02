@@ -36,7 +36,7 @@ export interface MessageData {
   id: string;
   content: string;
   sender_id: string;
-  receiver_id: string;
+  recipient_id: string; // Changed from receiver_id to recipient_id
   created_at: string;
   read: boolean;
 }
@@ -87,7 +87,7 @@ const UniversalMessagingModule: React.FC = () => {
       id: "m1",
       content: "Hi there! I'm planning to set up my stall at the Summer Festival. What time should I arrive for setup?",
       sender_id: "c1",
-      receiver_id: "current-user",
+      recipient_id: "current-user", // Changed from receiver_id to recipient_id
       created_at: "2025-05-10T10:00:00Z",
       read: true,
     },
@@ -95,7 +95,7 @@ const UniversalMessagingModule: React.FC = () => {
       id: "m2",
       content: "Hello John! Thanks for your message. Vendor setup for Summer Festival starts at 7 AM on the event day. You should have about 3 hours to set up before guests arrive at 10 AM.",
       sender_id: "current-user",
-      receiver_id: "c1",
+      recipient_id: "c1", // Changed from receiver_id to recipient_id
       created_at: "2025-05-10T10:15:00Z",
       read: true,
     },
@@ -103,7 +103,7 @@ const UniversalMessagingModule: React.FC = () => {
       id: "m3",
       content: "That sounds good. How much space will I have for my food stall?",
       sender_id: "c1",
-      receiver_id: "current-user",
+      recipient_id: "current-user", // Changed from receiver_id to recipient_id
       created_at: "2025-05-10T10:20:00Z",
       read: true,
     },
@@ -111,7 +111,7 @@ const UniversalMessagingModule: React.FC = () => {
       id: "m4",
       content: "You'll have a 3x3 meter space as per your vendor application. If you need more space, please let me know as soon as possible so I can check if we can accommodate that.",
       sender_id: "current-user",
-      receiver_id: "c1",
+      recipient_id: "c1", // Changed from receiver_id to recipient_id
       created_at: "2025-05-10T10:25:00Z",
       read: true,
     },
@@ -119,7 +119,7 @@ const UniversalMessagingModule: React.FC = () => {
       id: "m8",
       content: "When should I arrive to set up my stall?",
       sender_id: "c1",
-      receiver_id: "current-user",
+      recipient_id: "current-user", // Changed from receiver_id to recipient_id
       created_at: "2025-05-11T09:30:00Z",
       read: false,
     },
@@ -153,8 +153,8 @@ const UniversalMessagingModule: React.FC = () => {
   // Get messages for the current conversation
   const currentMessages = selectedContact 
     ? messages.filter(message => 
-        (message.sender_id === selectedContact.id && message.receiver_id === "current-user") || 
-        (message.sender_id === "current-user" && message.receiver_id === selectedContact.id)
+        (message.sender_id === selectedContact.id && message.recipient_id === "current-user") || 
+        (message.sender_id === "current-user" && message.recipient_id === selectedContact.id)
       )
     : [];
   
@@ -175,7 +175,7 @@ const UniversalMessagingModule: React.FC = () => {
       id: `m${messages.length + 1}`,
       content: newMessage,
       sender_id: "current-user",
-      receiver_id: selectedContact.id,
+      recipient_id: selectedContact.id, // Changed from receiver_id to recipient_id
       created_at: new Date().toISOString(),
       read: true,
     };
@@ -377,7 +377,8 @@ const UniversalMessagingModule: React.FC = () => {
                 content: m.content,
                 created_at: m.created_at,
                 id: m.id,
-                sender_id: m.sender_id === "current-user" ? user?.id || "current-user" : m.sender_id
+                sender_id: m.sender_id === "current-user" ? user?.id || "current-user" : m.sender_id,
+                recipient_id: m.recipient_id // Changed: Map recipient_id correctly
               }))}
               currentUserId={user?.id || "current-user"}
               currentUserRole={userRoles.includes("host") ? "host" : "vendor"}

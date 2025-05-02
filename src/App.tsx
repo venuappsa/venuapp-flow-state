@@ -1,18 +1,19 @@
+
 import { Route, Routes, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import HomePage from "@/pages/HomePage";
-import RedirectLoaderOverlay from "@/components/RedirectLoaderOverlay";
-import AuthProtected from "@/components/AuthProtected";
-import VendorsPage from "@/pages/VendorsPage";
-import VenuesPage from "@/pages/VenuesPage";
+import HomePage from "./pages/HomePage";
+import RedirectLoaderOverlay from "./components/RedirectLoaderOverlay";
+import AuthProtected from "./components/AuthProtected";
+import VendorsPage from "./pages/VendorsPage";
+import VenuesPage from "./pages/VenuesPage";
 
-const LoginPage = lazy(() => import("@/pages/LoginPage"));
-const RegisterPage = lazy(() => import("@/pages/RegisterPage"));
-const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
-const HostDashboardPage = lazy(() => import("@/pages/HostDashboardPage"));
-const AccountSettingsPage = lazy(() => import("@/pages/AccountSettingsPage"));
-const SubscriptionPage = lazy(() => import("@/pages/SubscriptionPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const HostDashboardPage = lazy(() => import("./pages/HostDashboardPage"));
+const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
+const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
 
 export default function App() {
   return (

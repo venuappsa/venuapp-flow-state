@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -175,7 +174,7 @@ export default function VendorPricingManager({
       const planData = {
         ...data,
         host_id: user.id,
-        features: features as unknown as any
+        features: features as unknown as any // Convert to any to satisfy Supabase JSON type
       };
       
       let result;
@@ -262,8 +261,8 @@ export default function VendorPricingManager({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
-          <h2 className="text-xl font-bold">Merchant Pricing Plans</h2>
-          <p className="text-gray-500">Manage your stall pricing for merchants</p>
+          <h2 className="text-xl font-bold">Vendor Pricing Plans</h2>
+          <p className="text-gray-500">Manage your stall pricing for vendors</p>
         </div>
         
         <div className="mt-4 sm:mt-0 flex items-center gap-4">
@@ -340,7 +339,7 @@ export default function VendorPricingManager({
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <h3 className="text-xl font-medium text-gray-700 mb-2">No pricing plans yet</h3>
           <p className="text-gray-500 mb-6">
-            Create your first pricing plan for merchants by clicking the "Add Plan" button.
+            Create your first pricing plan for vendors by clicking the "Add Plan" button.
           </p>
           <Button onClick={() => openEditDialog()}>
             <Plus className="mr-2 h-4 w-4" />
@@ -456,7 +455,7 @@ export default function VendorPricingManager({
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Essential stall for small merchants with basic needs"
+                        placeholder="Essential stall for vendors with basic needs"
                         className="h-20"
                         {...field} 
                         value={field.value || ''}

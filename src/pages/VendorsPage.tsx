@@ -45,7 +45,7 @@ export default function VendorsPage() {
     }
   };
 
-  // Load pricing plans from database - updated to use vendor_pricing_plans
+  // Load pricing plans from database - uses vendor_pricing_plans
   const loadPricingPlans = async () => {
     if (!user) return;
     

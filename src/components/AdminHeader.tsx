@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Menu, Settings, User } from "lucide-react";
+import { LogOut, Menu, MessageSquare, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -100,8 +100,51 @@ export default function AdminHeader() {
           </Link>
         </div>
 
-        {/* Right side of header - notifications and profile */}
+        {/* Right side of header - messages, notifications and profile */}
         <div className="flex items-center gap-2">
+          {/* Messages dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <MessageSquare className="h-5 w-5" />
+                <span className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-venu-orange text-white rounded-full">
+                  3
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel className="flex justify-between items-center">
+                <span>Messages</span>
+                <Button variant="ghost" size="sm" className="text-xs h-6" asChild>
+                  <Link to="/admin/messages">View All</Link>
+                </Button>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/admin/messages" className="flex flex-col w-full p-4 cursor-pointer">
+                  <div className="flex justify-between w-full">
+                    <span className="font-medium">Host Support</span>
+                    <span className="text-xs text-muted-foreground">10 min ago</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 truncate">
+                    Need assistance with event creation feature
+                  </p>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/admin/messages" className="flex flex-col w-full p-4 cursor-pointer">
+                  <div className="flex justify-between w-full">
+                    <span className="font-medium">Vendor Onboarding</span>
+                    <span className="text-xs text-muted-foreground">1 hour ago</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 truncate">
+                    Question about merchant verification process
+                  </p>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <NotificationBell />
 
           <DropdownMenu>

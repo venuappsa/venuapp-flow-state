@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useNotifications } from "@/contexts/NotificationContext";
 import {
   LayoutDashboard,
   Users,
@@ -35,6 +36,7 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
   const { pathname } = useLocation();
   const { user } = useUser();
   const { toast } = useToast();
+  const { unreadCount } = useNotifications();
 
   const handleLogout = async () => {
     try {
@@ -69,7 +71,8 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
     { href: "/admin/subscriptions", label: "Subscriptions", icon: <CreditCard size={18} /> },
     { href: "/admin/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
     { href: "/admin/reports", label: "Reports", icon: <FileText size={18} /> },
-    { href: "/admin/notifications", label: "Notifications", icon: <Bell size={18} /> },
+    { href: "/admin/messages", label: "Messages", icon: <MessageSquare size={18} />, badge: 3 },
+    { href: "/admin/notifications", label: "Notifications", icon: <Bell size={18} />, badge: unreadCount },
     { href: "/admin/support", label: "Support", icon: <MessageSquare size={18} /> },
     { href: "/admin/platform", label: "Platform", icon: <GanttChart size={18} /> },
     { href: "/admin/settings", label: "Settings", icon: <Settings size={18} /> },
@@ -102,12 +105,17 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
               to={item.href}
               onClick={onNavItemClick}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors relative",
                 pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
               )}
             >
               {item.icon}
               {item.label}
+              {item.badge && item.badge > 0 && (
+                <span className="absolute right-2 top-2 bg-venu-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

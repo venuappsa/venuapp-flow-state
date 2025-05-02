@@ -1,4 +1,3 @@
-
 import { Route, Routes, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { Home as HomePage } from "./pages/index";
@@ -39,6 +38,7 @@ const AdminReportsPage = lazy(() => import("./pages/admin/AdminReportsPage"));
 const AdminNotificationsPage = lazy(() => import("./pages/admin/AdminNotificationsPage"));
 const AdminSupportPage = lazy(() => import("./pages/admin/AdminSupportPage"));
 const AdminPlatformPage = lazy(() => import("./pages/admin/AdminPlatformPage"));
+const AdminMessagesPage = lazy(() => import("./pages/admin/AdminMessagesPage"));
 
 // Vendor pages
 const VendorSignupPage = lazy(() => import("./pages/vendor/VendorSignupPage"));
@@ -77,6 +77,8 @@ const FetchmanAssignmentsPage = lazy(() => import("./pages/fetchman/FetchmanAssi
 const FetchmanSchedulePage = lazy(() => import("./pages/fetchman/FetchmanSchedulePage"));
 const FetchmanEarningsPage = lazy(() => import("./pages/fetchman/FetchmanEarningsPage"));
 const FetchmanSettingsPage = lazy(() => import("./pages/fetchman/FetchmanSettingsPage"));
+const FetchmanMessagesPage = lazy(() => import("./pages/fetchman/FetchmanMessagesPage"));
+const FetchmanNotificationsPage = lazy(() => import("./pages/fetchman/FetchmanNotificationsPage"));
 
 export default function App() {
   return (
@@ -148,6 +150,7 @@ export default function App() {
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="notifications" element={<AdminNotificationsPage />} />
+            <Route path="messages" element={<AdminMessagesPage />} />
             <Route path="support" element={<AdminSupportPage />} />
             <Route path="platform" element={<AdminPlatformPage />} />
             <Route path="settings" element={<AdminPlatformSettingsPage />} />
@@ -198,6 +201,8 @@ export default function App() {
             <Route path="schedule" element={<FetchmanSchedulePage />} />
             <Route path="earnings" element={<FetchmanEarningsPage />} />
             <Route path="settings" element={<FetchmanSettingsPage />} />
+            <Route path="messages" element={<FetchmanMessagesPage />} />
+            <Route path="notifications" element={<FetchmanNotificationsPage />} />
           </Route>
 
           {/* Not found route */}

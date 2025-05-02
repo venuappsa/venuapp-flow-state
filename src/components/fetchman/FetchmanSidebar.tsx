@@ -10,9 +10,12 @@ import {
   Settings,
   ChevronRight,
   ChevronLeft,
+  Bell,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -20,6 +23,7 @@ interface SidebarItemProps {
   path: string;
   isActive: boolean;
   isCollapsed: boolean;
+  badgeCount?: number;
   onClick?: () => void;
 }
 
@@ -29,13 +33,14 @@ const SidebarItem = ({
   path,
   isActive,
   isCollapsed,
+  badgeCount,
   onClick,
 }: SidebarItemProps) => (
   <Link to={path}>
     <Button
       variant="ghost"
       className={cn(
-        "w-full justify-start mb-1",
+        "w-full justify-start mb-1 relative",
         isActive
           ? "bg-venu-orange/10 text-venu-orange hover:bg-venu-orange/15"
           : "text-gray-600 hover:text-venu-orange hover:bg-venu-orange/5"
@@ -44,6 +49,11 @@ const SidebarItem = ({
     >
       {icon}
       {!isCollapsed && <span className="ml-2">{label}</span>}
+      {badgeCount && badgeCount > 0 && (
+        <span className="absolute top-1 right-1 bg-venu-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          {badgeCount}
+        </span>
+      )}
     </Button>
   </Link>
 );
@@ -51,6 +61,7 @@ const SidebarItem = ({
 export default function FetchmanSidebar() {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { unreadCount } = useNotifications();
 
   const navItems = [
     {
@@ -67,6 +78,18 @@ export default function FetchmanSidebar() {
       icon: <Clock size={20} />,
       label: "Schedule",
       path: "/fetchman/schedule",
+    },
+    {
+      icon: <MessageSquare size={20} />,
+      label: "Messages",
+      path: "/fetchman/messages",
+      badgeCount: 3,
+    },
+    {
+      icon: <Bell size={20} />,
+      label: "Notifications",
+      path: "/fetchman/notifications",
+      badgeCount: unreadCount,
     },
     {
       icon: <DollarSign size={20} />,
@@ -116,6 +139,7 @@ export default function FetchmanSidebar() {
               path={item.path}
               isActive={location.pathname === item.path}
               isCollapsed={isCollapsed}
+              badgeCount={item.badgeCount}
             />
           ))}
         </nav>

@@ -376,7 +376,8 @@ const UniversalMessagingModule: React.FC = () => {
                 created_at: m.created_at,
                 id: m.id,
                 sender_id: m.sender_id === "current-user" ? user?.id || "current-user" : m.sender_id,
-                recipient_id: m.recipient_id // Changed: Map recipient_id correctly
+                recipient_id: m.recipient_id,
+                read: m.read // Adding the missing read property
               }))}
               currentUserId={user?.id || "current-user"}
               currentUserRole={userRoles.includes("host") ? "host" : "vendor"}

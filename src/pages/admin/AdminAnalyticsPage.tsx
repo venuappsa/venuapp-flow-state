@@ -1,62 +1,57 @@
 
-import React from "react";
+import React, { useState } from "react";
+import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Download } from "lucide-react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
 
 export default function AdminAnalyticsPage() {
-  // Mock data for user growth
-  const userGrowthData = [
-    { month: "Jan", hosts: 10, vendors: 24, customers: 150 },
-    { month: "Feb", hosts: 15, vendors: 32, customers: 220 },
-    { month: "Mar", hosts: 22, vendors: 45, customers: 320 },
-    { month: "Apr", hosts: 28, vendors: 52, customers: 410 },
-    { month: "May", hosts: 35, vendors: 64, customers: 510 },
-    { month: "Jun", hosts: 42, vendors: 72, customers: 590 },
-    { month: "Jul", hosts: 48, vendors: 80, customers: 650 },
-    { month: "Aug", hosts: 55, vendors: 88, customers: 720 },
-    { month: "Sep", hosts: 62, vendors: 94, customers: 810 },
-    { month: "Oct", hosts: 70, vendors: 102, customers: 890 },
+  const [dateRange, setDateRange] = useState("30");
+
+  // Mock data for analytics
+  const platformStats = {
+    totalUsers: 2487,
+    activeUsers: 1893,
+    totalEvents: 385,
+    totalRevenue: 157950
+  };
+
+  const userActivityData = [
+    { date: "Week 1", users: 320, hosts: 42, vendors: 78 },
+    { date: "Week 2", users: 350, hosts: 45, vendors: 85 },
+    { date: "Week 3", users: 410, hosts: 52, vendors: 95 },
+    { date: "Week 4", users: 480, hosts: 58, vendors: 115 },
+    { date: "Week 5", users: 520, hosts: 62, vendors: 125 },
+    { date: "Week 6", users: 590, hosts: 68, vendors: 140 },
+    { date: "Week 7", users: 650, hosts: 75, vendors: 160 },
+    { date: "Week 8", users: 720, hosts: 82, vendors: 180 }
   ];
 
-  // Mock data for revenue
   const revenueData = [
-    { month: "Jan", subscriptions: 15000, commissions: 8500, total: 23500 },
-    { month: "Feb", subscriptions: 17500, commissions: 9200, total: 26700 },
-    { month: "Mar", subscriptions: 21000, commissions: 12000, total: 33000 },
-    { month: "Apr", subscriptions: 24500, commissions: 13800, total: 38300 },
-    { month: "May", subscriptions: 26000, commissions: 15500, total: 41500 },
-    { month: "Jun", subscriptions: 28500, commissions: 17200, total: 45700 },
-    { month: "Jul", subscriptions: 31000, commissions: 18900, total: 49900 },
-    { month: "Aug", subscriptions: 32500, commissions: 20100, total: 52600 },
-    { month: "Sep", subscriptions: 35000, commissions: 22800, total: 57800 },
-    { month: "Oct", subscriptions: 38500, commissions: 25400, total: 63900 },
+    { name: "Jan", revenue: 18500 },
+    { name: "Feb", revenue: 22000 },
+    { name: "Mar", revenue: 26500 },
+    { name: "Apr", revenue: 31000 },
+    { name: "May", revenue: 28000 },
+    { name: "Jun", revenue: 32000 }
   ];
 
-  // Mock data for user types
-  const userTypesData = [
-    { name: "Hosts", value: 85, color: "#8884d8" },
-    { name: "Vendors", value: 175, color: "#82ca9d" },
-    { name: "Customers", value: 890, color: "#ffc658" },
-    { name: "Fetchmen", value: 45, color: "#ff7300" },
+  const userTypeData = [
+    { name: "Hosts", value: 263 },
+    { name: "Vendors", value: 478 },
+    { name: "Standard Users", value: 1746 }
   ];
 
-  // Mock data for events
-  const eventsData = [
-    { month: "Jan", total: 28, completed: 22, cancelled: 6 },
-    { month: "Feb", total: 35, completed: 30, cancelled: 5 },
-    { month: "Mar", total: 42, completed: 38, cancelled: 4 },
-    { month: "Apr", total: 50, completed: 45, cancelled: 5 },
-    { month: "May", total: 60, completed: 55, cancelled: 5 },
-    { month: "Jun", total: 72, completed: 68, cancelled: 4 },
-    { month: "Jul", total: 80, completed: 75, cancelled: 5 },
-    { month: "Aug", total: 88, completed: 82, cancelled: 6 },
-    { month: "Sep", total: 95, completed: 90, cancelled: 5 },
-    { month: "Oct", total: 105, completed: 98, cancelled: 7 },
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
+
+  const eventsByTypeData = [
+    { name: "Weddings", count: 125 },
+    { name: "Corporate", count: 98 },
+    { name: "Concerts", count: 64 },
+    { name: "Conferences", count: 45 },
+    { name: "Private Parties", count: 53 }
   ];
 
   return (
@@ -64,109 +59,114 @@ export default function AdminAnalyticsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-            <p className="text-gray-500">Track platform performance metrics</p>
+            <h1 className="text-2xl font-bold">Analytics</h1>
+            <p className="text-gray-500">Platform performance metrics and insights</p>
           </div>
-          <div className="mt-4 md:mt-0 flex space-x-2">
-            <Select defaultValue="this-year">
+          <div className="mt-4 md:mt-0 flex items-center gap-4">
+            <Select defaultValue="30" onValueChange={setDateRange}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select Period" />
+                <SelectValue placeholder="Select period" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="this-month">This Month</SelectItem>
-                <SelectItem value="last-month">Last Month</SelectItem>
-                <SelectItem value="this-quarter">This Quarter</SelectItem>
-                <SelectItem value="this-year">This Year</SelectItem>
-                <SelectItem value="all-time">All Time</SelectItem>
+                <SelectItem value="7">Last 7 days</SelectItem>
+                <SelectItem value="30">Last 30 days</SelectItem>
+                <SelectItem value="90">Last 90 days</SelectItem>
+                <SelectItem value="365">Last year</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline">
-              <Calendar className="mr-2 h-4 w-4" />
-              Custom Range
-            </Button>
-            <Button variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              Export
+              Export Report
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Total Users</CardTitle>
-              <CardDescription>Platform-wide</CardDescription>
+              <CardTitle className="text-sm font-medium text-gray-500">Total Users</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">1,195</p>
-              <p className="text-sm text-green-600">↑ 12% from last month</p>
+              <div className="text-2xl font-bold">{platformStats.totalUsers.toLocaleString()}</div>
+              <p className="text-xs text-green-500 flex items-center mt-1">
+                +12.5% from last month
+              </p>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Revenue</CardTitle>
-              <CardDescription>This month</CardDescription>
+              <CardTitle className="text-sm font-medium text-gray-500">Active Users</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">R 63,900</p>
-              <p className="text-sm text-green-600">↑ 10.5% from last month</p>
+              <div className="text-2xl font-bold">{platformStats.activeUsers.toLocaleString()}</div>
+              <p className="text-xs text-green-500 flex items-center mt-1">
+                +8.3% from last month
+              </p>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Events</CardTitle>
-              <CardDescription>This month</CardDescription>
+              <CardTitle className="text-sm font-medium text-gray-500">Total Events</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">105</p>
-              <p className="text-sm text-green-600">↑ 9.4% from last month</p>
+              <div className="text-2xl font-bold">{platformStats.totalEvents.toLocaleString()}</div>
+              <p className="text-xs text-green-500 flex items-center mt-1">
+                +15.2% from last month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">Total Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R{platformStats.totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-green-500 flex items-center mt-1">
+                +18.7% from last month
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="users">User Growth</TabsTrigger>
-            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+        <Tabs defaultValue="overview" className="mb-8">
+          <TabsList className="grid grid-cols-3 w-full max-w-md mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="engagement">Engagement</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="users" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>User Growth Over Time</CardTitle>
-                  <CardDescription>Tracking user acquisition by role</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={userGrowthData}
-                        margin={{
-                          top: 20,
-                          right: 30,
-                          left: 20,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="hosts" name="Hosts" stroke="#8884d8" activeDot={{ r: 8 }} />
-                        <Line type="monotone" dataKey="vendors" name="Vendors" stroke="#82ca9d" />
-                        <Line type="monotone" dataKey="customers" name="Customers" stroke="#ffc658" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-              
+          <TabsContent value="overview">
+            <Card>
+              <CardHeader>
+                <CardTitle>Platform Growth</CardTitle>
+                <CardDescription>User activity over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={userActivityData}
+                      margin={{
+                        top: 10,
+                        right: 30,
+                        left: 0,
+                        bottom: 0,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Area type="monotone" dataKey="users" stackId="1" stroke="#8884d8" fill="#8884d8" name="All Users" />
+                      <Area type="monotone" dataKey="hosts" stackId="2" stroke="#82ca9d" fill="#82ca9d" name="Hosts" />
+                      <Area type="monotone" dataKey="vendors" stackId="3" stroke="#ffc658" fill="#ffc658" name="Vendors" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="users">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card>
                 <CardHeader>
                   <CardTitle>User Distribution</CardTitle>
@@ -177,101 +177,70 @@ export default function AdminAnalyticsPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={userTypesData}
+                          data={userTypeData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                         >
-                          {userTypesData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          {userTypeData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip formatter={(value) => [`${value}`, 'Users']} />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue Trend</CardTitle>
+                  <CardDescription>Monthly platform revenue</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={revenueData}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => [`R${value}`, 'Revenue']} />
+                        <Bar dataKey="revenue" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
-          
-          <TabsContent value="revenue" className="space-y-6">
+          <TabsContent value="events">
             <Card>
               <CardHeader>
-                <CardTitle>Revenue Overview</CardTitle>
-                <CardDescription>Monthly revenue breakdown</CardDescription>
+                <CardTitle>Events by Type</CardTitle>
+                <CardDescription>Distribution of events by category</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-96">
+                <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
-                      data={revenueData}
-                      margin={{
-                        top: 20,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
+                      data={eventsByTypeData}
+                      layout="vertical"
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={100} />
                       <Tooltip />
-                      <Legend />
-                      <Bar dataKey="subscriptions" name="Subscription Revenue" fill="#8884d8" />
-                      <Bar dataKey="commissions" name="Commission Revenue" fill="#82ca9d" />
+                      <Bar dataKey="count" fill="#82ca9d" name="Event Count" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="events" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Events Overview</CardTitle>
-                <CardDescription>Monthly events statistics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={eventsData}
-                      margin={{
-                        top: 20,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="completed" name="Completed Events" fill="#82ca9d" />
-                      <Bar dataKey="cancelled" name="Cancelled Events" fill="#ff8042" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="engagement" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Engagement</CardTitle>
-                <CardDescription>Feature engagement metrics</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center py-20">
-                <p className="text-gray-500">Engagement analytics coming soon</p>
               </CardContent>
             </Card>
           </TabsContent>

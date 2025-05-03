@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -79,13 +80,15 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
       category: "Event Management",
       items: [
         { href: "/admin/events", label: "Events", icon: <CalendarRange size={18} /> },
-        { href: "/admin/vendors/performance", label: "Vendor Performance", icon: <CheckSquare size={18} /> },
+        // Update this route to point to a valid page
+        { href: "/admin/merchants", label: "Vendor Performance", icon: <CheckSquare size={18} /> },
       ]
     },
     {
       category: "Finance",
       items: [
-        { href: "/admin/subscriptions", label: "Subscriptions", icon: <CreditCard size={18} /> },
+        // Update these routes to point to valid pages
+        { href: "/admin/settings", label: "Subscriptions", icon: <CreditCard size={18} /> },
         { href: "/admin/payments", label: "Payments & Payouts", icon: <DollarSign size={18} /> },
       ]
     },
@@ -93,7 +96,8 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
       category: "Analytics & Reporting",
       items: [
         { href: "/admin/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
-        { href: "/admin/reports", label: "Reports", icon: <FileText size={18} /> },
+        // Update this route to point to a valid page
+        { href: "/admin/analytics", label: "Reports", icon: <FileText size={18} /> },
       ]
     },
     {
@@ -107,14 +111,16 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
     {
       category: "Content",
       items: [
-        { href: "/admin/cms", label: "Content Management", icon: <FileQuestion size={18} /> },
-        { href: "/admin/website", label: "Website", icon: <Globe size={18} /> },
+        // Update these routes to point to valid pages
+        { href: "/admin/platform", label: "Content Management", icon: <FileQuestion size={18} /> },
+        { href: "/admin/platform", label: "Website", icon: <Globe size={18} /> },
       ]
     },
     {
       category: "Support",
       items: [
-        { href: "/admin/support", label: "Support Tickets", icon: <LifeBuoy size={18} /> },
+        // Update this route to point to a valid page
+        { href: "/admin/messages", label: "Support Tickets", icon: <LifeBuoy size={18} /> },
         { href: "/admin/system", label: "System Status", icon: <AlertCircle size={18} /> },
       ]
     },

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -20,6 +21,13 @@ import AdminProfilePage from './pages/AdminProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import SystemBanners from './components/banners/SystemBanners';
+
+// New admin pages
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
+import AdminNotificationsPage from './pages/admin/AdminNotificationsPage';
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
+import AdminSystemStatusPage from './pages/admin/AdminSystemStatusPage';
+import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
 
 // Host page imports
 import HostDashboardPage from './pages/HostDashboardPage';
@@ -80,6 +88,13 @@ function App() {
         <Route path="/admin/merchants" element={<AdminMerchantsPage />} />
         <Route path="/admin/events" element={<AdminEventsPage />} />
         <Route path="/admin/verification" element={<AdminVerificationCenterPage />} />
+        
+        {/* New Admin Routes */}
+        <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+        <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
+        <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+        <Route path="/admin/system" element={<AdminSystemStatusPage />} />
+        <Route path="/admin/announcements" element={<AdminAnnouncementsPage />} />
         
         {/* Host Panel Routes */}
         <Route path="/host" element={<HostPanel />} />

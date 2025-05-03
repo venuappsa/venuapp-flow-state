@@ -4,7 +4,6 @@ import { Outlet } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import HostHeader from "@/components/HostHeader";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import SystemBanners from "@/components/banners/SystemBanners";
@@ -32,11 +31,11 @@ export default function HostPanelLayout({ children }: HostPanelLayoutProps) {
       <div className="flex h-screen overflow-hidden bg-venu-soft-gray/30">
         {/* Ensure the sidebar takes the full height */}
         <DashboardSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <HostHeader />
           {/* Add SystemBanners right under the header */}
           <SystemBanners />
-          <div className="flex-1 overflow-auto pt-16">
+          <div className="flex-1 overflow-auto">
             <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
               {children || <Outlet />}
             </main>

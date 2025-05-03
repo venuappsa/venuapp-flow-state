@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -251,8 +252,8 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
         )}
       </div>
       
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full">
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full w-full">
           <nav className="px-2 py-4">
             {navigationCategories.map((category, index) => (
               <div key={category.category} className="mb-4">

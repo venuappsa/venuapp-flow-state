@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -219,8 +220,8 @@ export function DashboardSidebar() {
         )}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full px-3 py-4">
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full w-full px-3 py-4">
           <div className="space-y-1">
             {filteredNavItems.map((item) => (
               <NavItem

@@ -28,6 +28,12 @@ import AdminNotificationsPage from './pages/admin/AdminNotificationsPage';
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
 import AdminSystemStatusPage from './pages/admin/AdminSystemStatusPage';
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
+import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage';
+import AdminCMSPage from './pages/admin/AdminCMSPage';
+import AdminWebsitePage from './pages/admin/AdminWebsitePage';
+import AdminSupportPage from './pages/admin/AdminSupportPage';
+import AdminReportsPage from './pages/admin/AdminReportsPage';
+import AdminVendorPerformancePage from './pages/admin/AdminVendorPerformancePage';
 
 // Host page imports
 import HostDashboardPage from './pages/HostDashboardPage';
@@ -95,6 +101,12 @@ function App() {
         <Route path="/admin/payments" element={<AdminPaymentsPage />} />
         <Route path="/admin/system" element={<AdminSystemStatusPage />} />
         <Route path="/admin/announcements" element={<AdminAnnouncementsPage />} />
+        <Route path="/admin/subscriptions" element={<AdminSubscriptionsPage />} />
+        <Route path="/admin/cms" element={<AdminCMSPage />} />
+        <Route path="/admin/website" element={<AdminWebsitePage />} />
+        <Route path="/admin/support" element={<AdminSupportPage />} />
+        <Route path="/admin/reports" element={<AdminReportsPage />} />
+        <Route path="/admin/vendors/performance" element={<AdminVendorPerformancePage />} />
         
         {/* Host Panel Routes */}
         <Route path="/host" element={<HostPanel />} />

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -17,7 +17,6 @@ import {
   CalendarRange,
   Store,
   CreditCard,
-  FileBarChart,
   Settings,
   Bell,
   LogOut,
@@ -91,6 +90,7 @@ const NavItem = ({ to, label, icon, isActive, badge, collapsed, onClick }: NavIt
 export function CollapsibleAdminSidebar({ className, onNavItemClick }: CollapsibleAdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user } = useUser();
   const { toast } = useToast();
   const { unreadCount } = useNotifications();
@@ -111,6 +111,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
+      navigate("/auth");
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account"

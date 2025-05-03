@@ -1,121 +1,209 @@
 
 import React, { useState } from "react";
+import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Filter, MessageSquare, AlertCircle, CheckCircle, Clock, ArrowUpRight } from "lucide-react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Search, 
+  Filter, 
+  Tag, 
+  MessageCircle, 
+  AlertTriangle, 
+  CheckCircle, 
+  Clock, 
+  Inbox, 
+  UserCheck, 
+  Download 
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminSupportPage() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("tickets");
 
-  // Mock support ticket data
+  // Mock data for support tickets
   const tickets = [
     {
-      id: "T-1001",
-      subject: "Payment Processing Issue",
-      user: "Sarah Johnson",
-      userEmail: "sarah@eventco.com",
-      userType: "host",
+      id: "TICKET-001",
+      subject: "Cannot access my account",
+      requester: "John Smith",
+      requesterEmail: "john.smith@example.com",
       status: "open",
       priority: "high",
-      date: "2025-05-01T10:30:00Z",
-      lastUpdate: "2025-05-01T14:45:00Z",
-      assignedTo: "Admin User",
-    },
-    {
-      id: "T-1002",
-      subject: "Cannot Upload Event Photos",
-      user: "Michael Brown",
-      userEmail: "michael@celebrationevents.com",
-      userType: "host",
-      status: "in_progress",
-      priority: "medium",
-      date: "2025-04-30T09:15:00Z",
-      lastUpdate: "2025-05-01T11:20:00Z",
+      category: "Account Access",
       assignedTo: "Support Team",
+      createdAt: new Date(2025, 4, 2, 14, 35).toISOString(),
+      lastUpdated: new Date(2025, 4, 2, 15, 10).toISOString(),
+      replies: 2
     },
     {
-      id: "T-1003",
-      subject: "Subscription Cancellation Request",
-      user: "Elite Photography",
-      userEmail: "lisa@elitephoto.com",
-      userType: "vendor",
+      id: "TICKET-002",
+      subject: "Payment failed but money was deducted",
+      requester: "Alice Johnson",
+      requesterEmail: "alice.johnson@example.com",
+      status: "pending",
+      priority: "high",
+      category: "Billing",
+      assignedTo: "Finance Team",
+      createdAt: new Date(2025, 4, 1, 9, 22).toISOString(),
+      lastUpdated: new Date(2025, 4, 2, 11, 45).toISOString(),
+      replies: 3
+    },
+    {
+      id: "TICKET-003",
+      subject: "How to add multiple vendors to an event",
+      requester: "Robert Davis",
+      requesterEmail: "robert.davis@example.com",
       status: "open",
       priority: "medium",
-      date: "2025-05-01T13:45:00Z",
-      lastUpdate: "2025-05-01T13:45:00Z",
-      assignedTo: "Unassigned",
+      category: "Feature Help",
+      assignedTo: "Customer Success",
+      createdAt: new Date(2025, 4, 1, 16, 10).toISOString(),
+      lastUpdated: new Date(2025, 4, 1, 16, 45).toISOString(),
+      replies: 1
     },
     {
-      id: "T-1004",
-      subject: "Refund for Double Charge",
-      user: "David Wilson",
-      userEmail: "david@premiereevents.com",
-      userType: "host",
-      status: "closed",
-      priority: "high",
-      date: "2025-04-28T15:20:00Z",
-      lastUpdate: "2025-04-30T09:10:00Z",
-      assignedTo: "Admin User",
-    },
-    {
-      id: "T-1005",
-      subject: "Account Access Issues",
-      user: "Sweet Delights Bakery",
-      userEmail: "michael@sweetdelights.com",
-      userType: "vendor",
-      status: "in_progress",
-      priority: "high",
-      date: "2025-04-29T11:30:00Z",
-      lastUpdate: "2025-05-01T10:15:00Z",
-      assignedTo: "Support Team",
-    },
-    {
-      id: "T-1006",
-      subject: "Feature Request: Calendar Integration",
-      user: "Olivia Martin",
-      userEmail: "olivia@eventelegance.com",
-      userType: "host",
-      status: "open",
+      id: "TICKET-004",
+      subject: "Suggestion for new feature",
+      requester: "Emily Wilson",
+      requesterEmail: "emily.wilson@example.com",
+      status: "resolved",
       priority: "low",
-      date: "2025-05-01T09:00:00Z",
-      lastUpdate: "2025-05-01T09:00:00Z",
+      category: "Feature Request",
       assignedTo: "Product Team",
+      createdAt: new Date(2025, 3, 28, 11, 20).toISOString(),
+      lastUpdated: new Date(2025, 3, 30, 14, 15).toISOString(),
+      replies: 4
     },
+    {
+      id: "TICKET-005",
+      subject: "Vendor verification taking too long",
+      requester: "Michael Brown",
+      requesterEmail: "michael.brown@example.com",
+      status: "closed",
+      priority: "medium",
+      category: "Verification",
+      assignedTo: "Verification Team",
+      createdAt: new Date(2025, 3, 25, 9, 30).toISOString(),
+      lastUpdated: new Date(2025, 3, 27, 16, 20).toISOString(),
+      replies: 5
+    },
+    {
+      id: "TICKET-006",
+      subject: "Website is slow when adding vendors",
+      requester: "Sarah Lee",
+      requesterEmail: "sarah.lee@example.com",
+      status: "open",
+      priority: "high",
+      category: "Technical Issue",
+      assignedTo: "Technical Support",
+      createdAt: new Date(2025, 4, 2, 8, 45).toISOString(),
+      lastUpdated: new Date(2025, 4, 2, 9, 30).toISOString(),
+      replies: 1
+    }
   ];
 
-  const filteredTickets = tickets.filter(
-    ticket =>
-      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Mock data for knowledge base articles
+  const knowledgeArticles = [
+    {
+      id: "KB-001",
+      title: "Getting started with Venuapp",
+      category: "Getting Started",
+      views: 2560,
+      lastUpdated: new Date(2025, 3, 15).toISOString(),
+      status: "published"
+    },
+    {
+      id: "KB-002",
+      title: "How to manage your events",
+      category: "Events",
+      views: 1890,
+      lastUpdated: new Date(2025, 3, 20).toISOString(),
+      status: "published"
+    },
+    {
+      id: "KB-003",
+      title: "Vendor onboarding process",
+      category: "Vendors",
+      views: 1450,
+      lastUpdated: new Date(2025, 3, 25).toISOString(),
+      status: "published"
+    },
+    {
+      id: "KB-004",
+      title: "Troubleshooting payment issues",
+      category: "Billing",
+      views: 2100,
+      lastUpdated: new Date(2025, 4, 1).toISOString(),
+      status: "published"
+    },
+    {
+      id: "KB-005",
+      title: "Upcoming feature: Advanced analytics",
+      category: "Features",
+      views: 750,
+      lastUpdated: new Date(2025, 4, 1).toISOString(),
+      status: "draft"
+    }
+  ];
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-ZA', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  // Filter tickets based on search term and filters
+  const filteredTickets = tickets.filter((ticket) => {
+    // Apply status filter
+    if (statusFilter !== "all" && ticket.status !== statusFilter) {
+      return false;
+    }
+    
+    // Apply priority filter
+    if (priorityFilter !== "all" && ticket.priority !== priorityFilter) {
+      return false;
+    }
+    
+    // Apply search filter
+    if (searchTerm && 
+        !ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) && 
+        !ticket.requester.toLowerCase().includes(searchTerm.toLowerCase()) && 
+        !ticket.id.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    
+    return true;
+  });
+
+  // Filter knowledge base articles
+  const filteredArticles = knowledgeArticles.filter((article) => {
+    if (searchTerm && 
+        !article.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
+        !article.category.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    
+    return true;
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "open":
         return <Badge className="bg-blue-100 text-blue-800">Open</Badge>;
-      case "in_progress":
-        return <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case "resolved":
+        return <Badge className="bg-green-100 text-green-800">Resolved</Badge>;
       case "closed":
-        return <Badge className="bg-green-100 text-green-800">Closed</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800">Closed</Badge>;
+      case "published":
+        return <Badge className="bg-green-100 text-green-800">Published</Badge>;
+      case "draft":
+        return <Badge className="bg-yellow-100 text-yellow-800">Draft</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -134,436 +222,408 @@ export default function AdminSupportPage() {
     }
   };
 
-  const getUserTypeBadge = (userType: string) => {
-    switch (userType) {
-      case "host":
-        return <Badge className="bg-purple-100 text-purple-800">Host</Badge>;
-      case "vendor":
-        return <Badge className="bg-indigo-100 text-indigo-800">Vendor</Badge>;
-      case "customer":
-        return <Badge className="bg-cyan-100 text-cyan-800">Customer</Badge>;
-      default:
-        return <Badge variant="outline">{userType}</Badge>;
-    }
+  const handleViewTicket = (id: string) => {
+    toast({
+      title: "Opening ticket",
+      description: `Viewing ticket ${id}`
+    });
   };
 
-  // Mock knowledge base articles
-  const kbArticles = [
-    { id: "KB-1001", title: "Getting Started with Venuapp", category: "General", views: 1250 },
-    { id: "KB-1002", title: "How to Create Your First Event", category: "Host", views: 890 },
-    { id: "KB-1003", title: "Setting Up Your Vendor Profile", category: "Vendor", views: 750 },
-    { id: "KB-1004", title: "Subscription Plans and Billing", category: "Billing", views: 680 },
-    { id: "KB-1005", title: "Troubleshooting Login Issues", category: "Account", views: 920 },
-    { id: "KB-1006", title: "Managing Guest Lists", category: "Host", views: 540 },
-    { id: "KB-1007", title: "Processing Refunds", category: "Billing", views: 420 },
-    { id: "KB-1008", title: "Vendor Booking Process", category: "Vendor", views: 610 },
-  ];
+  const handleExportTickets = () => {
+    toast({
+      title: "Export initiated",
+      description: "Ticket data is being exported to CSV"
+    });
+  };
 
   return (
     <AdminPanelLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Support Management</h1>
-            <p className="text-gray-500">Manage customer support tickets and knowledge base</p>
+            <h1 className="text-2xl font-bold">Support Center</h1>
+            <p className="text-gray-500">Manage support tickets and knowledge base</p>
           </div>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 space-x-2">
+            <Button variant="outline" onClick={handleExportTickets}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Tickets
+            </Button>
             <Button>
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Create New Ticket
+              <MessageCircle className="mr-2 h-4 w-4" />
+              New Article
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Open Tickets</CardTitle>
-              <CardDescription>Awaiting response</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <AlertCircle className="h-8 w-8 text-blue-500 mr-3" />
-                <p className="text-3xl font-bold">{tickets.filter(t => t.status === "open").length}</p>
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row justify-between">
+              <div>
+                <CardTitle>Support Overview</CardTitle>
+                <CardDescription>Quick summary of support activity</CardDescription>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">In Progress</CardTitle>
-              <CardDescription>Being worked on</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Clock className="h-8 w-8 text-yellow-500 mr-3" />
-                <p className="text-3xl font-bold">{tickets.filter(t => t.status === "in_progress").length}</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Resolved</CardTitle>
-              <CardDescription>Last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <CheckCircle className="h-8 w-8 text-green-500 mr-3" />
-                <p className="text-3xl font-bold">{tickets.filter(t => t.status === "closed").length}</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Avg. Response Time</CardTitle>
-              <CardDescription>Last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">4.2 hrs</p>
-            </CardContent>
-          </Card>
-        </div>
+              <Tabs 
+                defaultValue="tickets" 
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full sm:w-auto mt-4 sm:mt-0"
+              >
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="tickets">
+                    <Inbox className="h-4 w-4 mr-2" />
+                    Tickets
+                  </TabsTrigger>
+                  <TabsTrigger value="knowledge">
+                    <Tag className="h-4 w-4 mr-2" />
+                    Knowledge Base
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {activeTab === "tickets" ? (
+                <>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <AlertTriangle className="h-8 w-8 text-blue-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {tickets.filter(t => t.status === "open").length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Open Tickets</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <Clock className="h-8 w-8 text-yellow-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {tickets.filter(t => t.status === "pending").length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Pending Response</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <CheckCircle className="h-8 w-8 text-green-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {tickets.filter(t => t.status === "resolved").length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Resolved Today</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <UserCheck className="h-8 w-8 text-purple-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">1.5h</p>
+                        <p className="text-sm text-muted-foreground">Avg. Response Time</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <FileSearchIcon className="h-8 w-8 text-blue-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">{knowledgeArticles.length}</p>
+                        <p className="text-sm text-muted-foreground">Total Articles</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <CheckCircle className="h-8 w-8 text-green-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {knowledgeArticles.filter(a => a.status === "published").length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Published</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <Clock className="h-8 w-8 text-yellow-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {knowledgeArticles.filter(a => a.status === "draft").length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Draft</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 flex items-center">
+                      <Eye className="h-8 w-8 text-purple-500 mr-4" />
+                      <div>
+                        <p className="text-2xl font-bold">8750</p>
+                        <p className="text-sm text-muted-foreground">Monthly Views</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-        <Tabs defaultValue="all-tickets" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="all-tickets">All Tickets</TabsTrigger>
-            <TabsTrigger value="open">Open</TabsTrigger>
-            <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-            <TabsTrigger value="closed">Closed</TabsTrigger>
-            <TabsTrigger value="knowledge-base">Knowledge Base</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="all-tickets">
-            <Card>
-              <CardHeader>
-                <CardTitle>Support Tickets</CardTitle>
-                <CardDescription>Manage all support tickets</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row justify-between mb-6">
-                  <div className="relative max-w-md mb-4 md:mb-0">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                    <Input
-                      placeholder="Search tickets..."
-                      className="pl-9"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-x-2">
-                    <Button variant="outline">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </Button>
-                    <Button variant="outline">
-                      Export
-                    </Button>
-                  </div>
+        <TabsContent value="tickets" className="mt-0 p-0" hidden={activeTab !== "tickets"}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Support Tickets</CardTitle>
+              <CardDescription>Manage and respond to user support requests</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input
+                    placeholder="Search tickets..."
+                    className="pl-9"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
+                <div className="flex gap-2">
+                  <Select 
+                    value={statusFilter} 
+                    onValueChange={setStatusFilter}
+                  >
+                    <SelectTrigger className="w-32">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <span>Status</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="resolved">Resolved</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={priorityFilter} 
+                    onValueChange={setPriorityFilter}
+                  >
+                    <SelectTrigger className="w-32">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      <span>Priority</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Priority</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-                <div className="rounded-md border">
-                  <Table>
-                    <TableCaption>All support tickets</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Subject</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Date Created</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredTickets.map((ticket) => (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Ticket ID</TableHead>
+                      <TableHead>Subject</TableHead>
+                      <TableHead>Requester</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Last Updated</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTickets.length > 0 ? (
+                      filteredTickets.map((ticket) => (
                         <TableRow key={ticket.id}>
                           <TableCell className="font-medium">{ticket.id}</TableCell>
-                          <TableCell>{ticket.subject}</TableCell>
                           <TableCell>
-                            <div>
-                              {ticket.user}
-                              <div className="text-xs text-gray-500">{ticket.userEmail}</div>
+                            <div className="flex items-center">
+                              <span className="mr-1">{ticket.subject}</span>
+                              {ticket.replies > 0 && (
+                                <Badge variant="outline" className="ml-2">
+                                  {ticket.replies}
+                                </Badge>
+                              )}
                             </div>
                           </TableCell>
-                          <TableCell>{getUserTypeBadge(ticket.userType)}</TableCell>
+                          <TableCell>
+                            <div>
+                              <p>{ticket.requester}</p>
+                              <p className="text-sm text-muted-foreground">{ticket.requesterEmail}</p>
+                            </div>
+                          </TableCell>
                           <TableCell>{getStatusBadge(ticket.status)}</TableCell>
                           <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
-                          <TableCell>{formatDate(ticket.date)}</TableCell>
+                          <TableCell>
+                            {formatDistanceToNow(new Date(ticket.lastUpdated), { addSuffix: true })}
+                          </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="outline" size="sm">
-                              <ArrowUpRight className="h-4 w-4" />
+                            <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket.id)}>
                               View
                             </Button>
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="open">
-            <Card>
-              <CardHeader>
-                <CardTitle>Open Tickets</CardTitle>
-                <CardDescription>Tickets awaiting response</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableCaption>Open support tickets</TableCaption>
-                    <TableHeader>
+                      ))
+                    ) : (
                       <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Subject</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Date Created</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableCell colSpan={7} className="text-center py-6">
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <Inbox className="h-12 w-12 mb-2 text-gray-300" />
+                            <p className="text-lg font-medium">No tickets found</p>
+                            <p className="text-sm">
+                              {searchTerm || statusFilter !== "all" || priorityFilter !== "all" ? 
+                                "Try adjusting your filters" : "No support tickets available"}
+                            </p>
+                          </div>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {tickets
-                        .filter(ticket => ticket.status === "open")
-                        .map((ticket) => (
-                          <TableRow key={ticket.id}>
-                            <TableCell className="font-medium">{ticket.id}</TableCell>
-                            <TableCell>{ticket.subject}</TableCell>
-                            <TableCell>
-                              <div>
-                                {ticket.user}
-                                <div className="text-xs text-gray-500">{ticket.userEmail}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
-                            <TableCell>{formatDate(ticket.date)}</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="outline" size="sm">
-                                <ArrowUpRight className="h-4 w-4" />
-                                View
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="in-progress">
-            <Card>
-              <CardHeader>
-                <CardTitle>In Progress Tickets</CardTitle>
-                <CardDescription>Tickets currently being worked on</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableCaption>In progress support tickets</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Subject</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Assigned To</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Last Update</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {tickets
-                        .filter(ticket => ticket.status === "in_progress")
-                        .map((ticket) => (
-                          <TableRow key={ticket.id}>
-                            <TableCell className="font-medium">{ticket.id}</TableCell>
-                            <TableCell>{ticket.subject}</TableCell>
-                            <TableCell>
-                              <div>
-                                {ticket.user}
-                                <div className="text-xs text-gray-500">{ticket.userEmail}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{ticket.assignedTo}</TableCell>
-                            <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
-                            <TableCell>{formatDate(ticket.lastUpdate)}</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="outline" size="sm">
-                                <ArrowUpRight className="h-4 w-4" />
-                                View
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="closed">
-            <Card>
-              <CardHeader>
-                <CardTitle>Closed Tickets</CardTitle>
-                <CardDescription>Resolved support tickets</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableCaption>Closed support tickets</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Subject</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Resolved By</TableHead>
-                        <TableHead>Date Closed</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {tickets
-                        .filter(ticket => ticket.status === "closed")
-                        .map((ticket) => (
-                          <TableRow key={ticket.id}>
-                            <TableCell className="font-medium">{ticket.id}</TableCell>
-                            <TableCell>{ticket.subject}</TableCell>
-                            <TableCell>
-                              <div>
-                                {ticket.user}
-                                <div className="text-xs text-gray-500">{ticket.userEmail}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{ticket.assignedTo}</TableCell>
-                            <TableCell>{formatDate(ticket.lastUpdate)}</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="outline" size="sm">
-                                <ArrowUpRight className="h-4 w-4" />
-                                View
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="knowledge-base">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Knowledge Base Articles</CardTitle>
-                  <CardDescription>Manage help and support articles</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between mb-6">
-                    <div className="relative max-w-md">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                      <Input
-                        placeholder="Search articles..."
-                        className="pl-9"
-                      />
-                    </div>
-                    <Button>
-                      Add New Article
-                    </Button>
-                  </div>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableCaption>Knowledge base articles</TableCaption>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Views</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+        <TabsContent value="knowledge" className="mt-0 p-0" hidden={activeTab !== "knowledge"}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Knowledge Base</CardTitle>
+              <CardDescription>Manage help articles and documentation</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input
+                    placeholder="Search articles..."
+                    className="pl-9"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Views</TableHead>
+                      <TableHead>Last Updated</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredArticles.length > 0 ? (
+                      filteredArticles.map((article) => (
+                        <TableRow key={article.id}>
+                          <TableCell className="font-medium">{article.id}</TableCell>
+                          <TableCell>{article.title}</TableCell>
+                          <TableCell>{article.category}</TableCell>
+                          <TableCell>{article.views.toLocaleString()}</TableCell>
+                          <TableCell>
+                            {new Date(article.lastUpdated).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(article.status)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" size="sm">
+                                Edit
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                Preview
+                              </Button>
+                            </div>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {kbArticles.map((article) => (
-                          <TableRow key={article.id}>
-                            <TableCell className="font-medium">{article.id}</TableCell>
-                            <TableCell>{article.title}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{article.category}</Badge>
-                            </TableCell>
-                            <TableCell>{article.views}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button variant="outline" size="sm">
-                                  Edit
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  View
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Add New Article</CardTitle>
-                  <CardDescription>Create a new knowledge base article</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="article-title">Article Title</Label>
-                      <Input id="article-title" placeholder="Enter article title" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="general">General</SelectItem>
-                          <SelectItem value="account">Account</SelectItem>
-                          <SelectItem value="billing">Billing</SelectItem>
-                          <SelectItem value="host">Host</SelectItem>
-                          <SelectItem value="vendor">Vendor</SelectItem>
-                          <SelectItem value="customer">Customer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="content">Article Content</Label>
-                      <Textarea id="content" placeholder="Write article content..." rows={8} />
-                    </div>
-                    
-                    <Button className="w-full">
-                      Publish Article
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-6">
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <FileQuestion className="h-12 w-12 mb-2 text-gray-300" />
+                            <p className="text-lg font-medium">No articles found</p>
+                            <p className="text-sm">
+                              {searchTerm ? "Try adjusting your search term" : "No knowledge base articles available"}
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </div>
     </AdminPanelLayout>
   );
 }
+
+// Missing icons added
+const Eye = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const FileSearchIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v3" />
+    <polyline points="14 2 14 8 20 8" />
+    <path d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+    <path d="m9 18-1.5-1.5" />
+  </svg>
+);
+
+const FileQuestion = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+    <path d="M10 10.3c.2-.4.5-.8.9-1a2.1 2.1 0 0 1 2.6.4c.3.4.5.8.5 1.3 0 1.3-2 2-2 2" />
+    <path d="M12 17h.01" />
+  </svg>
+);

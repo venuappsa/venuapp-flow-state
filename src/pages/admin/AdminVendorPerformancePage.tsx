@@ -1,201 +1,374 @@
 
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState } from "react";
 import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, LineChart } from "@/components/ui/chart";
+import { 
+  Search, 
+  Download, 
+  Filter, 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Star, 
+  Calendar, 
+  DollarSign, 
+  ThumbsUp, 
+  ThumbsDown,
+  BarChart as BarChartIcon,
+  LineChart as LineChartIcon
+} from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminVendorPerformancePage() {
-  // Mock data for vendor performance metrics
-  const performanceData = [
-    { category: "Catering", bookings: 124, revenue: 78500, vendors: 15, avgRating: 4.7 },
-    { category: "Photography", bookings: 92, revenue: 55000, vendors: 20, avgRating: 4.8 },
-    { category: "Venues", bookings: 67, revenue: 150000, vendors: 12, avgRating: 4.5 },
-    { category: "Music", bookings: 88, revenue: 42000, vendors: 18, avgRating: 4.6 },
-    { category: "Decor", bookings: 112, revenue: 67000, vendors: 24, avgRating: 4.4 },
-    { category: "Florists", bookings: 75, revenue: 38000, vendors: 16, avgRating: 4.7 },
-    { category: "Transport", bookings: 45, revenue: 28000, vendors: 8, avgRating: 4.3 },
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Mock data for vendor performance
+  const vendors = [
+    {
+      id: "1",
+      name: "Elegant Catering Co.",
+      category: "Catering",
+      bookingRate: 82,
+      responseRate: 95,
+      avgRating: 4.8,
+      reviews: 68,
+      events: 42,
+      revenue: 84500,
+      trend: "up"
+    },
+    {
+      id: "2",
+      name: "Dynamic Sound Systems",
+      category: "Audio/Visual",
+      bookingRate: 76,
+      responseRate: 88,
+      avgRating: 4.6,
+      reviews: 53,
+      events: 37,
+      revenue: 55200,
+      trend: "up"
+    },
+    {
+      id: "3",
+      name: "Floral Fantasy Designs",
+      category: "Decor & Flowers",
+      bookingRate: 90,
+      responseRate: 97,
+      avgRating: 4.9,
+      reviews: 92,
+      events: 60,
+      revenue: 72800,
+      trend: "up"
+    },
+    {
+      id: "4",
+      name: "Snap Memories Photography",
+      category: "Photography",
+      bookingRate: 65,
+      responseRate: 82,
+      avgRating: 4.2,
+      reviews: 41,
+      events: 28,
+      revenue: 42600,
+      trend: "down"
+    },
+    {
+      id: "5",
+      name: "Sweet Celebrations Bakery",
+      category: "Bakery",
+      bookingRate: 89,
+      responseRate: 94,
+      avgRating: 4.7,
+      reviews: 77,
+      events: 45,
+      revenue: 63400,
+      trend: "up"
+    },
+    {
+      id: "6",
+      name: "Premier Event Staffing",
+      category: "Staff",
+      bookingRate: 72,
+      responseRate: 86,
+      avgRating: 4.4,
+      reviews: 32,
+      events: 24,
+      revenue: 36800,
+      trend: "down"
+    }
   ];
 
-  // Mock top-performing vendors
-  const topVendors = [
-    { name: "Gourmet Catering Co.", category: "Catering", bookings: 34, revenue: 28500, rating: 4.9 },
-    { name: "Elite Photography", category: "Photography", bookings: 28, revenue: 22000, rating: 4.9 },
-    { name: "Elegant Venues", category: "Venues", bookings: 15, revenue: 85000, rating: 4.8 },
-    { name: "Sound Masters", category: "Music", bookings: 22, revenue: 15000, rating: 4.8 },
-    { name: "Bloom Floral Design", category: "Florists", bookings: 25, revenue: 18500, rating: 4.8 },
+  // Mock data for charts
+  const monthlyRevenueData = Array.from({ length: 12 }, (_, i) => {
+    const month = new Date(0, i).toLocaleString('default', { month: 'short' });
+    return {
+      month,
+      revenue: Math.floor(Math.random() * 50000) + 25000
+    };
+  });
+
+  const categoryPerformanceData = [
+    { category: "Catering", avgRating: 4.7, bookingRate: 85 },
+    { category: "Audio/Visual", avgRating: 4.5, bookingRate: 75 },
+    { category: "Decor & Flowers", avgRating: 4.8, bookingRate: 88 },
+    { category: "Photography", avgRating: 4.4, bookingRate: 72 },
+    { category: "Bakery", avgRating: 4.6, bookingRate: 82 },
+    { category: "Staff", avgRating: 4.2, bookingRate: 68 }
   ];
+
+  // Filter vendors based on search term
+  const filteredVendors = vendors.filter(vendor => 
+    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    vendor.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleExportData = (dataType: string) => {
+    toast({
+      title: "Export initiated",
+      description: `${dataType} data is being exported to CSV`
+    });
+  };
+
+  const handleViewVendor = (id: string, name: string) => {
+    toast({
+      title: "Viewing vendor details",
+      description: `Navigating to ${name} performance details`
+    });
+  };
 
   return (
     <AdminPanelLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">Vendor Performance Analytics</h1>
-          <p className="text-gray-500">Monitor and analyze vendor performance metrics</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Vendor Performance</h1>
+            <p className="text-gray-500">Track and analyze vendor metrics</p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <Button variant="outline" onClick={() => handleExportData("Vendor Performance")}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Data
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Total Vendors</CardTitle>
-              <CardDescription>Platform-wide</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">113</p>
-              <p className="text-sm text-green-600">↑ 12% from last quarter</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Total Bookings</CardTitle>
-              <CardDescription>All vendors</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">603</p>
-              <p className="text-sm text-green-600">↑ 8% from last quarter</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Platform Revenue</CardTitle>
-              <CardDescription>Commission from bookings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">R 42,850</p>
-              <p className="text-sm text-green-600">↑ 15% from last quarter</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="bookings" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="revenue">Revenue</TabsTrigger>
-            <TabsTrigger value="ratings">Ratings</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="bookings" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Bookings by Vendor Category</CardTitle>
-                <CardDescription>Total bookings across different vendor categories</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <div className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={performanceData}
-                      margin={{
-                        top: 20,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="category" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="bookings" fill="#8884d8" name="Bookings" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="revenue" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Revenue by Vendor Category</CardTitle>
-                <CardDescription>Total revenue generated across different vendor categories</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <div className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={performanceData}
-                      margin={{
-                        top: 20,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="category" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="revenue" fill="#82ca9d" name="Revenue (R)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="ratings" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Average Ratings by Vendor Category</CardTitle>
-                <CardDescription>Customer satisfaction across different vendor categories</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <div className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={performanceData}
-                      margin={{
-                        top: 20,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="category" />
-                      <YAxis domain={[0, 5]} />
-                      <Tooltip />
-                      <Bar dataKey="avgRating" fill="#f59e0b" name="Average Rating" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        <Card className="mt-8">
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Top Performing Vendors</CardTitle>
-            <CardDescription>Vendors with the highest bookings and ratings</CardDescription>
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+              <div>
+                <CardTitle>Performance Overview</CardTitle>
+                <CardDescription>Key vendor performance metrics</CardDescription>
+              </div>
+              <Tabs 
+                defaultValue="overview" 
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full sm:w-auto"
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="overview">
+                    <BarChartIcon className="h-4 w-4 mr-2" />
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="category">
+                    <LineChartIcon className="h-4 w-4 mr-2" />
+                    By Category
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </CardHeader>
           <CardContent>
+            <TabsContent value="overview" className="mt-0 h-[350px]">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">Monthly Revenue by Vendors</h3>
+                <Button variant="outline" size="sm" onClick={() => handleExportData("Monthly Revenue")}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </div>
+              <BarChart
+                data={monthlyRevenueData}
+                index="month"
+                categories={["revenue"]}
+                colors={["#8B5CF6"]}
+                valueFormatter={(value) => `$${value.toLocaleString()}`}
+                showXAxis
+                showYAxis
+                showLegend={false}
+                showTooltip
+                showGridLines
+                className="h-[300px]"
+              />
+            </TabsContent>
+            <TabsContent value="category" className="mt-0 h-[350px]">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">Category Performance</h3>
+                <Button variant="outline" size="sm" onClick={() => handleExportData("Category Performance")}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </div>
+              <LineChart
+                data={categoryPerformanceData}
+                index="category"
+                categories={["avgRating", "bookingRate"]}
+                colors={["#10B981", "#F59E0B"]}
+                valueFormatter={(value, category) => 
+                  category === "avgRating" ? `${value} stars` : `${value}%`
+                }
+                showXAxis
+                showYAxis
+                showLegend
+                showTooltip
+                showGridLines
+                className="h-[300px]"
+              />
+            </TabsContent>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Vendor Metrics</CardTitle>
+            <CardDescription>Detailed vendor performance metrics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <Star className="h-8 w-8 text-yellow-500 mr-4" />
+                  <div>
+                    <p className="text-2xl font-bold">4.6</p>
+                    <p className="text-sm text-muted-foreground">Average Rating</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <Calendar className="h-8 w-8 text-blue-500 mr-4" />
+                  <div>
+                    <p className="text-2xl font-bold">79%</p>
+                    <p className="text-sm text-muted-foreground">Booking Rate</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <DollarSign className="h-8 w-8 text-green-500 mr-4" />
+                  <div>
+                    <p className="text-2xl font-bold">$355K</p>
+                    <p className="text-sm text-muted-foreground">Total Revenue</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <ThumbsUp className="h-8 w-8 text-purple-500 mr-4" />
+                  <div>
+                    <p className="text-2xl font-bold">90%</p>
+                    <p className="text-sm text-muted-foreground">Response Rate</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                <Input
+                  placeholder="Search vendors..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+              </Button>
+            </div>
+
             <div className="rounded-md border">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="py-3 px-4 text-left text-sm font-medium">Vendor Name</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium">Category</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium">Bookings</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium">Revenue (R)</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium">Rating</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topVendors.map((vendor, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="py-3 px-4 text-sm font-medium">{vendor.name}</td>
-                      <td className="py-3 px-4 text-sm">{vendor.category}</td>
-                      <td className="py-3 px-4 text-sm">{vendor.bookings}</td>
-                      <td className="py-3 px-4 text-sm">{vendor.revenue.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-sm">{vendor.rating}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Avg. Rating</TableHead>
+                    <TableHead>Booking Rate</TableHead>
+                    <TableHead>Response Rate</TableHead>
+                    <TableHead>Revenue</TableHead>
+                    <TableHead>Trend</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredVendors.length > 0 ? (
+                    filteredVendors.map((vendor) => (
+                      <TableRow key={vendor.id}>
+                        <TableCell className="font-medium">{vendor.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{vendor.category}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                            <span>{vendor.avgRating}</span>
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({vendor.reviews})
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{vendor.bookingRate}%</TableCell>
+                        <TableCell>{vendor.responseRate}%</TableCell>
+                        <TableCell>${vendor.revenue.toLocaleString()}</TableCell>
+                        <TableCell>
+                          {vendor.trend === "up" ? (
+                            <div className="flex items-center text-green-600">
+                              <ArrowUpRight className="h-4 w-4 mr-1" />
+                              <span>Up</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center text-red-600">
+                              <ArrowDownRight className="h-4 w-4 mr-1" />
+                              <span>Down</span>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleViewVendor(vendor.id, vendor.name)}
+                          >
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-6">
+                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                          <ThumbsDown className="h-12 w-12 mb-2 text-gray-300" />
+                          <p className="text-lg font-medium">No vendors found</p>
+                          <p className="text-sm">
+                            {searchTerm ? "Try adjusting your search term" : "No vendor data available"}
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>

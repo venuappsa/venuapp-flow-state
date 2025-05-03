@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ export default function AdminHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
   const { toast } = useToast();
+  const location = useLocation();
 
   const displayName = user?.user_metadata?.full_name || 
     user?.email?.split("@")[0] || 
@@ -86,16 +87,28 @@ export default function AdminHeader() {
 
         {/* Desktop navigation - hidden on mobile */}
         <div className="hidden md:flex items-center gap-6 ml-6">
-          <Link to="/admin" className="text-sm font-medium hover:text-venu-orange transition-colors">
+          <Link 
+            to="/admin" 
+            className={`text-sm font-medium transition-colors ${location.pathname === '/admin' || location.pathname === '/admin/dashboard' ? 'text-venu-orange' : 'hover:text-venu-orange'}`}
+          >
             Dashboard
           </Link>
-          <Link to="/admin/events" className="text-sm font-medium hover:text-venu-orange transition-colors">
+          <Link 
+            to="/admin/events" 
+            className={`text-sm font-medium transition-colors ${location.pathname.includes('/admin/events') ? 'text-venu-orange' : 'hover:text-venu-orange'}`}
+          >
             Events
           </Link>
-          <Link to="/admin/users" className="text-sm font-medium hover:text-venu-orange transition-colors">
+          <Link 
+            to="/admin/users" 
+            className={`text-sm font-medium transition-colors ${location.pathname.includes('/admin/users') ? 'text-venu-orange' : 'hover:text-venu-orange'}`}
+          >
             Users
           </Link>
-          <Link to="/admin/settings" className="text-sm font-medium hover:text-venu-orange transition-colors">
+          <Link 
+            to="/admin/settings" 
+            className={`text-sm font-medium transition-colors ${location.pathname.includes('/admin/settings') ? 'text-venu-orange' : 'hover:text-venu-orange'}`}
+          >
             Settings
           </Link>
         </div>

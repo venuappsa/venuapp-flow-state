@@ -23,7 +23,7 @@ export const getRedirectPageForRoles = (roles: string[]): string => {
   // Role priority: admin > host > merchant > fetchman > customer
   if (hasRole("admin")) {
     console.log("Admin role found, redirecting to admin dashboard");
-    return "/admin/dashboard";
+    return "/admin"; // Updated from "/admin/dashboard" to "/admin"
   }
   
   if (hasRole("host")) {

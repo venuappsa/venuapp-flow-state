@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes, BrowserRouter } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { usePlatformSettings } from '@/contexts/PlatformSettingsContext';
@@ -81,7 +81,7 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
+    <>
       <ScrollToTop />
       <SystemBanners />
       <Routes>
@@ -393,7 +393,7 @@ function App() {
       </Routes>
       <Toaster />
       <SonnerToaster />
-    </BrowserRouter>
+    </>
   );
 }
 

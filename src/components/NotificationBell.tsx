@@ -71,14 +71,23 @@ export default function NotificationBell({ className }: NotificationBellProps) {
   const totalUnreadCount = unreadCount + unreadSystemNotices;
 
   const handleNotificationClick = (id: string) => {
+    // Mark the notification as read
     markAsRead(id);
-    setOpen(false);
     
     // Find the notification to get its link
     const notification = notifications.find(n => n.id === id);
     if (notification?.link) {
-      // Using navigate instead of window.location.href for SPA navigation
-      navigate(notification.link);
+      // Close dropdown before navigating
+      setOpen(false);
+      
+      // Wait a moment before navigating to ensure the dropdown closes smoothly
+      setTimeout(() => {
+        // Using navigate instead of window.location.href for SPA navigation
+        navigate(notification.link);
+      }, 100);
+    } else {
+      // If no specific link, just close the dropdown
+      setOpen(false);
     }
   };
   
@@ -93,12 +102,18 @@ export default function NotificationBell({ className }: NotificationBellProps) {
     // Find the notice to get its link
     const notice = systemNotices.find(n => n.id === id);
     if (notice?.link) {
-      // Navigate to the notice's link
-      navigate(notice.link);
+      // Close dropdown before navigating
+      setOpen(false);
+      
+      // Wait a moment before navigating to ensure the dropdown closes smoothly
+      setTimeout(() => {
+        // Navigate to the notice's link
+        navigate(notice.link);
+      }, 100);
+    } else {
+      // If no specific link, just close the dropdown
+      setOpen(false);
     }
-    
-    // Close the dropdown
-    setOpen(false);
   };
   
   const handleMarkAllAsRead = () => {
@@ -159,11 +174,12 @@ export default function NotificationBell({ className }: NotificationBellProps) {
             allNotifications.map((notification) => (
               <DropdownMenuItem
                 key={`${notification.isSystemNotice ? 'notice-' : 'notif-'}${notification.id}`}
-                onSelect={() => 
+                onSelect={(e) => {
+                  e.preventDefault();
                   notification.isSystemNotice 
                     ? handleSystemNoticeClick(notification.id) 
-                    : handleNotificationClick(notification.id)
-                }
+                    : handleNotificationClick(notification.id);
+                }}
                 className={`p-4 cursor-pointer ${!notification.read ? 'bg-accent/50' : ''}`}
               >
                 <div className="w-full">

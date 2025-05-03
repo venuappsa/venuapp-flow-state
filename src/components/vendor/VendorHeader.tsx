@@ -71,7 +71,7 @@ const VendorHeader = () => {
     }
   };
 
-  // New function to handle message click
+  // Updated function to handle message click with navigation
   const handleMessageClick = (threadId: string, messageId: string) => {
     // Mark the message as read
     setMessageData(prev => ({
@@ -82,8 +82,11 @@ const VendorHeader = () => {
       )
     }));
 
-    // Navigate to the specific message thread
-    navigate(`/vendor/messages?thread=${threadId}`);
+    // Close dropdown before navigating
+    setTimeout(() => {
+      // Navigate to the specific message thread
+      navigate(`/vendor/messages?thread=${threadId}`);
+    }, 100);
   };
 
   return (
@@ -105,7 +108,7 @@ const VendorHeader = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Messages dropdown */}
+          {/* Messages dropdown with enhanced navigation */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -129,7 +132,10 @@ const VendorHeader = () => {
                 <DropdownMenuItem 
                   key={message.id}
                   className={`flex flex-col w-full p-4 cursor-pointer ${!message.read ? 'bg-accent/50' : ''}`}
-                  onSelect={() => handleMessageClick(message.threadId, message.id)}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    handleMessageClick(message.threadId, message.id);
+                  }}
                 >
                   <div className="flex justify-between w-full">
                     <span className="font-medium">{message.title}</span>

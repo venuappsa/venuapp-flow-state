@@ -82,7 +82,7 @@ export default function AdminHeader() {
     }
   };
 
-  // New function to handle message click
+  // Updated function to handle message click with navigation
   const handleMessageClick = (threadId: string, messageId: string) => {
     // Mark the message as read
     setMessageData(prev => ({
@@ -93,8 +93,11 @@ export default function AdminHeader() {
       )
     }));
 
-    // Navigate to the specific message thread
-    navigate(`/admin/messages?thread=${threadId}`);
+    // Close dropdown before navigating
+    setTimeout(() => {
+      // Navigate to the specific message thread
+      navigate(`/admin/messages?thread=${threadId}`);
+    }, 100);
   };
 
   return (
@@ -156,14 +159,16 @@ export default function AdminHeader() {
 
         {/* Right side of header - messages, notifications and profile */}
         <div className="flex items-center gap-2">
-          {/* Messages dropdown */}
+          {/* Messages dropdown with enhanced navigation */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <MessageSquare className="h-5 w-5" />
-                <span className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-venu-orange text-white rounded-full">
-                  {messageData.unreadCount}
-                </span>
+                {messageData.unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-venu-orange text-white rounded-full">
+                    {messageData.unreadCount}
+                  </span>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
@@ -178,7 +183,10 @@ export default function AdminHeader() {
                 <DropdownMenuItem 
                   key={message.id}
                   className={`flex flex-col w-full p-4 cursor-pointer ${!message.read ? 'bg-accent/50' : ''}`}
-                  onSelect={() => handleMessageClick(message.threadId, message.id)}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    handleMessageClick(message.threadId, message.id);
+                  }}
                 >
                   <div className="flex justify-between w-full">
                     <span className="font-medium">{message.title}</span>

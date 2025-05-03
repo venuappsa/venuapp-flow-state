@@ -8,6 +8,7 @@ import { ScrollToTop } from '@/components/utils/ScrollToTop';
 import AuthPage from './pages/AuthPage';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
+import Home from './pages/Index';
 import { useUser } from '@/hooks/useUser';
 import AdminPlatformSettingsPage from './pages/admin/AdminPlatformSettingsPage';
 import AdminMessagesPage from './pages/admin/AdminMessagesPage';
@@ -46,6 +47,9 @@ function App() {
         </div>
       )}
       <Routes>
+        {/* Home Route */}
+        <Route path="/" element={<Home />} />
+        
         {/* Public Routes */}
         <Route path="/auth/*" element={<AuthPage />} />
         <Route path="/contact" element={<Contact />} />

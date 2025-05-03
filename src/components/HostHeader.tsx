@@ -81,7 +81,7 @@ export default function HostHeader() {
     }
   };
 
-  // New function to handle message click
+  // Updated function to handle message click with navigation
   const handleMessageClick = (threadId: string, messageId: string) => {
     // Mark the message as read
     setMessageData(prev => ({
@@ -92,8 +92,11 @@ export default function HostHeader() {
       )
     }));
 
-    // Navigate to the specific message thread
-    navigate(`/host/messages?thread=${threadId}`);
+    // Close dropdown before navigating
+    setTimeout(() => {
+      // Navigate to the specific message thread
+      navigate(`/host/messages?thread=${threadId}`);
+    }, 100);
   };
 
   return (
@@ -133,7 +136,7 @@ export default function HostHeader() {
             </Link>
           </Button>
 
-          {/* Messages dropdown */}
+          {/* Messages dropdown with enhanced navigation */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -157,7 +160,10 @@ export default function HostHeader() {
                 <DropdownMenuItem 
                   key={message.id}
                   className={`flex flex-col w-full p-4 cursor-pointer ${!message.read ? 'bg-accent/50' : ''}`}
-                  onSelect={() => handleMessageClick(message.threadId, message.id)}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    handleMessageClick(message.threadId, message.id);
+                  }}
                 >
                   <div className="flex justify-between w-full">
                     <span className="font-medium">{message.title}</span>

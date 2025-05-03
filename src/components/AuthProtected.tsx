@@ -23,6 +23,7 @@ const AuthProtected = ({
   const [retryCount, setRetryCount] = useState(0);
   const [checkingRoles, setCheckingRoles] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
   // For debugging
   useEffect(() => {
@@ -34,29 +35,35 @@ const AuthProtected = ({
     console.log("Required Roles:", requiredRoles);
     console.log("Loading States - User:", userLoading, "Roles:", rolesLoading, "Checking:", checkingRoles, "Session:", checkingSession);
     console.log("Retry Count:", retryCount);
+    console.log("Authentication State:", isAuthenticated);
     
     const hasRequiredRole = requiredRoles.length === 0 || 
       (Array.isArray(roles) && requiredRoles.some(role => roles.includes(role)));
     
     console.log("Has Required Role:", hasRequiredRole);
     console.groupEnd();
-  }, [user, roles, userLoading, rolesLoading, requiredRoles, location.pathname, retryCount, checkingRoles, initialized, checkingSession]);
+  }, [user, roles, userLoading, rolesLoading, requiredRoles, location.pathname, retryCount, checkingRoles, initialized, checkingSession, isAuthenticated]);
   
   // Check for active session directly when component mounts
   useEffect(() => {
+    if (!initialized) return;
+    
     const checkSession = async () => {
-      if (!initialized) return;
-      
       try {
+        console.log("AuthProtected: Verifying session via direct check");
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         
-        console.log("AuthProtected: Direct session check result:", !!data.session);
-        if (!data.session) {
+        const hasSession = !!data.session;
+        console.log("AuthProtected: Direct session check result:", hasSession);
+        setIsAuthenticated(hasSession);
+        
+        if (!hasSession) {
           console.log("AuthProtected: No active session found");
         }
       } catch (err) {
         console.error("AuthProtected: Error checking session:", err);
+        setIsAuthenticated(false);
       } finally {
         setCheckingSession(false);
       }
@@ -91,7 +98,7 @@ const AuthProtected = ({
   }, [user, userLoading, rolesLoading, roles, retryCount, requiredRoles, refetch]);
   
   // Show loading state while auth is being checked
-  if (userLoading || checkingSession || (!initialized && !user)) {
+  if (userLoading || checkingSession || (!initialized && !user) || isAuthenticated === null) {
     return <RedirectLoaderOverlay message="Checking authentication..." />;
   }
   
@@ -101,7 +108,7 @@ const AuthProtected = ({
   }
   
   // If user is not logged in, redirect to login
-  if (!user) {
+  if (!user || isAuthenticated === false) {
     console.log("AuthProtected: No user found, redirecting to login");
     // Include the current path as the 'next' parameter for redirect after login
     const loginRedirectUrl = `${redirectTo}${redirectTo.includes('?') ? '&' : '?'}next=${encodeURIComponent(location.pathname)}`;

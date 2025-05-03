@@ -55,6 +55,7 @@ export const useUser = () => {
           setSession(null);
           setUser(null);
         } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          console.log("useUser: Auth event requires session update:", event);
           setSession(newSession);
           setUser(newSession?.user ?? null);
         }
@@ -82,14 +83,12 @@ export const useUser = () => {
         
         console.log("useUser: Initial session check -", data.session?.user?.id);
         
-        // Only update if we have different values to prevent unnecessary renders
-        const hasUser = !!data.session?.user;
-        const currentHasUser = !!user;
-        
-        if (hasUser !== currentHasUser) {
-          console.log("useUser: Updating initial session state");
+        if (data.session) {
+          console.log("useUser: Found existing session, updating state");
           setSession(data.session);
-          setUser(data.session?.user ?? null);
+          setUser(data.session.user ?? null);
+        } else {
+          console.log("useUser: No existing session found");
         }
         
         // Mark initialization and loading as complete

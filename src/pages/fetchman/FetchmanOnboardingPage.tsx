@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -7,6 +6,7 @@ import * as z from "zod";
 import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/components/ui/use-toast";
 import { UserService } from "@/services/UserService";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader, MapPin, Truck, Clock, AlertCircle, CreditCard } from "lucide-react";
+import { Loader, MapPin, Truck, Clock, AlertCircle } from "lucide-react";
+import { CreditCard } from "@/components/ui/icons";
 
 const fetchmanSchema = z.object({
   vehicle_type: z.string().min(1, "Vehicle type is required"),

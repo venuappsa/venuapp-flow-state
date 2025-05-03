@@ -16,9 +16,9 @@ import {
 import { LogOut, Menu, MessageSquare, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import AdminSidebar from "@/components/AdminSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
+import { CollapsibleAdminSidebar } from "@/components/admin/CollapsibleAdminSidebar";
 
 export default function AdminHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -185,7 +185,7 @@ export default function AdminHeader() {
       {/* Mobile drawer */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
-          <AdminSidebar onNavItemClick={() => setMobileMenuOpen(false)} />
+          <CollapsibleAdminSidebar onNavItemClick={() => setMobileMenuOpen(false)} />
         </SheetContent>
       </Sheet>
     </header>

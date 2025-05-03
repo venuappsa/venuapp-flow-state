@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 // Added new interface for system notices from the old notice board
 interface SystemNotice {
@@ -35,6 +36,7 @@ export default function NotificationBell({ className }: NotificationBellProps) {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Added system notices (formerly from notice board)
   const [systemNotices, setSystemNotices] = useState<SystemNotice[]>([
@@ -69,6 +71,28 @@ export default function NotificationBell({ className }: NotificationBellProps) {
   
   const unreadSystemNotices = systemNotices.filter(notice => !notice.read).length;
   const totalUnreadCount = unreadCount + unreadSystemNotices;
+  
+  // Check if the link is valid before navigating
+  const isValidLink = (link?: string): boolean => {
+    if (!link) return false;
+    
+    // Basic admin routes that we know exist
+    const validAdminRoutes = [
+      '/admin', 
+      '/admin/system', 
+      '/admin/platform', 
+      '/admin/payments', 
+      '/admin/messages', 
+      '/admin/users', 
+      '/admin/hosts',
+      '/admin/merchants',
+      '/admin/events'
+    ];
+    
+    // Check if the link is in our valid routes list or starts with one of these valid prefixes
+    return validAdminRoutes.includes(link) || 
+      validAdminRoutes.some(route => link.startsWith(`${route}/`));
+  };
 
   const handleNotificationClick = (id: string) => {
     // Mark the notification as read
@@ -76,18 +100,34 @@ export default function NotificationBell({ className }: NotificationBellProps) {
     
     // Find the notification to get its link
     const notification = notifications.find(n => n.id === id);
+    
     if (notification?.link) {
-      // Close dropdown before navigating
+      // Validate the link before navigating
+      if (isValidLink(notification.link)) {
+        // Close dropdown before navigating
+        setOpen(false);
+        
+        // Wait a moment before navigating to ensure the dropdown closes smoothly
+        setTimeout(() => {
+          navigate(notification.link);
+        }, 100);
+      } else {
+        // Show toast for invalid links
+        toast({
+          title: "Navigation Error",
+          description: "The link for this notification is not valid.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // If no specific link, just close the dropdown after marking as read
       setOpen(false);
       
-      // Wait a moment before navigating to ensure the dropdown closes smoothly
-      setTimeout(() => {
-        // Using navigate instead of window.location.href for SPA navigation
-        navigate(notification.link);
-      }, 100);
-    } else {
-      // If no specific link, just close the dropdown
-      setOpen(false);
+      // Show toast confirming the notification was read
+      toast({
+        title: "Notification Read",
+        description: "This notification has been marked as read."
+      });
     }
   };
   
@@ -101,17 +141,27 @@ export default function NotificationBell({ className }: NotificationBellProps) {
     
     // Find the notice to get its link
     const notice = systemNotices.find(n => n.id === id);
+    
     if (notice?.link) {
-      // Close dropdown before navigating
-      setOpen(false);
-      
-      // Wait a moment before navigating to ensure the dropdown closes smoothly
-      setTimeout(() => {
-        // Navigate to the notice's link
-        navigate(notice.link);
-      }, 100);
+      // Validate the link before navigating
+      if (isValidLink(notice.link)) {
+        // Close dropdown before navigating
+        setOpen(false);
+        
+        // Wait a moment before navigating to ensure the dropdown closes smoothly
+        setTimeout(() => {
+          navigate(notice.link);
+        }, 100);
+      } else {
+        // Show toast for invalid links
+        toast({
+          title: "Navigation Error",
+          description: "The link for this system notice is not valid.",
+          variant: "destructive"
+        });
+      }
     } else {
-      // If no specific link, just close the dropdown
+      // If no specific link, just close the dropdown after marking as read
       setOpen(false);
     }
   };
@@ -121,6 +171,11 @@ export default function NotificationBell({ className }: NotificationBellProps) {
     setSystemNotices(
       systemNotices.map(notice => ({ ...notice, read: true }))
     );
+    
+    toast({
+      title: "All notifications marked as read",
+      description: `${totalUnreadCount} notification(s) have been marked as read.`
+    });
   };
 
   // Combine notifications and system notices for display

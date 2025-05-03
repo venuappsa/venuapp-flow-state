@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -76,7 +77,8 @@ export default function AdminVerificationCenterPage() {
             documentType: 'Business Registration',
             submissionDate: h.created_at,
             status: h.verification_status,
-            originalData: h
+            originalData: h,
+            rejectionReason: null // Add this field even for pending items
           };
         });
 
@@ -93,7 +95,8 @@ export default function AdminVerificationCenterPage() {
             documentType: 'Business License',
             submissionDate: v.created_at,
             status: v.verification_status,
-            originalData: v
+            originalData: v,
+            rejectionReason: null // Add this field even for pending items
           };
         });
 
@@ -110,7 +113,8 @@ export default function AdminVerificationCenterPage() {
             documentType: 'ID Verification',
             submissionDate: f.created_at,
             status: f.verification_status,
-            originalData: f
+            originalData: f,
+            rejectionReason: null // Add this field even for pending items
           };
         });
 
@@ -181,7 +185,8 @@ export default function AdminVerificationCenterPage() {
             submissionDate: h.created_at,
             status: h.verification_status,
             originalData: h,
-            rejectionReason: h.decline_reason || 'No reason specified'
+            // Safely handle decline_reason which may not exist in the database schema
+            rejectionReason: h.verification_status === 'declined' ? (h.decline_reason || 'No reason specified') : null
           };
         });
 
@@ -199,7 +204,8 @@ export default function AdminVerificationCenterPage() {
             submissionDate: v.created_at,
             status: v.verification_status,
             originalData: v,
-            rejectionReason: v.decline_reason || 'No reason specified'
+            // Safely handle decline_reason which may not exist in the database schema
+            rejectionReason: v.verification_status === 'declined' ? (v.decline_reason || 'No reason specified') : null
           };
         });
 
@@ -217,7 +223,7 @@ export default function AdminVerificationCenterPage() {
             submissionDate: f.created_at,
             status: f.verification_status,
             originalData: f,
-            rejectionReason: 'No reason specified' // Add a default rejection reason
+            rejectionReason: f.verification_status === 'declined' ? 'No reason specified' : null
           };
         });
 
@@ -232,16 +238,20 @@ export default function AdminVerificationCenterPage() {
 
   // Handle approve/reject mutations
   const updateVerificationStatus = useMutation({
-    mutationFn: async ({ id, type, status }: { id: string; type: string; status: string }) => {
+    mutationFn: async ({ id, type, status, reason }: { id: string; type: string; status: string; reason?: string }) => {
       const table = type === "host" 
         ? "host_profiles" 
         : type === "vendor" 
           ? "vendor_profiles" 
           : "fetchman_profiles";
           
+      const updateData = status === "declined" && reason 
+        ? { verification_status: status, decline_reason: reason }
+        : { verification_status: status };
+          
       const { error } = await supabase
         .from(table)
-        .update({ verification_status: status })
+        .update(updateData)
         .eq("id", id);
       
       if (error) throw error;
@@ -271,7 +281,8 @@ export default function AdminVerificationCenterPage() {
   };
 
   const handleReject = (id: string, type: string) => {
-    updateVerificationStatus.mutate({ id, type, status: "declined" });
+    const reason = "Application rejected by admin"; // You could add a reason input field later
+    updateVerificationStatus.mutate({ id, type, status: "declined", reason });
   };
 
   const filterVerifications = (status: string) => {

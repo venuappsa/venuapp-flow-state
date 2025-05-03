@@ -65,8 +65,21 @@ export default function FetchmanOnboardingPage() {
     setErrorMessage("");
     
     try {
-      // Values from the form are guaranteed to be non-optional thanks to zod validation
-      const success = await UserService.createFetchmanProfile(user.id, values);
+      // Cast the values to the required type to ensure all properties are recognized as non-optional
+      // This is safe because Zod validation guarantees all fields are present
+      const profileData = values as {
+        vehicle_type: string;
+        work_hours: string;
+        service_area: string;
+        phone_number: string;
+        identity_number: string;
+        has_own_transport: boolean;
+        bank_account_number: string;
+        bank_name: string;
+        branch_code: string;
+      };
+      
+      const success = await UserService.createFetchmanProfile(user.id, profileData);
       
       if (success) {
         toast({

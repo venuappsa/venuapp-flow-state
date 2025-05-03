@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -18,7 +19,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
-import AuthService from "@/services/AuthService";
+import { AuthService } from "@/services/AuthService";
 
 export default function HostHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

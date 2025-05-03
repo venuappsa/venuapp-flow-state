@@ -30,7 +30,7 @@ export function useUserRoles(userId?: string | null) {
       }
     },
     enabled: !!userId,
-    staleTime: 30000, // Cache for 30 seconds - reduced from 60s to refresh more often
+    staleTime: 5000, // Cache for 5 seconds - reduced from 30s to refresh more often when developing
     gcTime: 300000, // Keep in cache for 5 minutes (updated from cacheTime which is deprecated)
     retry: 2, // Retry failed requests up to 2 times
     retryDelay: attempt => Math.min(attempt > 1 ? 2000 : 1000, 30000),

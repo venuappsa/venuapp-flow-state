@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import type { Enums } from "@/integrations/supabase/types";
@@ -231,7 +230,7 @@ export const UserService = {
           .from('user_roles')
           .insert({
             user_id: userId,
-            role: 'fetchman' as Enums<"app_role">
+            role: 'fetchman' as any  // Using 'any' cast for compatibility
           });
 
         if (roleError && !roleError.message.includes('duplicate key')) {
@@ -250,6 +249,7 @@ export const UserService = {
       try {
         if (existingProfile) {
           // Profile exists, update it
+          console.log("Updating existing fetchman profile for user:", userId);
           const { error: updateError } = await supabase
             .from('fetchman_profiles')
             .update({
@@ -274,6 +274,7 @@ export const UserService = {
           return { success: true };
         } else {
           // Create new profile
+          console.log("Creating new fetchman profile for user:", userId);
           const { error: profileError } = await supabase
             .from('fetchman_profiles')
             .insert({
@@ -286,7 +287,8 @@ export const UserService = {
               has_own_transport: data.has_own_transport,
               bank_account_number: data.bank_account_number,
               bank_name: data.bank_name,
-              branch_code: data.branch_code
+              branch_code: data.branch_code,
+              verification_status: 'pending'
             });
 
           if (profileError) {

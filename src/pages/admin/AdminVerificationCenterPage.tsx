@@ -45,15 +45,26 @@ export default function AdminVerificationCenterPage() {
     queryFn: async () => {
       try {
         // First fetch all profiles to have user data available
-        const { data: profilesData } = await supabase
+        const { data: profilesData, error: profilesError } = await supabase
           .from("profiles")
           .select("id, name, surname, email");
         
+        if (profilesError) {
+          console.error("Error fetching profiles:", profilesError);
+          throw profilesError;
+        }
+        
         // Create a map of profiles for easy lookup
-        const profilesMap = (profilesData || []).reduce((map: Record<string, ProfileData>, profile) => {
-          map[profile.id] = profile;
-          return map;
-        }, {});
+        const profilesMap: Record<string, ProfileData> = {};
+        if (profilesData && Array.isArray(profilesData)) {
+          profilesData.forEach(profile => {
+            if (profile && profile.id) {
+              profilesMap[profile.id] = profile;
+            }
+          });
+        } else {
+          console.warn("Profiles data is not an array or is undefined");
+        }
 
         // Now fetch the different profile types
         const hostPromise = supabase
@@ -85,13 +96,15 @@ export default function AdminVerificationCenterPage() {
         
         // Transform the data to a common format using the profiles map
         const transformedHostData = (hostData || []).map(h => {
-          const profile = profilesMap[h.user_id] || {};
+          // Safely access the profile data with fallbacks
+          const profile = (h.user_id && profilesMap[h.user_id]) ? profilesMap[h.user_id] : {} as ProfileData;
+          const fullName = profile.name && profile.surname 
+            ? `${profile.name} ${profile.surname}`
+            : h.contact_name || 'Unknown';
           
           return {
             id: h.id,
-            name: profile.name && profile.surname 
-              ? `${profile.name} ${profile.surname}`
-              : h.contact_name || 'Unknown',
+            name: fullName,
             email: profile.email || h.contact_email || 'Unknown',
             type: 'host' as const,
             documentType: 'Business Registration',
@@ -103,13 +116,15 @@ export default function AdminVerificationCenterPage() {
         });
 
         const transformedVendorData = (vendorData || []).map(v => {
-          const profile = profilesMap[v.user_id] || {};
+          // Safely access the profile data with fallbacks
+          const profile = (v.user_id && profilesMap[v.user_id]) ? profilesMap[v.user_id] : {} as ProfileData;
+          const fullName = profile.name && profile.surname 
+            ? `${profile.name} ${profile.surname}`
+            : v.contact_name || 'Unknown';
           
           return {
             id: v.id,
-            name: profile.name && profile.surname 
-              ? `${profile.name} ${profile.surname}`
-              : v.contact_name || 'Unknown',
+            name: fullName,
             email: profile.email || v.contact_email || 'Unknown',
             type: 'vendor' as const,
             documentType: 'Business License',
@@ -121,13 +136,15 @@ export default function AdminVerificationCenterPage() {
         });
 
         const transformedFetchmanData = (fetchmanData || []).map(f => {
-          const profile = profilesMap[f.user_id] || {};
+          // Safely access the profile data with fallbacks
+          const profile = (f.user_id && profilesMap[f.user_id]) ? profilesMap[f.user_id] : {} as ProfileData;
+          const fullName = profile.name && profile.surname 
+            ? `${profile.name} ${profile.surname}`
+            : 'Unknown Fetchman';
           
           return {
             id: f.id,
-            name: profile.name && profile.surname 
-              ? `${profile.name} ${profile.surname}`
-              : 'Unknown Fetchman',
+            name: fullName,
             email: profile.email || 'Unknown',
             type: 'fetchman' as const,
             documentType: 'ID Verification',
@@ -153,15 +170,26 @@ export default function AdminVerificationCenterPage() {
     queryFn: async () => {
       try {
         // First fetch all profiles to have user data available
-        const { data: profilesData } = await supabase
+        const { data: profilesData, error: profilesError } = await supabase
           .from("profiles")
           .select("id, name, surname, email");
+          
+        if (profilesError) {
+          console.error("Error fetching profiles for processed items:", profilesError);
+          throw profilesError;
+        }
         
         // Create a map of profiles for easy lookup
-        const profilesMap = (profilesData || []).reduce((map: Record<string, ProfileData>, profile) => {
-          map[profile.id] = profile;
-          return map;
-        }, {});
+        const profilesMap: Record<string, ProfileData> = {};
+        if (profilesData && Array.isArray(profilesData)) {
+          profilesData.forEach(profile => {
+            if (profile && profile.id) {
+              profilesMap[profile.id] = profile;
+            }
+          });
+        } else {
+          console.warn("Profiles data is not an array or is undefined for processed items");
+        }
         
         const hostPromise = supabase
           .from("host_profiles")
@@ -192,13 +220,15 @@ export default function AdminVerificationCenterPage() {
         
         // Transform the data to a common format using the profiles map
         const transformedHostData = (hostData || []).map(h => {
-          const profile = profilesMap[h.user_id] || {};
+          // Safely access the profile data with fallbacks
+          const profile = (h.user_id && profilesMap[h.user_id]) ? profilesMap[h.user_id] : {} as ProfileData;
+          const fullName = profile.name && profile.surname 
+            ? `${profile.name} ${profile.surname}`
+            : h.contact_name || 'Unknown';
           
           return {
             id: h.id,
-            name: profile.name && profile.surname 
-              ? `${profile.name} ${profile.surname}`
-              : h.contact_name || 'Unknown',
+            name: fullName,
             email: profile.email || h.contact_email || 'Unknown',
             type: 'host' as const,
             documentType: 'Business Registration',
@@ -211,13 +241,15 @@ export default function AdminVerificationCenterPage() {
         });
 
         const transformedVendorData = (vendorData || []).map(v => {
-          const profile = profilesMap[v.user_id] || {};
+          // Safely access the profile data with fallbacks
+          const profile = (v.user_id && profilesMap[v.user_id]) ? profilesMap[v.user_id] : {} as ProfileData;
+          const fullName = profile.name && profile.surname 
+            ? `${profile.name} ${profile.surname}`
+            : v.contact_name || 'Unknown';
           
           return {
             id: v.id,
-            name: profile.name && profile.surname 
-              ? `${profile.name} ${profile.surname}`
-              : v.contact_name || 'Unknown',
+            name: fullName,
             email: profile.email || v.contact_email || 'Unknown',
             type: 'vendor' as const,
             documentType: 'Business License',
@@ -230,13 +262,15 @@ export default function AdminVerificationCenterPage() {
         });
 
         const transformedFetchmanData = (fetchmanData || []).map(f => {
-          const profile = profilesMap[f.user_id] || {};
+          // Safely access the profile data with fallbacks
+          const profile = (f.user_id && profilesMap[f.user_id]) ? profilesMap[f.user_id] : {} as ProfileData;
+          const fullName = profile.name && profile.surname 
+            ? `${profile.name} ${profile.surname}`
+            : 'Unknown Fetchman';
           
           return {
             id: f.id,
-            name: profile.name && profile.surname 
-              ? `${profile.name} ${profile.surname}`
-              : 'Unknown Fetchman',
+            name: fullName,
             email: profile.email || 'Unknown',
             type: 'fetchman' as const,
             documentType: 'ID Verification',

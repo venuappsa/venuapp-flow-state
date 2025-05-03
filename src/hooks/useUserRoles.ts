@@ -9,24 +9,19 @@ export function useUserRoles(userId?: string | null) {
       console.log("useUserRoles: Fetching roles for userId:", userId);
       if (!userId) return [] as string[];
       
-      try {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId);
-          
-        if (error) {
-          console.error("useUserRoles: Error fetching roles:", error);
-          throw error;
-        }
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
         
-        const roles = data?.map((r: { role: string }) => r.role) || [];
-        console.log("useUserRoles: Fetched roles:", roles);
-        return roles as string[];
-      } catch (err) {
-        console.error("useUserRoles: Exception in fetch:", err);
-        throw err;
+      if (error) {
+        console.error("useUserRoles: Error fetching roles:", error);
+        throw error;
       }
+      
+      const roles = data?.map((r: { role: string }) => r.role) || [];
+      console.log("useUserRoles: Fetched roles:", roles);
+      return roles as string[];
     },
     enabled: !!userId,
     staleTime: 5000, // Cache for 5 seconds - reduced from 30s to refresh more often when developing

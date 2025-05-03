@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { AuthService } from "@/services/AuthService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,20 +34,10 @@ const FetchmanHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      forceClearUser();
-      toast({
-        title: "Signed out successfully",
-      });
+    const success = await AuthService.signOut();
+    if (success) {
+      forceClearUser(); // Backup local state clearing
       navigate("/auth");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Error signing out",
-        variant: "destructive",
-      });
     }
   };
 

@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { AuthService } from "@/services/AuthService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,9 +43,11 @@ export default function SecurePanelButton({ showWelcome = false, className }: Se
     
     setIsSigningOut(true);
     try {
-      await supabase.auth.signOut();
-      forceClearUser();
-      navigate("/auth");
+      const success = await AuthService.signOut();
+      if (success) {
+        forceClearUser(); // Backup local state clearing
+        navigate("/auth");
+      }
     } catch (error) {
       console.error("Error during sign out:", error);
     } finally {

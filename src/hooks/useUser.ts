@@ -12,7 +12,7 @@ export const useUser = () => {
     let isMounted = true;
     let lastAuthEvent = '';
     
-    // Debounce timer with longer delay
+    // Use a timeout reference to properly clear debounce timers
     let debounceTimer: NodeJS.Timeout | null = null;
     
     // Track last update time to prevent rapid changes
@@ -21,7 +21,7 @@ export const useUser = () => {
     
     console.log("useUser: Setting up auth state listener");
     
-    // Set up auth state listener first before checking session
+    // Set up auth state listener before checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       console.log("useUser: onAuthStateChange event:", event, "session:", newSession?.user?.id);
       
@@ -115,7 +115,7 @@ export const useUser = () => {
     };
   }, []);
 
-  // Manual clear function as a fallback
+  // Manual clear function as a fallback - now uses local state only
   const forceClearUser = () => {
     console.log("useUser: forceClearUser called - manually clearing auth state");
     setSession(null);

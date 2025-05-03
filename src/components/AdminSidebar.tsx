@@ -5,7 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useUser";
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { AuthService } from "@/services/AuthService";
 import { useToast } from "@/components/ui/use-toast";
 import { useNotifications } from "@/contexts/NotificationContext";
 import {
@@ -40,26 +41,16 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ className, onNavItemClick }: AdminSidebarProps) {
   const { pathname } = useLocation();
-  const { user } = useUser();
+  const { user, forceClearUser } = useUser();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { unreadCount } = useNotifications();
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account"
-      });
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Error signing out",
-        description: "Please try again",
-        variant: "destructive"
-      });
+    const success = await AuthService.signOut();
+    if (success) {
+      forceClearUser(); // Backup local state clearing
+      navigate("/auth");
     }
   };
 

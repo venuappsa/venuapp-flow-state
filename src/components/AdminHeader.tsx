@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AuthService } from "@/services/AuthService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,13 +16,12 @@ import {
 import { LogOut, Menu, MessageSquare, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
 import { CollapsibleAdminSidebar } from "@/components/admin/CollapsibleAdminSidebar";
 
 export default function AdminHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useUser();
+  const { user, forceClearUser } = useUser();
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -64,21 +63,10 @@ export default function AdminHeader() {
     .substring(0, 2);
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account"
-      });
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Error signing out",
-        description: "Please try again",
-        variant: "destructive"
-      });
+    const success = await AuthService.signOut();
+    if (success) {
+      forceClearUser(); // Backup local state clearing
+      navigate("/auth");
     }
   };
 

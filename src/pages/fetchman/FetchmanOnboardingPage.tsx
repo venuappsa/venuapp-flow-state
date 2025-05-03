@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader, MapPin, Truck, Clock, AlertCircle } from "lucide-react";
+import { Loader, MapPin, Truck, Clock, AlertCircle, CreditCard } from "lucide-react";
 
 const fetchmanSchema = z.object({
   vehicle_type: z.string().min(1, "Vehicle type is required"),
@@ -77,8 +77,21 @@ export default function FetchmanOnboardingPage() {
     try {
       console.log("Submitting fetchman profile with data:", values);
       
+      // Ensure all required fields are present and not undefined
+      const profileData = {
+        vehicle_type: values.vehicle_type,
+        work_hours: values.work_hours,
+        service_area: values.service_area,
+        phone_number: values.phone_number,
+        identity_number: values.identity_number,
+        has_own_transport: values.has_own_transport,
+        bank_account_number: values.bank_account_number,
+        bank_name: values.bank_name,
+        branch_code: values.branch_code
+      };
+      
       // Call the updated service method with proper error handling
-      const result = await UserService.createFetchmanProfile(user.id, values);
+      const result = await UserService.createFetchmanProfile(user.id, profileData);
       
       if (result.success) {
         toast({

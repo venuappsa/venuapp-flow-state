@@ -1,4 +1,4 @@
 
-import { Store, Search, Tag, DollarSign } from "lucide-react";
+import { Store, Search, Tag, DollarSign, CreditCard } from "lucide-react";
 
-export { Store, Search, Tag, DollarSign as PricingCard };
+export { Store, Search, Tag, DollarSign as PricingCard, CreditCard };

@@ -200,74 +200,101 @@ export const UserService = {
     branch_code: string;
   }): Promise<boolean> => {
     try {
-      // Add fetchman role if not exists
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: 'fetchman' as Enums<"app_role">
-        })
-        .select()
+      // Check if user exists first
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
         .single();
+      
+      if (userError) {
+        console.error("Error checking user profile:", userError);
+        // Continue anyway as the auth user might exist without a profile
+      }
 
-      if (roleError && !roleError.message.includes('duplicate key')) {
-        console.error("Error adding fetchman role:", roleError);
-        return false;
+      // Add fetchman role if not exists
+      // First check if role already exists to avoid unique constraint violations
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('role', 'fetchman')
+        .maybeSingle();
+
+      if (!existingRole) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: 'fetchman' as Enums<"app_role">
+          });
+
+        if (roleError && !roleError.message.includes('duplicate key')) {
+          console.error("Error adding fetchman role:", roleError);
+          return false;
+        }
       }
 
       // Check if profile already exists
       const { data: existingProfile } = await supabase
         .from('fetchman_profiles')
         .select('id')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .maybeSingle();
       
-      if (existingProfile && existingProfile.length > 0) {
-        // Profile exists, update it
-        const { error: updateError } = await supabase
-          .from('fetchman_profiles')
-          .update({
-            vehicle_type: data.vehicle_type,
-            work_hours: data.work_hours,
-            service_area: data.service_area,
-            phone_number: data.phone_number,
-            identity_number: data.identity_number,
-            has_own_transport: data.has_own_transport,
-            bank_account_number: data.bank_account_number,
-            bank_name: data.bank_name,
-            branch_code: data.branch_code,
-            verification_status: 'pending'
-          })
-          .eq('user_id', userId);
+      try {
+        if (existingProfile) {
+          // Profile exists, update it
+          const { error: updateError } = await supabase
+            .from('fetchman_profiles')
+            .update({
+              vehicle_type: data.vehicle_type,
+              work_hours: data.work_hours,
+              service_area: data.service_area,
+              phone_number: data.phone_number,
+              identity_number: data.identity_number,
+              has_own_transport: data.has_own_transport,
+              bank_account_number: data.bank_account_number,
+              bank_name: data.bank_name,
+              branch_code: data.branch_code,
+              verification_status: 'pending'
+            })
+            .eq('user_id', userId);
 
-        if (updateError) {
-          console.error("Error updating fetchman profile:", updateError);
-          return false;
-        }
-      } else {
-        // Create new profile
-        const { error: profileError } = await supabase
-          .from('fetchman_profiles')
-          .insert({
-            user_id: userId,
-            vehicle_type: data.vehicle_type,
-            work_hours: data.work_hours,
-            service_area: data.service_area,
-            phone_number: data.phone_number,
-            identity_number: data.identity_number,
-            has_own_transport: data.has_own_transport,
-            bank_account_number: data.bank_account_number,
-            bank_name: data.bank_name,
-            branch_code: data.branch_code
-          });
+          if (updateError) {
+            console.error("Error updating fetchman profile:", updateError);
+            throw updateError;
+          }
+        } else {
+          // Create new profile
+          const { error: profileError } = await supabase
+            .from('fetchman_profiles')
+            .insert({
+              user_id: userId,
+              vehicle_type: data.vehicle_type,
+              work_hours: data.work_hours,
+              service_area: data.service_area,
+              phone_number: data.phone_number,
+              identity_number: data.identity_number,
+              has_own_transport: data.has_own_transport,
+              bank_account_number: data.bank_account_number,
+              bank_name: data.bank_name,
+              branch_code: data.branch_code
+            });
 
-        if (profileError) {
-          console.error("Error creating fetchman profile:", profileError);
-          return false;
+          if (profileError) {
+            console.error("Error creating fetchman profile:", profileError);
+            throw profileError;
+          }
         }
+
+        return true;
+      } catch (error) {
+        console.error("Error in profile operation:", error);
+        throw error;
       }
 
-      return true;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Exception creating fetchman profile:", err);
       return false;
     }
@@ -320,14 +347,15 @@ export const UserService = {
       const { data, error } = await supabase
         .from(tableName as any)
         .select("*")
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .maybeSingle();
 
       if (error) {
         console.error(`Error fetching ${role} profile:`, error);
-        return null;
+        throw error;
       }
 
-      return data && data.length > 0 ? data[0] : null;
+      return data;
     } catch (err) {
       console.error(`Exception fetching ${role} profile:`, err);
       return null;

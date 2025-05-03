@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +20,7 @@ import {
   Loader
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UserService } from "@/services/UserService";
 
 export default function FetchmanDashboardPage() {
   const { user } = useUser();
@@ -32,6 +32,7 @@ export default function FetchmanDashboardPage() {
   const [earnings, setEarnings] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [profileChecked, setProfileChecked] = useState(false);
   
   useEffect(() => {
     const loadFetchmanData = async () => {
@@ -42,103 +43,100 @@ export default function FetchmanDashboardPage() {
       
       try {
         // Load fetchman profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('fetchman_profiles')
-          .select('*')
-          .eq('user_id', user.id);
+        const profileData = await UserService.getRoleProfile(user.id, 'fetchman');
         
         // Check if profile exists
-        if (!profileData || profileData.length === 0) {
+        if (!profileData) {
           console.log("No fetchman profile found - redirecting to onboarding");
           setIsLoading(false);
           // Profile doesn't exist, but this is expected behavior - don't set an error
           setProfile(null);
+          setProfileChecked(true);
           return;
         }
         
-        // If profile exists, use the first one
-        if (profileData && profileData.length > 0) {
-          setProfile(profileData[0]);
+        // If profile exists, use it
+        setProfile(profileData);
+        setProfileChecked(true);
+        
+        // Try to load actual deliveries if they exist (fallback to mock data)
+        const { data: deliveriesData, error: deliveriesError } = await supabase
+          .from('fetchman_deliveries')
+          .select('*')
+          .eq('fetchman_id', user.id)
+          .order('scheduled_time', { ascending: true });
           
-          // Try to load actual deliveries if they exist (fallback to mock data)
-          const { data: deliveriesData, error: deliveriesError } = await supabase
-            .from('fetchman_deliveries')
-            .select('*')
-            .eq('fetchman_id', user.id)
-            .order('scheduled_time', { ascending: true });
-            
-          if (deliveriesError) {
-            console.error("Error loading deliveries:", deliveriesError);
-            // Continue execution and use mock data
-          }
+        if (deliveriesError) {
+          console.error("Error loading deliveries:", deliveriesError);
+          // Continue execution and use mock data
+        }
+        
+        // If we have real deliveries from database, use them
+        if (deliveriesData && deliveriesData.length > 0) {
+          const pending = deliveriesData.filter(d => ['pending', 'assigned', 'accepted'].includes(d.status));
+          const completed = deliveriesData.filter(d => d.status === 'completed');
           
-          // If we have real deliveries from database, use them
-          if (deliveriesData && deliveriesData.length > 0) {
-            const pending = deliveriesData.filter(d => ['pending', 'assigned', 'accepted'].includes(d.status));
-            const completed = deliveriesData.filter(d => d.status === 'completed');
-            
-            setPendingDeliveries(pending);
-            setCompletedDeliveries(completed);
-            
-            // Calculate total earnings from completed deliveries
-            const totalEarnings = completed.reduce((sum, delivery) => sum + (delivery.fee || 0), 0);
-            setEarnings(totalEarnings);
-          } else {
-            // For demo, we'll use mock data
-            // In a real implementation, we'd load from fetchman_deliveries table
-            setPendingDeliveries([
-              {
-                id: '1',
-                event_name: 'Wedding Reception',
-                pickup_location: 'Rose Garden Venue',
-                dropoff_location: 'Hamilton Hotel',
-                scheduled_time: '2025-05-04T15:30:00',
-                status: 'assigned',
-                fee: 350,
-                items: [
-                  { name: 'Floral Arrangements', quantity: 12 },
-                  { name: 'Table Centerpieces', quantity: 20 }
-                ]
-              },
-              {
-                id: '2',
-                event_name: 'Corporate Lunch',
-                pickup_location: 'Gourmet Catering',
-                dropoff_location: 'Sandton Office Park',
-                scheduled_time: '2025-05-05T11:00:00',
-                status: 'pending',
-                fee: 450,
-                items: [
-                  { name: 'Lunch Boxes', quantity: 50 },
-                  { name: 'Drinks Package', quantity: 10 }
-                ]
-              }
-            ]);
-            
-            setCompletedDeliveries([
-              {
-                id: '3',
-                event_name: 'Birthday Party',
-                pickup_location: 'Party Supply Store',
-                dropoff_location: 'Private Residence',
-                completion_time: '2025-05-01T14:45:00',
-                fee: 250,
-                rating: 5
-              },
-              {
-                id: '4',
-                event_name: 'Book Launch',
-                pickup_location: 'Publishers Ltd',
-                dropoff_location: 'City Library',
-                completion_time: '2025-04-28T16:20:00',
-                fee: 300,
-                rating: 4
-              }
-            ]);
-            
-            // Calculate mock earnings
-            setEarnings(900);
-          }
+          setPendingDeliveries(pending);
+          setCompletedDeliveries(completed);
+          
+          // Calculate total earnings from completed deliveries
+          const totalEarnings = completed.reduce((sum, delivery) => sum + (delivery.fee || 0), 0);
+          setEarnings(totalEarnings);
+        } else {
+          // For demo, we'll use mock data
+          // In a real implementation, we'd load from fetchman_deliveries table
+          setPendingDeliveries([
+            {
+              id: '1',
+              event_name: 'Wedding Reception',
+              pickup_location: 'Rose Garden Venue',
+              dropoff_location: 'Hamilton Hotel',
+              scheduled_time: '2025-05-04T15:30:00',
+              status: 'assigned',
+              fee: 350,
+              items: [
+                { name: 'Floral Arrangements', quantity: 12 },
+                { name: 'Table Centerpieces', quantity: 20 }
+              ]
+            },
+            {
+              id: '2',
+              event_name: 'Corporate Lunch',
+              pickup_location: 'Gourmet Catering',
+              dropoff_location: 'Sandton Office Park',
+              scheduled_time: '2025-05-05T11:00:00',
+              status: 'pending',
+              fee: 450,
+              items: [
+                { name: 'Lunch Boxes', quantity: 50 },
+                { name: 'Drinks Package', quantity: 10 }
+              ]
+            }
+          ]);
+          
+          setCompletedDeliveries([
+            {
+              id: '3',
+              event_name: 'Birthday Party',
+              pickup_location: 'Party Supply Store',
+              dropoff_location: 'Private Residence',
+              completion_time: '2025-05-01T14:45:00',
+              fee: 250,
+              rating: 5
+            },
+            {
+              id: '4',
+              event_name: 'Book Launch',
+              pickup_location: 'Publishers Ltd',
+              dropoff_location: 'City Library',
+              completion_time: '2025-04-28T16:20:00',
+              fee: 300,
+              rating: 4
+            }
+          ]);
+          
+          // Calculate mock earnings
+          setEarnings(900);
         }
       } catch (error: any) {
         console.error("Error loading fetchman data:", error);
@@ -322,7 +320,7 @@ export default function FetchmanDashboardPage() {
   }
 
   // No profile case - show onboarding prompt
-  if (!profile) {
+  if (profileChecked && !profile) {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold flex items-center mb-6">

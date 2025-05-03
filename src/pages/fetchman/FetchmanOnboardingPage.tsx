@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,6 +39,7 @@ export default function FetchmanOnboardingPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
   
   const form = useForm<FetchmanProfileData>({
     resolver: zodResolver(fetchmanSchema),
@@ -55,6 +56,18 @@ export default function FetchmanOnboardingPage() {
     },
   });
   
+  // Check if user is already logged in
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to continue with the Fetchman onboarding process.",
+        variant: "destructive"
+      });
+      navigate("/auth");
+    }
+  }, [user, navigate, toast]);
+  
   const onSubmit = async (values: FetchmanProfileData) => {
     if (!user) {
       setErrorMessage("You must be logged in to complete your profile");
@@ -63,20 +76,23 @@ export default function FetchmanOnboardingPage() {
     
     setIsLoading(true);
     setErrorMessage("");
+    setIsSubmitted(true);
     
     try {
+      console.log("Submitting fetchman profile with data:", values);
+      
       // Cast the values to the required type to ensure all properties are recognized as non-optional
       // This is safe because Zod validation guarantees all fields are present
-      const profileData = values as {
-        vehicle_type: string;
-        work_hours: string;
-        service_area: string;
-        phone_number: string;
-        identity_number: string;
-        has_own_transport: boolean;
-        bank_account_number: string;
-        bank_name: string;
-        branch_code: string;
+      const profileData = {
+        vehicle_type: values.vehicle_type,
+        work_hours: values.work_hours,
+        service_area: values.service_area,
+        phone_number: values.phone_number,
+        identity_number: values.identity_number,
+        has_own_transport: values.has_own_transport,
+        bank_account_number: values.bank_account_number,
+        bank_name: values.bank_name,
+        branch_code: values.branch_code
       };
       
       const success = await UserService.createFetchmanProfile(user.id, profileData);
@@ -332,7 +348,7 @@ export default function FetchmanOnboardingPage() {
               <Button 
                 type="submit" 
                 className="w-full bg-venu-orange hover:bg-venu-dark-orange"
-                disabled={isLoading}
+                disabled={isLoading || isSubmitted}
               >
                 {isLoading ? (
                   <>

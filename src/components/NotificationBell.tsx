@@ -24,6 +24,7 @@ interface SystemNotice {
   type: "info" | "warning" | "success" | "error";
   date: string;
   read: boolean;
+  link?: string; // Added link property for navigation
 }
 
 interface NotificationBellProps {
@@ -44,6 +45,7 @@ export default function NotificationBell({ className }: NotificationBellProps) {
       type: "info",
       date: "2023-04-28",
       read: false,
+      link: "/admin/system", // Added link for system maintenance notice
     },
     {
       id: "2",
@@ -52,6 +54,7 @@ export default function NotificationBell({ className }: NotificationBellProps) {
       type: "success",
       date: "2023-04-27",
       read: false,
+      link: "/admin/platform", // Added link for platform features notice
     },
     {
       id: "3",
@@ -60,6 +63,7 @@ export default function NotificationBell({ className }: NotificationBellProps) {
       type: "info",
       date: "2023-04-25",
       read: true,
+      link: "/admin/payments", // Added link for payments notice
     }
   ]);
   
@@ -79,11 +83,22 @@ export default function NotificationBell({ className }: NotificationBellProps) {
   };
   
   const handleSystemNoticeClick = (id: string) => {
+    // Mark the notice as read
     setSystemNotices(
       systemNotices.map(notice =>
         notice.id === id ? { ...notice, read: true } : notice
       )
     );
+    
+    // Find the notice to get its link
+    const notice = systemNotices.find(n => n.id === id);
+    if (notice?.link) {
+      // Navigate to the notice's link
+      navigate(notice.link);
+    }
+    
+    // Close the dropdown
+    setOpen(false);
   };
   
   const handleMarkAllAsRead = () => {
@@ -102,7 +117,8 @@ export default function NotificationBell({ className }: NotificationBellProps) {
       timestamp: n.timestamp,
       read: n.read,
       isSystemNotice: false,
-      type: "notification" as const
+      type: "notification" as const,
+      link: n.link // Pass through the link from the notification
     })),
     ...systemNotices.map(n => ({
       id: n.id,
@@ -111,7 +127,8 @@ export default function NotificationBell({ className }: NotificationBellProps) {
       timestamp: new Date(n.date).toISOString(),
       read: n.read,
       isSystemNotice: true,
-      type: n.type
+      type: n.type,
+      link: n.link // Pass through the link from the system notice
     }))
   ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,6 +18,7 @@ import {
   LifeBuoy,
   LogOut,
   Menu,
+  MessageSquare,
   Settings,
   User,
 } from "lucide-react";
@@ -26,7 +27,33 @@ import NotificationBell from "@/components/NotificationBell";
 const VendorHeader = () => {
   const { user } = useUser();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Message data state with thread IDs for direct navigation
+  const [messageData, setMessageData] = useState({
+    unreadCount: 2,
+    messages: [
+      { 
+        id: "msg1", 
+        title: "Event Confirmation", 
+        sender: "Event Team", 
+        content: "Your booth has been confirmed for the Summer Festival", 
+        time: "30 min ago",
+        read: false,
+        threadId: "event-confirmation-1" // Added thread ID for direct navigation
+      },
+      { 
+        id: "msg2", 
+        title: "Payment Reminder", 
+        sender: "Finance Team", 
+        content: "Your payment is due by Friday for the upcoming event", 
+        time: "3 hours ago",
+        read: false,
+        threadId: "payment-reminder-1" // Added thread ID for direct navigation
+      }
+    ]
+  });
 
   const handleSignOut = async () => {
     try {
@@ -42,6 +69,21 @@ const VendorHeader = () => {
         variant: "destructive",
       });
     }
+  };
+
+  // New function to handle message click
+  const handleMessageClick = (threadId: string, messageId: string) => {
+    // Mark the message as read
+    setMessageData(prev => ({
+      ...prev,
+      unreadCount: Math.max(0, prev.unreadCount - 1),
+      messages: prev.messages.map(msg => 
+        msg.id === messageId ? { ...msg, read: true } : msg
+      )
+    }));
+
+    // Navigate to the specific message thread
+    navigate(`/vendor/messages?thread=${threadId}`);
   };
 
   return (
@@ -63,6 +105,44 @@ const VendorHeader = () => {
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Messages dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <MessageSquare className="h-5 w-5" />
+                {messageData.unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-venu-orange text-white rounded-full">
+                    {messageData.unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel className="flex justify-between items-center">
+                <span>Messages</span>
+                <Button variant="ghost" size="sm" className="text-xs h-6" asChild>
+                  <Link to="/vendor/messages">View All</Link>
+                </Button>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {messageData.messages.map(message => (
+                <DropdownMenuItem 
+                  key={message.id}
+                  className={`flex flex-col w-full p-4 cursor-pointer ${!message.read ? 'bg-accent/50' : ''}`}
+                  onSelect={() => handleMessageClick(message.threadId, message.id)}
+                >
+                  <div className="flex justify-between w-full">
+                    <span className="font-medium">{message.title}</span>
+                    <span className="text-xs text-muted-foreground">{message.time}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 truncate">
+                    {message.content}
+                  </p>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <NotificationBell />
 
           <Button variant="outline" size="icon">

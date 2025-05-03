@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Menu, Settings, User, Plus } from "lucide-react";
+import { LogOut, Menu, Settings, User, Plus, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -24,6 +24,32 @@ export default function HostHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Message data state with thread IDs for direct navigation
+  const [messageData, setMessageData] = useState({
+    unreadCount: 2,
+    messages: [
+      { 
+        id: "msg1", 
+        title: "Vendor Question", 
+        sender: "Food Truck Co", 
+        content: "What time can we arrive to set up?", 
+        time: "15 min ago",
+        read: false,
+        threadId: "vendor-question-1" // Added thread ID for direct navigation
+      },
+      { 
+        id: "msg2", 
+        title: "Guest Inquiry", 
+        sender: "Jane Smith", 
+        content: "Are there vegetarian options at the event?", 
+        time: "2 hours ago",
+        read: false,
+        threadId: "guest-inquiry-1" // Added thread ID for direct navigation
+      }
+    ]
+  });
 
   const displayName = user?.user_metadata?.full_name || 
     user?.email?.split("@")[0] || 
@@ -53,6 +79,21 @@ export default function HostHeader() {
         variant: "destructive"
       });
     }
+  };
+
+  // New function to handle message click
+  const handleMessageClick = (threadId: string, messageId: string) => {
+    // Mark the message as read
+    setMessageData(prev => ({
+      ...prev,
+      unreadCount: Math.max(0, prev.unreadCount - 1),
+      messages: prev.messages.map(msg => 
+        msg.id === messageId ? { ...msg, read: true } : msg
+      )
+    }));
+
+    // Navigate to the specific message thread
+    navigate(`/host/messages?thread=${threadId}`);
   };
 
   return (
@@ -91,6 +132,44 @@ export default function HostHeader() {
               New Event
             </Link>
           </Button>
+
+          {/* Messages dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <MessageSquare className="h-5 w-5" />
+                {messageData.unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-venu-orange text-white rounded-full">
+                    {messageData.unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel className="flex justify-between items-center">
+                <span>Messages</span>
+                <Button variant="ghost" size="sm" className="text-xs h-6" asChild>
+                  <Link to="/host/messages">View All</Link>
+                </Button>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {messageData.messages.map(message => (
+                <DropdownMenuItem 
+                  key={message.id}
+                  className={`flex flex-col w-full p-4 cursor-pointer ${!message.read ? 'bg-accent/50' : ''}`}
+                  onSelect={() => handleMessageClick(message.threadId, message.id)}
+                >
+                  <div className="flex justify-between w-full">
+                    <span className="font-medium">{message.title}</span>
+                    <span className="text-xs text-muted-foreground">{message.time}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 truncate">
+                    {message.content}
+                  </p>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Updated notification bell that includes old notice board content */}
           <NotificationBell />

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import MessageThread from "@/components/messaging/MessageThread";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useToast } from "@/components/ui/use-toast";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export interface Contact {
   id: string;
@@ -44,6 +46,12 @@ const UniversalMessagingModule: React.FC = () => {
   const { user } = useUser();
   const { data: userRoles = [] } = useUserRoles(user?.id);
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Get thread parameter from URL if available
+  const urlParams = new URLSearchParams(location.search);
+  const threadParam = urlParams.get('thread');
   
   const [contacts, setContacts] = useState<Contact[]>([
     {
@@ -126,8 +134,23 @@ const UniversalMessagingModule: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(contacts[0]);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [newMessage, setNewMessage] = useState("");
+  
+  // Auto-select contact if thread param is present
+  useEffect(() => {
+    if (threadParam) {
+      // This is simplified for demo - in a real app, you'd look up the contact by thread ID
+      // For now, select the first contact that has unread messages as a demo
+      const contactWithUnread = contacts.find(c => c.unread > 0);
+      if (contactWithUnread) {
+        selectContact(contactWithUnread);
+      }
+    } else if (!selectedContact && contacts.length > 0) {
+      // If no thread param and no selected contact, default to first contact
+      setSelectedContact(contacts[0]);
+    }
+  }, [threadParam, contacts]);
   
   // Filter contacts based on search query and role
   const filteredContacts = contacts.filter(contact => {
@@ -198,6 +221,12 @@ const UniversalMessagingModule: React.FC = () => {
   
   const selectContact = (contact: Contact) => {
     setSelectedContact(contact);
+    
+    // Update URL with thread parameter without page reload
+    const currentPath = location.pathname;
+    const newParams = new URLSearchParams();
+    newParams.set('thread', contact.id);
+    navigate(`${currentPath}?${newParams.toString()}`, { replace: true });
     
     // Mark messages as read
     setMessages(messages.map(msg => 

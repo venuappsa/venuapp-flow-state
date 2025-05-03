@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,32 @@ export default function AdminHeader() {
   const { user } = useUser();
   const { toast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Message data state with thread IDs for direct navigation
+  const [messageData, setMessageData] = useState({
+    unreadCount: 3,
+    messages: [
+      { 
+        id: "msg1", 
+        title: "Host Support", 
+        sender: "John Host", 
+        content: "Need assistance with event creation feature", 
+        time: "10 min ago",
+        read: false,
+        threadId: "host-support-1" // Added thread ID for direct navigation
+      },
+      { 
+        id: "msg2", 
+        title: "Vendor Onboarding", 
+        sender: "Sarah Vendor", 
+        content: "Question about merchant verification process", 
+        time: "1 hour ago",
+        read: false,
+        threadId: "vendor-onboarding-1" // Added thread ID for direct navigation
+      }
+    ]
+  });
 
   const displayName = user?.user_metadata?.full_name || 
     user?.email?.split("@")[0] || 
@@ -54,6 +80,21 @@ export default function AdminHeader() {
         variant: "destructive"
       });
     }
+  };
+
+  // New function to handle message click
+  const handleMessageClick = (threadId: string, messageId: string) => {
+    // Mark the message as read
+    setMessageData(prev => ({
+      ...prev,
+      unreadCount: Math.max(0, prev.unreadCount - 1),
+      messages: prev.messages.map(msg => 
+        msg.id === messageId ? { ...msg, read: true } : msg
+      )
+    }));
+
+    // Navigate to the specific message thread
+    navigate(`/admin/messages?thread=${threadId}`);
   };
 
   return (
@@ -121,7 +162,7 @@ export default function AdminHeader() {
               <Button variant="ghost" size="icon" className="relative">
                 <MessageSquare className="h-5 w-5" />
                 <span className="absolute top-0 right-0 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-venu-orange text-white rounded-full">
-                  3
+                  {messageData.unreadCount}
                 </span>
               </Button>
             </DropdownMenuTrigger>
@@ -133,28 +174,21 @@ export default function AdminHeader() {
                 </Button>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/admin/messages" className="flex flex-col w-full p-4 cursor-pointer">
+              {messageData.messages.map(message => (
+                <DropdownMenuItem 
+                  key={message.id}
+                  className={`flex flex-col w-full p-4 cursor-pointer ${!message.read ? 'bg-accent/50' : ''}`}
+                  onSelect={() => handleMessageClick(message.threadId, message.id)}
+                >
                   <div className="flex justify-between w-full">
-                    <span className="font-medium">Host Support</span>
-                    <span className="text-xs text-muted-foreground">10 min ago</span>
+                    <span className="font-medium">{message.title}</span>
+                    <span className="text-xs text-muted-foreground">{message.time}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1 truncate">
-                    Need assistance with event creation feature
+                    {message.content}
                   </p>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/admin/messages" className="flex flex-col w-full p-4 cursor-pointer">
-                  <div className="flex justify-between w-full">
-                    <span className="font-medium">Vendor Onboarding</span>
-                    <span className="text-xs text-muted-foreground">1 hour ago</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1 truncate">
-                    Question about merchant verification process
-                  </p>
-                </Link>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 

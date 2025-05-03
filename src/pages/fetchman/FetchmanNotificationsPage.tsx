@@ -136,7 +136,6 @@ export default function FetchmanNotificationsPage() {
                       onClick={() => !notification.read && handleMarkAsRead(notification.id)}
                       role="button"
                     >
-                      {/* ... keep existing code for notification display ... */}
                       <div className="mt-1">{notification.icon}</div>
                       <div className="flex-1">
                         <div className="flex justify-between">
@@ -166,7 +165,6 @@ export default function FetchmanNotificationsPage() {
                       onClick={() => !notification.read && handleMarkAsRead(notification.id)}
                       role="button"
                     >
-                      {/* ... keep existing code for notification display ... */}
                       <div className="mt-1">{notification.icon}</div>
                       <div className="flex-1">
                         <div className="flex justify-between">
@@ -196,7 +194,6 @@ export default function FetchmanNotificationsPage() {
                       onClick={() => !notification.read && handleMarkAsRead(notification.id)}
                       role="button"
                     >
-                      {/* ... keep existing code for notification display ... */}
                       <div className="mt-1">{notification.icon}</div>
                       <div className="flex-1">
                         <div className="flex justify-between">

@@ -5,7 +5,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import FetchmanPanelLayout from "@/components/layouts/FetchmanPanelLayout";
 
 export default function FetchmanDashboardPage() {
   const { user } = useUser();
@@ -99,25 +98,23 @@ export default function FetchmanDashboardPage() {
   };
 
   return (
-    <FetchmanPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Fetchman Dashboard</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Fetchman Dashboard</h1>
 
-        {loading ? (
-          <div className="text-center py-10">Loading profile information...</div>
-        ) : (
-          getVerificationStatus()
-        )}
+      {loading ? (
+        <div className="text-center py-10">Loading profile information...</div>
+      ) : (
+        getVerificationStatus()
+      )}
 
-        {/* Rest of the dashboard content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Dashboard components will go here */}
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-3">Quick Stats</h2>
-            <p>Fetchman Dashboard is coming soon.</p>
-          </div>
+      {/* Rest of the dashboard content */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Dashboard components will go here */}
+        <div className="p-6 bg-white rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-3">Quick Stats</h2>
+          <p>Fetchman Dashboard is coming soon.</p>
         </div>
       </div>
-    </FetchmanPanelLayout>
+    </div>
   );
 }

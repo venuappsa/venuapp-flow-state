@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,19 +23,31 @@ export default function AdminVerificationCenterPage() {
     queryKey: ['verifications'],
     queryFn: async () => {
       try {
+        // First fetch all profiles to have user data available
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, surname, email");
+        
+        // Create a map of profiles for easy lookup
+        const profilesMap = (profilesData || []).reduce((map, profile) => {
+          map[profile.id] = profile;
+          return map;
+        }, {});
+
+        // Now fetch the different profile types
         const hostPromise = supabase
           .from("host_profiles")
-          .select("*, profiles:user_id(name, surname, email)")
+          .select("*, user_id")
           .eq("verification_status", "pending");
           
         const vendorPromise = supabase
           .from("vendor_profiles")
-          .select("*, profiles:user_id(name, surname, email)")
+          .select("*, user_id")
           .eq("verification_status", "pending");
 
         const fetchmanPromise = supabase
           .from("fetchman_profiles")
-          .select("*, profiles:user_id(name, surname, email)")
+          .select("*, user_id")
           .eq("verification_status", "pending");
 
         const [{ data: hostData, error: hostError }, 
@@ -51,45 +62,57 @@ export default function AdminVerificationCenterPage() {
         if (vendorError) console.error("Error fetching vendor verifications:", vendorError);
         if (fetchmanError) console.error("Error fetching fetchman verifications:", fetchmanError);
         
-        // Transform the data to a common format
-        const transformedHostData = (hostData || []).map(h => ({
-          id: h.id,
-          name: h.profiles?.name && h.profiles?.surname 
-            ? `${h.profiles.name} ${h.profiles.surname}`
-            : h.contact_name || 'Unknown',
-          email: h.profiles?.email || h.contact_email || 'Unknown',
-          type: 'host',
-          documentType: 'Business Registration',
-          submissionDate: h.created_at,
-          status: h.verification_status,
-          originalData: h
-        }));
+        // Transform the data to a common format using the profiles map
+        const transformedHostData = (hostData || []).map(h => {
+          const profile = profilesMap[h.user_id] || {};
+          
+          return {
+            id: h.id,
+            name: profile.name && profile.surname 
+              ? `${profile.name} ${profile.surname}`
+              : h.contact_name || 'Unknown',
+            email: profile.email || h.contact_email || 'Unknown',
+            type: 'host',
+            documentType: 'Business Registration',
+            submissionDate: h.created_at,
+            status: h.verification_status,
+            originalData: h
+          };
+        });
 
-        const transformedVendorData = (vendorData || []).map(v => ({
-          id: v.id,
-          name: v.profiles?.name && v.profiles?.surname 
-            ? `${v.profiles.name} ${v.profiles.surname}`
-            : v.contact_name || 'Unknown',
-          email: v.profiles?.email || v.contact_email || 'Unknown',
-          type: 'vendor',
-          documentType: 'Business License',
-          submissionDate: v.created_at,
-          status: v.verification_status,
-          originalData: v
-        }));
+        const transformedVendorData = (vendorData || []).map(v => {
+          const profile = profilesMap[v.user_id] || {};
+          
+          return {
+            id: v.id,
+            name: profile.name && profile.surname 
+              ? `${profile.name} ${profile.surname}`
+              : v.contact_name || 'Unknown',
+            email: profile.email || v.contact_email || 'Unknown',
+            type: 'vendor',
+            documentType: 'Business License',
+            submissionDate: v.created_at,
+            status: v.verification_status,
+            originalData: v
+          };
+        });
 
-        const transformedFetchmanData = (fetchmanData || []).map(f => ({
-          id: f.id,
-          name: f.profiles?.name && f.profiles?.surname 
-            ? `${f.profiles.name} ${f.profiles.surname}`
-            : 'Unknown Fetchman',
-          email: f.profiles?.email || 'Unknown',
-          type: 'fetchman',
-          documentType: 'ID Verification',
-          submissionDate: f.created_at,
-          status: f.verification_status,
-          originalData: f
-        }));
+        const transformedFetchmanData = (fetchmanData || []).map(f => {
+          const profile = profilesMap[f.user_id] || {};
+          
+          return {
+            id: f.id,
+            name: profile.name && profile.surname 
+              ? `${profile.name} ${profile.surname}`
+              : 'Unknown Fetchman',
+            email: profile.email || 'Unknown',
+            type: 'fetchman',
+            documentType: 'ID Verification',
+            submissionDate: f.created_at,
+            status: f.verification_status,
+            originalData: f
+          };
+        });
 
         return [...transformedHostData, ...transformedVendorData, ...transformedFetchmanData];
       } catch (error) {
@@ -105,19 +128,30 @@ export default function AdminVerificationCenterPage() {
     queryKey: ['processed-verifications'],
     queryFn: async () => {
       try {
+        // First fetch all profiles to have user data available
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, surname, email");
+        
+        // Create a map of profiles for easy lookup
+        const profilesMap = (profilesData || []).reduce((map, profile) => {
+          map[profile.id] = profile;
+          return map;
+        }, {});
+        
         const hostPromise = supabase
           .from("host_profiles")
-          .select("*, profiles:user_id(name, surname, email)")
+          .select("*, user_id")
           .in("verification_status", ["verified", "declined"]);
           
         const vendorPromise = supabase
           .from("vendor_profiles")
-          .select("*, profiles:user_id(name, surname, email)")
+          .select("*, user_id")
           .in("verification_status", ["verified", "declined"]);
 
         const fetchmanPromise = supabase
           .from("fetchman_profiles")
-          .select("*, profiles:user_id(name, surname, email)")
+          .select("*, user_id")
           .in("verification_status", ["verified", "declined"]);
 
         const [{ data: hostData, error: hostError }, 
@@ -132,45 +166,60 @@ export default function AdminVerificationCenterPage() {
         if (vendorError) console.error("Error fetching processed vendor verifications:", vendorError);
         if (fetchmanError) console.error("Error fetching processed fetchman verifications:", fetchmanError);
         
-        // Transform the data to a common format
-        const transformedHostData = (hostData || []).map(h => ({
-          id: h.id,
-          name: h.profiles?.name && h.profiles?.surname 
-            ? `${h.profiles.name} ${h.profiles.surname}`
-            : h.contact_name || 'Unknown',
-          email: h.profiles?.email || h.contact_email || 'Unknown',
-          type: 'host',
-          documentType: 'Business Registration',
-          submissionDate: h.created_at,
-          status: h.verification_status,
-          originalData: h
-        }));
+        // Transform the data to a common format using the profiles map
+        const transformedHostData = (hostData || []).map(h => {
+          const profile = profilesMap[h.user_id] || {};
+          
+          return {
+            id: h.id,
+            name: profile.name && profile.surname 
+              ? `${profile.name} ${profile.surname}`
+              : h.contact_name || 'Unknown',
+            email: profile.email || h.contact_email || 'Unknown',
+            type: 'host',
+            documentType: 'Business Registration',
+            submissionDate: h.created_at,
+            status: h.verification_status,
+            originalData: h,
+            rejectionReason: h.decline_reason || 'No reason specified'
+          };
+        });
 
-        const transformedVendorData = (vendorData || []).map(v => ({
-          id: v.id,
-          name: v.profiles?.name && v.profiles?.surname 
-            ? `${v.profiles.name} ${v.profiles.surname}`
-            : v.contact_name || 'Unknown',
-          email: v.profiles?.email || v.contact_email || 'Unknown',
-          type: 'vendor',
-          documentType: 'Business License',
-          submissionDate: v.created_at,
-          status: v.verification_status,
-          originalData: v
-        }));
+        const transformedVendorData = (vendorData || []).map(v => {
+          const profile = profilesMap[v.user_id] || {};
+          
+          return {
+            id: v.id,
+            name: profile.name && profile.surname 
+              ? `${profile.name} ${profile.surname}`
+              : v.contact_name || 'Unknown',
+            email: profile.email || v.contact_email || 'Unknown',
+            type: 'vendor',
+            documentType: 'Business License',
+            submissionDate: v.created_at,
+            status: v.verification_status,
+            originalData: v,
+            rejectionReason: v.decline_reason || 'No reason specified'
+          };
+        });
 
-        const transformedFetchmanData = (fetchmanData || []).map(f => ({
-          id: f.id,
-          name: f.profiles?.name && f.profiles?.surname 
-            ? `${f.profiles.name} ${f.profiles.surname}`
-            : 'Unknown Fetchman',
-          email: f.profiles?.email || 'Unknown',
-          type: 'fetchman',
-          documentType: 'ID Verification',
-          submissionDate: f.created_at,
-          status: f.verification_status,
-          originalData: f
-        }));
+        const transformedFetchmanData = (fetchmanData || []).map(f => {
+          const profile = profilesMap[f.user_id] || {};
+          
+          return {
+            id: f.id,
+            name: profile.name && profile.surname 
+              ? `${profile.name} ${profile.surname}`
+              : 'Unknown Fetchman',
+            email: profile.email || 'Unknown',
+            type: 'fetchman',
+            documentType: 'ID Verification',
+            submissionDate: f.created_at,
+            status: f.verification_status,
+            originalData: f,
+            rejectionReason: 'No reason specified' // Add a default rejection reason
+          };
+        });
 
         return [...transformedHostData, ...transformedVendorData, ...transformedFetchmanData];
       } catch (error) {

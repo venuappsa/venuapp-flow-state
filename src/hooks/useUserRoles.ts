@@ -10,8 +10,7 @@ export function useUserRoles(userId?: string | null) {
       if (!userId) return [] as string[];
       
       try {
-        // The explicit 'as any' cast fixes the type error until types are updated with the real schema
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", userId);

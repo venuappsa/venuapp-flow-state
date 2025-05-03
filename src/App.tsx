@@ -22,6 +22,25 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import SystemBanners from './components/banners/SystemBanners';
 
+// Host page imports
+import HostDashboardPage from './pages/HostDashboardPage';
+import HostProfilePage from './pages/HostProfilePage';
+import HostPanel from './pages/HostPanel';
+import EventTasksPage from './pages/host/EventTasksPage';
+import EventMessagesPage from './pages/host/EventMessagesPage';
+import EventEditPage from './pages/host/EventEditPage';
+import EventCreationPage from './pages/host/EventCreationPage';
+import EventVendorsPage from './pages/host/EventVendorsPage';
+import EventManagementPage from './pages/host/EventManagementPage';
+import HostMessagesPage from './pages/host/HostMessagesPage';
+import HostSettingsPage from './pages/host/HostSettingsPage';
+
+// Vendor page imports
+import VendorDashboardPage from './pages/vendor/VendorDashboardPage';
+import VendorProfilePage from './pages/vendor/VendorProfilePage';
+import VendorMessagesPage from './pages/vendor/VendorMessagesPage';
+import VendorSettingsPage from './pages/vendor/VendorSettingsPage';
+
 function App() {
   const { settings, isLoading } = usePlatformSettings();
   const { user } = useUser();
@@ -66,6 +85,26 @@ function App() {
         <Route path="/admin/merchants" element={<AdminMerchantsPage />} />
         <Route path="/admin/events" element={<AdminEventsPage />} />
         <Route path="/admin/verification" element={<AdminVerificationCenterPage />} />
+        
+        {/* Host Panel Routes */}
+        <Route path="/host" element={<HostPanel />} />
+        <Route path="/host/dashboard" element={<HostDashboardPage />} />
+        <Route path="/host/profile" element={<HostProfilePage />} />
+        <Route path="/host/messages" element={<HostMessagesPage />} />
+        <Route path="/host/settings" element={<HostSettingsPage />} />
+        <Route path="/host/events/new" element={<EventCreationPage />} />
+        <Route path="/host/events/:eventId" element={<EventManagementPage />} />
+        <Route path="/host/events/:eventId/edit" element={<EventEditPage />} />
+        <Route path="/host/events/:eventId/tasks" element={<EventTasksPage />} />
+        <Route path="/host/events/:eventId/vendors" element={<EventVendorsPage />} />
+        <Route path="/host/events/:eventId/messages" element={<EventMessagesPage />} />
+        
+        {/* Vendor Panel Routes */}
+        <Route path="/vendor" element={<VendorDashboardPage />} />
+        <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
+        <Route path="/vendor/profile" element={<VendorProfilePage />} />
+        <Route path="/vendor/messages" element={<VendorMessagesPage />} />
+        <Route path="/vendor/settings" element={<VendorSettingsPage />} />
         
         {/* Not Found */}
         <Route path="*" element={<NotFound />} />

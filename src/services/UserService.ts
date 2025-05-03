@@ -198,8 +198,13 @@ export const UserService = {
     bank_account_number: string;
     bank_name: string;
     branch_code: string;
-  }): Promise<boolean> => {
+  }): Promise<{ success: boolean; error?: string }> => {
     try {
+      if (!userId) {
+        console.error("No user ID provided");
+        return { success: false, error: "User authentication required. Please log in again." };
+      }
+
       // Check if user exists first
       const { data: userData, error: userError } = await supabase
         .from('profiles')
@@ -207,9 +212,9 @@ export const UserService = {
         .eq('id', userId)
         .single();
       
-      if (userError) {
+      if (userError && userError.code !== 'PGRST116') {
         console.error("Error checking user profile:", userError);
-        // Continue anyway as the auth user might exist without a profile
+        return { success: false, error: "Could not verify user account. Please try again." };
       }
 
       // Add fetchman role if not exists
@@ -231,7 +236,7 @@ export const UserService = {
 
         if (roleError && !roleError.message.includes('duplicate key')) {
           console.error("Error adding fetchman role:", roleError);
-          return false;
+          return { success: false, error: "Failed to assign fetchman role. Please try again." };
         }
       }
 
@@ -263,8 +268,10 @@ export const UserService = {
 
           if (updateError) {
             console.error("Error updating fetchman profile:", updateError);
-            throw updateError;
+            return { success: false, error: "Failed to update profile. Please try again." };
           }
+          
+          return { success: true };
         } else {
           // Create new profile
           const { error: profileError } = await supabase
@@ -284,19 +291,19 @@ export const UserService = {
 
           if (profileError) {
             console.error("Error creating fetchman profile:", profileError);
-            throw profileError;
+            return { success: false, error: "Failed to create profile. Please check your information and try again." };
           }
+          
+          return { success: true };
         }
-
-        return true;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error in profile operation:", error);
-        throw error;
+        return { success: false, error: "Database operation failed. Please try again later." };
       }
 
     } catch (err: any) {
       console.error("Exception creating fetchman profile:", err);
-      return false;
+      return { success: false, error: err.message || "An unexpected error occurred. Please try again." };
     }
   },
   

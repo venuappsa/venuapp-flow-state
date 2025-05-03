@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -12,11 +11,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader, MapPin, Truck, Clock, Briefcase, CreditCard, AlertCircle } from "lucide-react";
+import { Loader, MapPin, Truck, Clock, AlertCircle } from "lucide-react";
 
 const fetchmanSchema = z.object({
   vehicle_type: z.string().min(1, "Vehicle type is required"),
@@ -39,7 +37,6 @@ export default function FetchmanOnboardingPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
   
   const form = useForm<FetchmanProfileData>({
     resolver: zodResolver(fetchmanSchema),
@@ -76,28 +73,14 @@ export default function FetchmanOnboardingPage() {
     
     setIsLoading(true);
     setErrorMessage("");
-    setIsSubmitted(true);
     
     try {
       console.log("Submitting fetchman profile with data:", values);
       
-      // Cast the values to the required type to ensure all properties are recognized as non-optional
-      // This is safe because Zod validation guarantees all fields are present
-      const profileData = {
-        vehicle_type: values.vehicle_type,
-        work_hours: values.work_hours,
-        service_area: values.service_area,
-        phone_number: values.phone_number,
-        identity_number: values.identity_number,
-        has_own_transport: values.has_own_transport,
-        bank_account_number: values.bank_account_number,
-        bank_name: values.bank_name,
-        branch_code: values.branch_code
-      };
+      // Call the updated service method with proper error handling
+      const result = await UserService.createFetchmanProfile(user.id, values);
       
-      const success = await UserService.createFetchmanProfile(user.id, profileData);
-      
-      if (success) {
+      if (result.success) {
         toast({
           title: "Profile created successfully",
           description: "Your fetchman profile has been set up. You can now start accepting deliveries.",
@@ -106,7 +89,7 @@ export default function FetchmanOnboardingPage() {
         // Redirect to dashboard
         navigate("/fetchman/dashboard");
       } else {
-        setErrorMessage("There was an error creating your profile. Please try again.");
+        setErrorMessage(result.error || "There was an error creating your profile. Please try again.");
       }
     } catch (error: any) {
       console.error("Error during fetchman onboarding:", error);
@@ -348,7 +331,7 @@ export default function FetchmanOnboardingPage() {
               <Button 
                 type="submit" 
                 className="w-full bg-venu-orange hover:bg-venu-dark-orange"
-                disabled={isLoading || isSubmitted}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <>

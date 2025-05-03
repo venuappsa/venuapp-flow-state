@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -283,17 +284,7 @@ export default function AdminReportsPage() {
                   showTooltip
                   showLegend
                   className="h-[300px]"
-                >
-                  <PieArcSeries innerRadius={40}>
-                    {userTypesData.map((_, index) => (
-                      <PieArc
-                        key={`arc-${index}`}
-                        color={["#8B5CF6", "#10B981", "#F59E0B"][index % 3]}
-                        strokeWidth={2}
-                      />
-                    ))}
-                  </PieArcSeries>
-                </PieChart>
+                />
               </div>
             </CardContent>
           </Card>
@@ -319,17 +310,7 @@ export default function AdminReportsPage() {
                   showTooltip
                   showLegend
                   className="h-[300px]"
-                >
-                  <PieArcSeries innerRadius={40}>
-                    {eventCategoriesData.map((_, index) => (
-                      <PieArc
-                        key={`arc-${index}`}
-                        color={["#F59E0B", "#10B981", "#8B5CF6", "#3B82F6"][index % 4]}
-                        strokeWidth={2}
-                      />
-                    ))}
-                  </PieArcSeries>
-                </PieChart>
+                />
               </div>
             </CardContent>
           </Card>
@@ -355,17 +336,7 @@ export default function AdminReportsPage() {
                   showTooltip
                   showLegend
                   className="h-[300px]"
-                >
-                  <PieArcSeries innerRadius={40}>
-                    {revenueSourcesData.map((_, index) => (
-                      <PieArc
-                        key={`arc-${index}`}
-                        color={["#3B82F6", "#10B981", "#F59E0B"][index % 3]}
-                        strokeWidth={2}
-                      />
-                    ))}
-                  </PieArcSeries>
-                </PieChart>
+                />
               </div>
             </CardContent>
           </Card>

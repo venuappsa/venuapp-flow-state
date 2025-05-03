@@ -392,33 +392,24 @@ export function PieArcSeries({
 }
 
 interface PieArcProps {
-  arcPath: string;
   color?: string;
   strokeWidth?: number;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   tooltip?: boolean;
+  // Make arcPath optional since it gets provided by the parent Pie component
+  arcPath?: string;
 }
 
 export function PieArc({
-  arcPath,
   color = "#2563eb",
   strokeWidth = 2,
   onMouseEnter,
   onMouseLeave,
   tooltip = false,
 }: PieArcProps) {
-  return (
-    <g>
-      <path
-        d={arcPath}
-        fill={color}
-        stroke="white"
-        strokeWidth={strokeWidth}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      />
-    </g>
-  );
+  // This is now a simplified version that works with the recharts Cell component
+  // The actual path rendering is handled by the Cell component
+  return <Cell fill={color} stroke="white" strokeWidth={strokeWidth} />;
 }
 

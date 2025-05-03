@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
+import { Link } from "react-router-dom";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -241,12 +242,15 @@ export default function AuthPage() {
       </Card>
 
       {/* Quick test links */}
-      <div className="mt-8 flex gap-4">
+      <div className="mt-8 flex flex-wrap gap-4 justify-center">
         <Button variant="outline" size="sm" asChild>
-          <a href="/host">Test Host Panel</a>
+          <Link to="/host">Test Host Panel</Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
-          <a href="/admin">Test Admin Panel</a>
+          <Link to="/admin">Test Admin Panel</Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/vendor">Test Vendor Panel</Link>
         </Button>
       </div>
     </div>

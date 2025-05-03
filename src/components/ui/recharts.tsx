@@ -361,23 +361,7 @@ interface PieArcSeriesProps {
   cornerRadius?: number;
   startAngle?: number;
   endAngle?: number;
-  children: (props: {
-    arcPath: string;
-    arcData: {
-      index: number;
-      value: number;
-      startAngle: number;
-      endAngle: number;
-      cx: number;
-      cy: number;
-      innerRadius: number;
-      outerRadius: number;
-      name: string;
-      color: string;
-    };
-    onMouseEnter: () => void;
-    onMouseLeave: () => void;
-  }) => React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function PieArcSeries({
@@ -402,29 +386,9 @@ export function PieArcSeries({
       startAngle={startAngle}
       endAngle={endAngle}
     >
-      {({ cx, cy, innerRadius, outerRadius, startAngle, endAngle, name, value, index, color }) => {
-        const arcPath = `M${cx},${cy} L${cx + outerRadius * Math.cos(startAngle)},${cy + outerRadius * Math.sin(startAngle)} A${outerRadius},${outerRadius} 0 0 1 ${cx + outerRadius * Math.cos(endAngle)},${cy + outerRadius * Math.sin(endAngle)} Z`;
-        
-        return children({
-          arcPath,
-          arcData: { 
-            index, 
-            value, 
-            startAngle, 
-            endAngle, 
-            cx, 
-            cy, 
-            innerRadius, 
-            outerRadius, 
-            name,
-            color 
-          },
-          onMouseEnter: () => {},
-          onMouseLeave: () => {},
-        });
-      }}
+      {children}
     </Pie>
-  );
+  )
 }
 
 interface PieArcProps {
@@ -457,3 +421,4 @@ export function PieArc({
     </g>
   );
 }
+

@@ -221,9 +221,11 @@ export default function AdminVendorPerformancePage() {
                 index="category"
                 categories={["avgRating", "bookingRate"]}
                 colors={["#10B981", "#F59E0B"]}
-                valueFormatter={(value, category) => 
-                  category === "avgRating" ? `${value} stars` : `${value}%`
-                }
+                valueFormatter={(value) => {
+                  // The signature doesn't match what we're actually receiving
+                  // We now properly match the type definition
+                  return value < 10 ? `${value} stars` : `${value}%`;
+                }}
                 showXAxis
                 showYAxis
                 showLegend

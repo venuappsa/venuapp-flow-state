@@ -34,6 +34,7 @@ import AdminWebsitePage from './pages/admin/AdminWebsitePage';
 import AdminSupportPage from './pages/admin/AdminSupportPage';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminVendorPerformancePage from './pages/admin/AdminVendorPerformancePage';
+import AdminEventVendorsPage from './pages/admin/AdminEventVendorsPage';
 
 // Host page imports
 import HostDashboardPage from './pages/HostDashboardPage';
@@ -53,6 +54,7 @@ import VendorDashboardPage from './pages/vendor/VendorDashboardPage';
 import VendorProfilePage from './pages/vendor/VendorProfilePage';
 import VendorMessagesPage from './pages/vendor/VendorMessagesPage';
 import VendorSettingsPage from './pages/vendor/VendorSettingsPage';
+import { Link } from 'react-router-dom';
 
 function App() {
   const { settings, isLoading } = usePlatformSettings();
@@ -107,6 +109,7 @@ function App() {
         <Route path="/admin/support" element={<AdminSupportPage />} />
         <Route path="/admin/reports" element={<AdminReportsPage />} />
         <Route path="/admin/vendors/performance" element={<AdminVendorPerformancePage />} />
+        <Route path="/admin/events/:id/vendors" element={<AdminEventVendorsPage />} />
         
         {/* Host Panel Routes */}
         <Route path="/host" element={<HostPanel />} />

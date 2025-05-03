@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -32,11 +33,12 @@ const fetchmanSchema = z.object({
 type FetchmanProfileData = z.infer<typeof fetchmanSchema>;
 
 export default function FetchmanOnboardingPage() {
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
   const form = useForm<FetchmanProfileData>({
     resolver: zodResolver(fetchmanSchema),
@@ -55,15 +57,26 @@ export default function FetchmanOnboardingPage() {
   
   // Check if user is already logged in
   useEffect(() => {
-    if (!user) {
+    console.log("FetchmanOnboardingPage: Auth check - loading:", userLoading, "user:", !!user);
+    
+    if (!userLoading && !user) {
+      console.log("FetchmanOnboardingPage: User not authenticated, redirecting to login");
+      setIsRedirecting(true);
+      
       toast({
         title: "Authentication required",
         description: "Please log in to continue with the Fetchman onboarding process.",
         variant: "destructive"
       });
-      navigate("/auth");
+      
+      // Short delay to allow toast to be seen
+      setTimeout(() => {
+        navigate("/auth");
+      }, 500);
+    } else if (user) {
+      console.log("FetchmanOnboardingPage: User authenticated:", user.id);
     }
-  }, [user, navigate, toast]);
+  }, [user, userLoading, navigate, toast]);
   
   const onSubmit = async (values: FetchmanProfileData) => {
     if (!user) {
@@ -111,6 +124,22 @@ export default function FetchmanOnboardingPage() {
       setIsLoading(false);
     }
   };
+  
+  // If redirecting due to auth issues, show minimal content
+  if (isRedirecting || userLoading) {
+    return (
+      <div className="container max-w-3xl py-8 mx-auto flex items-center justify-center">
+        <Card className="w-full">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center p-8">
+              <Loader className="h-8 w-8 animate-spin text-venu-orange mb-4" />
+              <p>Checking authentication status...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   return (
     <div className="container max-w-3xl py-8 mx-auto">

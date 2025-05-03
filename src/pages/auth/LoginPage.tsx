@@ -13,6 +13,7 @@ import { useUser } from "@/hooks/useUser";
 import { LogIn, Mail, KeyRound, AlertCircle, Loader } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
+import { supabase } from "@/integrations/supabase/client";
 
 const loginFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -24,21 +25,46 @@ export default function LoginPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user, initialized } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [authChecked, setAuthChecked] = useState(false);
   
   // Get next path from URL parameters or location state
   const nextPath = searchParams.get('next') || location.state?.from?.pathname || null;
   const requiredRole = searchParams.get('required') || null;
   
-  // If user is already logged in, redirect to appropriate dashboard
+  // Check initial auth state
   useEffect(() => {
-    if (user) {
-      console.log("LoginPage: User already logged in, fetching roles for redirection");
+    if (!initialized) return;
+    
+    const checkAuth = async () => {
+      console.log("LoginPage: Checking auth state");
+      try {
+        const { data } = await supabase.auth.getSession();
+        console.log("LoginPage: Session check:", !!data.session);
+        
+        if (data.session?.user) {
+          console.log("LoginPage: User already logged in, fetching roles for redirection");
+          await handleUserRoleRedirect(data.session.user.id);
+        }
+      } catch (error) {
+        console.error("LoginPage: Error checking auth:", error);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    
+    checkAuth();
+  }, [initialized]);
+  
+  // If user state changes (like after login), handle redirect
+  useEffect(() => {
+    if (user && authChecked) {
+      console.log("LoginPage: User state changed, handling redirect");
       handleUserRoleRedirect(user.id);
     }
-  }, [user, navigate]);
+  }, [user, authChecked]);
   
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -99,6 +125,7 @@ export default function LoginPage() {
       
       if (!result.success) {
         setLoginError(result.error || "Login failed");
+        setIsLoading(false);
         return;
       }
       
@@ -111,13 +138,13 @@ export default function LoginPage() {
           navigate("/auth/2fa", { state: { email: data.email } });
         } else {
           // Otherwise, fetch user roles and redirect
-          await handleUserRoleRedirect(result.data.id);
+          // The redirect will be handled by the useEffect hook watching user state
+          setIsLoading(false);
         }
       }
     } catch (error: any) {
       console.error("Error logging in:", error);
       setLoginError(error.message || "An error occurred during login.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -148,6 +175,21 @@ export default function LoginPage() {
     form.setValue("password", password);
     await form.handleSubmit(onSubmit)();
   };
+  
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-md">
+        <Card className="shadow-lg">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center p-8">
+              <Loader className="h-8 w-8 animate-spin text-venu-orange mb-4" />
+              <p>Processing login...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   return (
     <div className="w-full max-w-md">

@@ -21,7 +21,7 @@ export const useUser = () => {
     
     console.log("useUser: Setting up auth state listener");
     
-    // Set up auth state listener before checking session
+    // Set up auth state listener FIRST - this is critical for proper auth state handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       console.log("useUser: onAuthStateChange event:", event, "session:", newSession?.user?.id);
       
@@ -54,7 +54,7 @@ export const useUser = () => {
           console.log("useUser: SIGNED_OUT - clearing session/user");
           setSession(null);
           setUser(null);
-        } else {
+        } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
           setSession(newSession);
           setUser(newSession?.user ?? null);
         }
@@ -69,7 +69,7 @@ export const useUser = () => {
       }, 200); // longer debounce to allow for auth state to settle
     });
 
-    // Force check session at mount, but only once and after listener is set up
+    // THEN check for existing session but only after listener is set up
     const checkInitialSession = async () => {
       try {
         console.log("useUser: Checking initial session");

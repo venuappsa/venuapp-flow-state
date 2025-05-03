@@ -74,7 +74,12 @@ export const useUser = () => {
     const checkInitialSession = async () => {
       try {
         console.log("useUser: Checking initial session");
-        const { data } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("useUser: Error fetching session:", error);
+          throw error;
+        }
         
         if (!isMounted) {
           console.log("useUser: Component unmounted during initial session check");

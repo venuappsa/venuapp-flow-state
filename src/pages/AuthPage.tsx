@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,18 +16,67 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 import { Link } from "react-router-dom";
+import { useUser } from "@/hooks/useUser";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const { user, initialized } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  // Get the redirect path from location state, or default to "/"
-  const from = location.state?.from || "/";
+  // Get the redirect path from location state, query params or default to "/"
+  const queryParams = new URLSearchParams(location.search);
+  const nextParam = queryParams.get('next');
+  const from = nextParam || location.state?.from?.pathname || "/";
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (initialized && user) {
+      console.log("AuthPage: User already authenticated, redirecting...");
+      
+      // Fetch user roles and redirect based on role
+      const fetchUserRolesAndRedirect = async () => {
+        try {
+          const { data: userRoles, error } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id);
+          
+          if (error) {
+            console.error("Error fetching user roles:", error);
+            toast({
+              title: "Could not retrieve user roles",
+              description: "Please try again or contact support",
+              variant: "destructive"
+            });
+            return;
+          }
+          
+          const roles = userRoles?.map(r => r.role) || [];
+          console.log("AuthPage: Already logged in, user roles:", roles);
+          
+          // Navigate to appropriate dashboard based on role or to the 'next' URL if specified
+          if (nextParam) {
+            console.log("AuthPage: Redirecting to requested page:", nextParam);
+            navigate(nextParam);
+          } else {
+            const redirectPath = getRedirectPageForRoles(roles);
+            console.log("AuthPage: Redirecting to role dashboard:", redirectPath);
+            navigate(redirectPath);
+          }
+        } catch (error) {
+          console.error("Error in role redirect:", error);
+          navigate('/');
+        }
+      };
+      
+      fetchUserRolesAndRedirect();
+    }
+  }, [user, initialized, navigate, nextParam, toast]);
 
   // Function to fetch user roles and redirect based on those roles
   const handleUserRoleRedirect = async (userId: string) => {
@@ -51,20 +100,26 @@ export default function AuthPage() {
       const roles = userRoles?.map(r => r.role) || [];
       console.log("AuthPage: User roles retrieved:", roles);
       
-      // Determine redirect based on actual roles
-      const redirectPath = getRedirectPageForRoles(roles);
-      console.log("AuthPage: Redirecting to", redirectPath);
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back to Venuapp"
-      });
-      
-      navigate(redirectPath);
+      // Redirect to next param if it exists, otherwise use role-based redirect
+      if (nextParam) {
+        console.log("AuthPage: Redirecting to requested page:", nextParam);
+        navigate(nextParam);
+      } else {
+        // Determine redirect based on actual roles
+        const redirectPath = getRedirectPageForRoles(roles);
+        console.log("AuthPage: Redirecting to", redirectPath);
+        
+        toast({
+          title: "Login successful",
+          description: "Welcome back to Venuapp"
+        });
+        
+        navigate(redirectPath);
+      }
     } catch (error: any) {
       console.error("Error in role-based redirect:", error);
-      // Default to host dashboard if role check fails
-      navigate("/host");
+      // Default to home if role check fails
+      navigate("/");
     }
   };
 
@@ -130,6 +185,17 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
+
+  // If user is already logged in, show loading while we process the redirect
+  if (user && initialized) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <p className="text-lg">You're already logged in. Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">

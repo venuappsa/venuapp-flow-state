@@ -52,7 +52,10 @@ const AuthProtected = ({
       try {
         console.log("AuthProtected: Verifying session via direct check");
         const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        if (error) {
+          console.error("AuthProtected: Session check error:", error);
+          throw error;
+        }
         
         const hasSession = !!data.session;
         console.log("AuthProtected: Direct session check result:", hasSession);
@@ -60,6 +63,11 @@ const AuthProtected = ({
         
         if (!hasSession) {
           console.log("AuthProtected: No active session found");
+        } else {
+          // If we have a session but no user in state, update the user state
+          if (!user && data.session?.user) {
+            console.log("AuthProtected: Session found but no user in state, should be handled by useUser hook");
+          }
         }
       } catch (err) {
         console.error("AuthProtected: Error checking session:", err);
@@ -70,7 +78,7 @@ const AuthProtected = ({
     };
     
     checkSession();
-  }, [initialized]);
+  }, [initialized, user]);
   
   // If roles are empty but user exists, retry fetching roles a few times
   useEffect(() => {

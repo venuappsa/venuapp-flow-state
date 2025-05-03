@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader, MapPin, Truck, Clock, AlertCircle } from "lucide-react";
-import { CreditCard } from "@/components/ui/icons";
+import { CreditCard } from "lucide-react";
 
 const fetchmanSchema = z.object({
   vehicle_type: z.string().min(1, "Vehicle type is required"),

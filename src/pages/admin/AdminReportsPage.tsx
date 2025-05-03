@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LineChart, BarChart, PieChart, PieArcSeries, PieArc } from "@/components/ui/chart";
+import { LineChart, BarChart, PieChart, PieArcSeries, PieArc } from "@/components/ui/recharts";
 import { 
   Download, 
   Calendar, 

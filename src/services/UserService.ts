@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import type { Enums } from "@/integrations/supabase/types";
@@ -214,25 +215,55 @@ export const UserService = {
         return false;
       }
 
-      // Create fetchman profile
-      const { error: profileError } = await supabase
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
         .from('fetchman_profiles')
-        .insert({
-          user_id: userId,
-          vehicle_type: data.vehicle_type,
-          work_hours: data.work_hours,
-          service_area: data.service_area,
-          phone_number: data.phone_number,
-          identity_number: data.identity_number,
-          has_own_transport: data.has_own_transport,
-          bank_account_number: data.bank_account_number,
-          bank_name: data.bank_name,
-          branch_code: data.branch_code
-        });
+        .select('id')
+        .eq('user_id', userId);
+      
+      if (existingProfile && existingProfile.length > 0) {
+        // Profile exists, update it
+        const { error: updateError } = await supabase
+          .from('fetchman_profiles')
+          .update({
+            vehicle_type: data.vehicle_type,
+            work_hours: data.work_hours,
+            service_area: data.service_area,
+            phone_number: data.phone_number,
+            identity_number: data.identity_number,
+            has_own_transport: data.has_own_transport,
+            bank_account_number: data.bank_account_number,
+            bank_name: data.bank_name,
+            branch_code: data.branch_code,
+            verification_status: 'pending'
+          })
+          .eq('user_id', userId);
 
-      if (profileError) {
-        console.error("Error creating fetchman profile:", profileError);
-        return false;
+        if (updateError) {
+          console.error("Error updating fetchman profile:", updateError);
+          return false;
+        }
+      } else {
+        // Create new profile
+        const { error: profileError } = await supabase
+          .from('fetchman_profiles')
+          .insert({
+            user_id: userId,
+            vehicle_type: data.vehicle_type,
+            work_hours: data.work_hours,
+            service_area: data.service_area,
+            phone_number: data.phone_number,
+            identity_number: data.identity_number,
+            has_own_transport: data.has_own_transport,
+            bank_account_number: data.bank_account_number,
+            bank_name: data.bank_name,
+            branch_code: data.branch_code
+          });
+
+        if (profileError) {
+          console.error("Error creating fetchman profile:", profileError);
+          return false;
+        }
       }
 
       return true;
@@ -289,15 +320,14 @@ export const UserService = {
       const { data, error } = await supabase
         .from(tableName as any)
         .select("*")
-        .eq("user_id", userId)
-        .single();
+        .eq("user_id", userId);
 
       if (error) {
         console.error(`Error fetching ${role} profile:`, error);
         return null;
       }
 
-      return data;
+      return data && data.length > 0 ? data[0] : null;
     } catch (err) {
       console.error(`Exception fetching ${role} profile:`, err);
       return null;

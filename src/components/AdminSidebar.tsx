@@ -72,7 +72,7 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
     {
       category: "Overview",
       items: [
-        { href: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+        { href: "/admin", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
       ]
     },
     {

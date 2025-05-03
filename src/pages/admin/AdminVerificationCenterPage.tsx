@@ -13,6 +13,26 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+// Define interfaces for clarity
+interface ProfileData {
+  id: string;
+  name?: string | null;
+  surname?: string | null;
+  email?: string | null;
+}
+
+interface VerificationItem {
+  id: string;
+  name: string;
+  email: string;
+  type: 'host' | 'vendor' | 'fetchman';
+  documentType: string;
+  submissionDate: string;
+  status: 'pending' | 'verified' | 'declined' | 'ready_for_review';
+  originalData: any;
+  rejectionReason: string | null;
+}
+
 export default function AdminVerificationCenterPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [accountType, setAccountType] = useState("all");
@@ -30,7 +50,7 @@ export default function AdminVerificationCenterPage() {
           .select("id, name, surname, email");
         
         // Create a map of profiles for easy lookup
-        const profilesMap = (profilesData || []).reduce((map, profile) => {
+        const profilesMap = (profilesData || []).reduce((map: Record<string, ProfileData>, profile) => {
           map[profile.id] = profile;
           return map;
         }, {});
@@ -73,7 +93,7 @@ export default function AdminVerificationCenterPage() {
               ? `${profile.name} ${profile.surname}`
               : h.contact_name || 'Unknown',
             email: profile.email || h.contact_email || 'Unknown',
-            type: 'host',
+            type: 'host' as const,
             documentType: 'Business Registration',
             submissionDate: h.created_at,
             status: h.verification_status,
@@ -91,7 +111,7 @@ export default function AdminVerificationCenterPage() {
               ? `${profile.name} ${profile.surname}`
               : v.contact_name || 'Unknown',
             email: profile.email || v.contact_email || 'Unknown',
-            type: 'vendor',
+            type: 'vendor' as const,
             documentType: 'Business License',
             submissionDate: v.created_at,
             status: v.verification_status,
@@ -109,7 +129,7 @@ export default function AdminVerificationCenterPage() {
               ? `${profile.name} ${profile.surname}`
               : 'Unknown Fetchman',
             email: profile.email || 'Unknown',
-            type: 'fetchman',
+            type: 'fetchman' as const,
             documentType: 'ID Verification',
             submissionDate: f.created_at,
             status: f.verification_status,
@@ -138,7 +158,7 @@ export default function AdminVerificationCenterPage() {
           .select("id, name, surname, email");
         
         // Create a map of profiles for easy lookup
-        const profilesMap = (profilesData || []).reduce((map, profile) => {
+        const profilesMap = (profilesData || []).reduce((map: Record<string, ProfileData>, profile) => {
           map[profile.id] = profile;
           return map;
         }, {});
@@ -180,13 +200,13 @@ export default function AdminVerificationCenterPage() {
               ? `${profile.name} ${profile.surname}`
               : h.contact_name || 'Unknown',
             email: profile.email || h.contact_email || 'Unknown',
-            type: 'host',
+            type: 'host' as const,
             documentType: 'Business Registration',
             submissionDate: h.created_at,
             status: h.verification_status,
             originalData: h,
-            // Safely handle decline_reason which may not exist in the database schema
-            rejectionReason: h.verification_status === 'declined' ? (h.decline_reason || 'No reason specified') : null
+            // Don't try to access decline_reason directly since it might not exist in the schema
+            rejectionReason: h.verification_status === 'declined' ? 'No reason specified' : null
           };
         });
 
@@ -199,13 +219,13 @@ export default function AdminVerificationCenterPage() {
               ? `${profile.name} ${profile.surname}`
               : v.contact_name || 'Unknown',
             email: profile.email || v.contact_email || 'Unknown',
-            type: 'vendor',
+            type: 'vendor' as const,
             documentType: 'Business License',
             submissionDate: v.created_at,
             status: v.verification_status,
             originalData: v,
-            // Safely handle decline_reason which may not exist in the database schema
-            rejectionReason: v.verification_status === 'declined' ? (v.decline_reason || 'No reason specified') : null
+            // Don't try to access decline_reason directly since it might not exist in the schema
+            rejectionReason: v.verification_status === 'declined' ? 'No reason specified' : null
           };
         });
 
@@ -218,7 +238,7 @@ export default function AdminVerificationCenterPage() {
               ? `${profile.name} ${profile.surname}`
               : 'Unknown Fetchman',
             email: profile.email || 'Unknown',
-            type: 'fetchman',
+            type: 'fetchman' as const,
             documentType: 'ID Verification',
             submissionDate: f.created_at,
             status: f.verification_status,
@@ -245,9 +265,9 @@ export default function AdminVerificationCenterPage() {
           ? "vendor_profiles" 
           : "fetchman_profiles";
           
-      const updateData = status === "declined" && reason 
-        ? { verification_status: status, decline_reason: reason }
-        : { verification_status: status };
+      // For now, we'll only update the verification_status field since decline_reason may not exist
+      // To add a decline_reason field, we would need to first add it to the database schema
+      const updateData = { verification_status: status };
           
       const { error } = await supabase
         .from(table)
@@ -281,7 +301,8 @@ export default function AdminVerificationCenterPage() {
   };
 
   const handleReject = (id: string, type: string) => {
-    const reason = "Application rejected by admin"; // You could add a reason input field later
+    // We can still pass a reason here, but we won't try to store it in the database yet
+    const reason = "Application rejected by admin";
     updateVerificationStatus.mutate({ id, type, status: "declined", reason });
   };
 

@@ -205,7 +205,7 @@ export const UserService = {
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: 'fetchman'
+          role: 'fetchman' as Enums<"app_role">
         })
         .select()
         .single();
@@ -220,7 +220,15 @@ export const UserService = {
         .from('fetchman_profiles')
         .insert({
           user_id: userId,
-          ...data
+          vehicle_type: data.vehicle_type,
+          work_hours: data.work_hours,
+          service_area: data.service_area,
+          phone_number: data.phone_number,
+          identity_number: data.identity_number,
+          has_own_transport: data.has_own_transport,
+          bank_account_number: data.bank_account_number,
+          bank_name: data.bank_name,
+          branch_code: data.branch_code
         });
 
       if (profileError) {
@@ -261,9 +269,9 @@ export const UserService = {
   /**
    * Get role-specific profile data
    */
-  getRoleProfile: async (userId: string, role: string): Promise<any> => {
+  getRoleProfile: async (userId: string, role: "host" | "merchant" | "fetchman"): Promise<any> => {
     try {
-      let tableName = "";
+      let tableName: string;
       
       switch(role) {
         case "host":
@@ -279,8 +287,6 @@ export const UserService = {
           return null;
       }
       
-      if (!tableName) return null;
-
       const { data, error } = await supabase
         .from(tableName)
         .select("*")

@@ -302,19 +302,82 @@ function App() {
           path="/fetchman"
           element={
             <AuthProtected requiredRoles={["fetchman"]}>
-              <FetchmanPanelLayout />
+              <FetchmanPanelLayout>
+                <FetchmanDashboardPage />
+              </FetchmanPanelLayout>
             </AuthProtected>
           }
-        >
-          <Route index element={<FetchmanDashboardPage />} />
-          <Route path="dashboard" element={<FetchmanDashboardPage />} />
-          <Route path="earnings" element={<FetchmanEarningsPage />} />
-          <Route path="schedule" element={<FetchmanSchedulePage />} />
-          <Route path="assignments" element={<FetchmanAssignmentsPage />} />
-          <Route path="notifications" element={<FetchmanNotificationsPage />} />
-          <Route path="messages" element={<FetchmanMessagesPage />} />
-          <Route path="settings" element={<FetchmanSettingsPage />} />
-        </Route>
+        />
+        <Route
+          path="/fetchman/dashboard"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout>
+                <FetchmanDashboardPage />
+              </FetchmanPanelLayout>
+            </AuthProtected>
+          }
+        />
+        <Route
+          path="/fetchman/earnings"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout>
+                <FetchmanEarningsPage />
+              </FetchmanPanelLayout>
+            </AuthProtected>
+          }
+        />
+        <Route
+          path="/fetchman/schedule"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout>
+                <FetchmanSchedulePage />
+              </FetchmanPanelLayout>
+            </AuthProtected>
+          }
+        />
+        <Route
+          path="/fetchman/assignments"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout>
+                <FetchmanAssignmentsPage />
+              </FetchmanPanelLayout>
+            </AuthProtected>
+          }
+        />
+        <Route
+          path="/fetchman/notifications"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout>
+                <FetchmanNotificationsPage />
+              </FetchmanPanelLayout>
+            </AuthProtected>
+          }
+        />
+        <Route
+          path="/fetchman/messages"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout>
+                <FetchmanMessagesPage />
+              </FetchmanPanelLayout>
+            </AuthProtected>
+          }
+        />
+        <Route
+          path="/fetchman/settings"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout>
+                <FetchmanSettingsPage />
+              </FetchmanPanelLayout>
+            </AuthProtected>
+          }
+        />
         
         <Route 
           path="/fetchman/onboarding" 

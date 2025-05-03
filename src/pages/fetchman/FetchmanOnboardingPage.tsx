@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -30,6 +29,9 @@ const fetchmanSchema = z.object({
   branch_code: z.string().min(1, "Branch code is required"),
 });
 
+// Define the fetchman profile data type
+type FetchmanProfileData = z.infer<typeof fetchmanSchema>;
+
 export default function FetchmanOnboardingPage() {
   const { user } = useUser();
   const { toast } = useToast();
@@ -37,7 +39,7 @@ export default function FetchmanOnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   
-  const form = useForm<z.infer<typeof fetchmanSchema>>({
+  const form = useForm<FetchmanProfileData>({
     resolver: zodResolver(fetchmanSchema),
     defaultValues: {
       vehicle_type: "",
@@ -52,7 +54,7 @@ export default function FetchmanOnboardingPage() {
     },
   });
   
-  const onSubmit = async (values: z.infer<typeof fetchmanSchema>) => {
+  const onSubmit = async (values: FetchmanProfileData) => {
     if (!user) {
       setErrorMessage("You must be logged in to complete your profile");
       return;
@@ -62,6 +64,7 @@ export default function FetchmanOnboardingPage() {
     setErrorMessage("");
     
     try {
+      // Values from the form are all guaranteed to be non-optional due to the schema
       const success = await UserService.createFetchmanProfile(user.id, values);
       
       if (success) {

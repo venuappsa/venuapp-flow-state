@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -64,7 +65,7 @@ export default function FetchmanOnboardingPage() {
     setErrorMessage("");
     
     try {
-      // Values from the form are all guaranteed to be non-optional due to the schema
+      // Values from the form are guaranteed to be non-optional thanks to zod validation
       const success = await UserService.createFetchmanProfile(user.id, values);
       
       if (success) {

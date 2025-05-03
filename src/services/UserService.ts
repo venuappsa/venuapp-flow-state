@@ -288,7 +288,7 @@ export const UserService = {
       }
       
       const { data, error } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .select("*")
         .eq("user_id", userId)
         .single();

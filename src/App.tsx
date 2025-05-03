@@ -1,15 +1,19 @@
-
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { usePlatformSettings } from '@/contexts/PlatformSettingsContext';
 import { ScrollToTop } from '@/components/utils/ScrollToTop';
+import { useUser } from '@/hooks/useUser';
+import AuthTransitionWrapper from '@/components/AuthTransitionWrapper';
 import AuthPage from './pages/AuthPage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import Home from './pages/Index';
-import { useUser } from '@/hooks/useUser';
+
+// Admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminPlatformSettingsPage from './pages/admin/AdminPlatformSettingsPage';
 import AdminMessagesPage from './pages/admin/AdminMessagesPage';
@@ -20,9 +24,6 @@ import AdminVerificationCenterPage from './pages/admin/AdminVerificationCenterPa
 import AdminProfilePage from './pages/AdminProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
-import SystemBanners from './components/banners/SystemBanners';
-
-// New admin pages
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 import AdminNotificationsPage from './pages/admin/AdminNotificationsPage';
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
@@ -36,7 +37,7 @@ import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminVendorPerformancePage from './pages/admin/AdminVendorPerformancePage';
 import AdminEventVendorsPage from './pages/admin/AdminEventVendorsPage';
 
-// Host page imports
+// Host pages
 import HostDashboardPage from './pages/HostDashboardPage';
 import HostProfilePage from './pages/HostProfilePage';
 import HostPanel from './pages/HostPanel';
@@ -49,24 +50,23 @@ import EventManagementPage from './pages/host/EventManagementPage';
 import HostMessagesPage from './pages/host/HostMessagesPage';
 import HostSettingsPage from './pages/host/HostSettingsPage';
 
-// Vendor page imports
+// Vendor pages
 import VendorDashboardPage from './pages/vendor/VendorDashboardPage';
 import VendorProfilePage from './pages/vendor/VendorProfilePage';
 import VendorMessagesPage from './pages/vendor/VendorMessagesPage';
 import VendorSettingsPage from './pages/vendor/VendorSettingsPage';
-import { Link } from 'react-router-dom';
+
+// Fetchman pages
+import FetchmanDashboardPage from './pages/fetchman/FetchmanDashboardPage';
+import FetchmanOnboardingPage from './pages/fetchman/FetchmanOnboardingPage';
+
+// Other components
+import SystemBanners from './components/banners/SystemBanners';
 
 function App() {
   const { settings, isLoading } = usePlatformSettings();
   const { user } = useUser();
   
-  useEffect(() => {
-    if (settings.maintenanceMode && user && !isUserAdmin(user)) {
-      // For non-admin users, we could redirect to a maintenance page or show a modal
-      console.log("Maintenance mode is active - restricted access");
-    }
-  }, [settings.maintenanceMode, user]);
-
   const isUserAdmin = (user: any) => {
     // This is a simplified check - in a real app, you would check roles from the database
     return user?.email?.includes('admin') || user?.user_metadata?.isAdmin;
@@ -75,61 +75,236 @@ function App() {
   return (
     <>
       <ScrollToTop />
-      {/* Remove the fixed position banner from here as it will be positioned within each layout */}
+      <SystemBanners />
       <Routes>
         {/* Home Route */}
         <Route path="/" element={<Home />} />
         
         {/* Public Routes */}
-        <Route path="/auth/*" element={<AuthPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/contact" element={<Contact />} />
 
         {/* Admin Panel Routes */}
-        <Route path="/admin" element={<AdminDashboardPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/admin/profile" element={<AdminProfilePage />} />
-        <Route path="/admin/settings" element={<AdminSettingsPage />} />
-        <Route path="/admin/users" element={<AdminUsersPage />} />
-        <Route path="/admin/platform" element={<AdminPlatformSettingsPage />} />
-        <Route path="/admin/messages" element={<AdminMessagesPage />} />
-        <Route path="/admin/hosts" element={<AdminHostsPage />} />
-        <Route path="/admin/merchants" element={<AdminMerchantsPage />} />
-        <Route path="/admin/events" element={<AdminEventsPage />} />
-        <Route path="/admin/verification" element={<AdminVerificationCenterPage />} />
+        <Route path="/admin" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminDashboardPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/dashboard" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminDashboardPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/profile" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminProfilePage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/settings" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminSettingsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/users" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminUsersPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/platform" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminPlatformSettingsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/messages" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminMessagesPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/hosts" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminHostsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/merchants" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminMerchantsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/events" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminEventsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/verification" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminVerificationCenterPage />
+          </AuthTransitionWrapper>
+        } />
         
         {/* New Admin Routes */}
-        <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
-        <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
-        <Route path="/admin/payments" element={<AdminPaymentsPage />} />
-        <Route path="/admin/system" element={<AdminSystemStatusPage />} />
-        <Route path="/admin/announcements" element={<AdminAnnouncementsPage />} />
-        <Route path="/admin/subscriptions" element={<AdminSubscriptionsPage />} />
-        <Route path="/admin/cms" element={<AdminCMSPage />} />
-        <Route path="/admin/website" element={<AdminWebsitePage />} />
-        <Route path="/admin/support" element={<AdminSupportPage />} />
-        <Route path="/admin/reports" element={<AdminReportsPage />} />
-        <Route path="/admin/vendors/performance" element={<AdminVendorPerformancePage />} />
-        <Route path="/admin/events/:id/vendors" element={<AdminEventVendorsPage />} />
+        <Route path="/admin/analytics" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminAnalyticsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/notifications" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminNotificationsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/payments" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminPaymentsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/system" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminSystemStatusPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/announcements" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminAnnouncementsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/subscriptions" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminSubscriptionsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/cms" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminCMSPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/website" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminWebsitePage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/support" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminSupportPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/reports" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminReportsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/vendors/performance" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminVendorPerformancePage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/events/:id/vendors" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminEventVendorsPage />
+          </AuthTransitionWrapper>
+        } />
         
         {/* Host Panel Routes */}
-        <Route path="/host" element={<HostPanel />} />
-        <Route path="/host/dashboard" element={<HostDashboardPage />} />
-        <Route path="/host/profile" element={<HostProfilePage />} />
-        <Route path="/host/messages" element={<HostMessagesPage />} />
-        <Route path="/host/settings" element={<HostSettingsPage />} />
-        <Route path="/host/events/new" element={<EventCreationPage />} />
-        <Route path="/host/events/:eventId" element={<EventManagementPage />} />
-        <Route path="/host/events/:eventId/edit" element={<EventEditPage />} />
-        <Route path="/host/events/:eventId/tasks" element={<EventTasksPage />} />
-        <Route path="/host/events/:eventId/vendors" element={<EventVendorsPage />} />
-        <Route path="/host/events/:eventId/messages" element={<EventMessagesPage />} />
+        <Route path="/host" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <HostPanel />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/dashboard" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <HostDashboardPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/profile" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <HostProfilePage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/messages" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <HostMessagesPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/settings" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <HostSettingsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/events/new" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <EventCreationPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/events/:eventId" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <EventManagementPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/events/:eventId/edit" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <EventEditPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/events/:eventId/tasks" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <EventTasksPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/events/:eventId/vendors" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <EventVendorsPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/host/events/:eventId/messages" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["host"]}>
+            <EventMessagesPage />
+          </AuthTransitionWrapper>
+        } />
         
         {/* Vendor Panel Routes */}
-        <Route path="/vendor" element={<VendorDashboardPage />} />
-        <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
-        <Route path="/vendor/profile" element={<VendorProfilePage />} />
-        <Route path="/vendor/messages" element={<VendorMessagesPage />} />
-        <Route path="/vendor/settings" element={<VendorSettingsPage />} />
+        <Route path="/vendor" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["merchant"]}>
+            <VendorDashboardPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/vendor/dashboard" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["merchant"]}>
+            <VendorDashboardPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/vendor/profile" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["merchant"]}>
+            <VendorProfilePage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/vendor/messages" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["merchant"]}>
+            <VendorMessagesPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/vendor/settings" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["merchant"]}>
+            <VendorSettingsPage />
+          </AuthTransitionWrapper>
+        } />
+        
+        {/* Fetchman Panel Routes */}
+        <Route path="/fetchman" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["fetchman"]}>
+            <FetchmanDashboardPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/fetchman/dashboard" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["fetchman"]}>
+            <FetchmanDashboardPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/fetchman/onboarding" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["fetchman"]}>
+            <FetchmanOnboardingPage />
+          </AuthTransitionWrapper>
+        } />
         
         {/* Not Found */}
         <Route path="*" element={<NotFound />} />

@@ -1,4 +1,6 @@
 
+import { useEffect, useState } from "react";
+import { UserService } from "@/services/UserService";
 import type { Enums } from "@/integrations/supabase/types";
 
 /**
@@ -16,7 +18,7 @@ export const getRedirectPageForRoles = (roles: string[]): string => {
   }
 
   // Safe type check function
-  const hasRole = (role: Enums<"app_role">): boolean => {
+  const hasRole = (role: Enums<"app_role"> | string): boolean => {
     return roles.includes(role);
   };
 
@@ -53,11 +55,38 @@ export const getRedirectPageForRoles = (roles: string[]): string => {
 
 /**
  * Custom hook to use role-based redirection
- * @param roles Array of user roles
- * @returns The path to redirect the user to
+ * @param userId User ID to check roles for
+ * @returns Object containing the redirect path and loading state
  */
-export const useRoleRedirect = (roles: string[] = []): string => {
-  return getRedirectPageForRoles(roles);
+export const useRoleRedirect = (userId?: string): { path: string, loading: boolean } => {
+  const [redirectPath, setRedirectPath] = useState<string>("/");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  
+  useEffect(() => {
+    const fetchRoles = async () => {
+      if (!userId) {
+        setRedirectPath("/");
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        const userRoles = await UserService.getUserRoles(userId);
+        const path = getRedirectPageForRoles(userRoles);
+        setRedirectPath(path);
+      } catch (error) {
+        console.error("Error in useRoleRedirect:", error);
+        setRedirectPath("/");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRoles();
+  }, [userId]);
+  
+  return { path: redirectPath, loading: isLoading };
 };
 
 export default useRoleRedirect;

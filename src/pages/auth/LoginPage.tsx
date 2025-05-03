@@ -8,12 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { UserService } from "@/services/UserService";
 import { useUser } from "@/hooks/useUser";
-import { LogIn, Mail, KeyRound, AlertCircle } from "lucide-react";
+import { LogIn, Mail, KeyRound, AlertCircle, Loader } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
-import type { Enums } from "@/integrations/supabase/types";
 
 const loginFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -34,7 +33,7 @@ export default function LoginPage() {
   const requiredRole = searchParams.get('required') || null;
   
   // If user is already logged in, redirect to appropriate dashboard
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       console.log("LoginPage: User already logged in, fetching roles for redirection");
       handleUserRoleRedirect(user.id);
@@ -53,26 +52,13 @@ export default function LoginPage() {
   const handleUserRoleRedirect = async (userId: string) => {
     try {
       console.log("LoginPage: Fetching roles for user", userId);
-      const { data: userRoles, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
       
-      if (error) {
-        console.error("Error fetching user roles:", error);
-        toast({
-          title: "Could not retrieve user roles",
-          description: "Please try again or contact support",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      const roles = userRoles?.map(r => r.role) || [];
+      // Use our service to get roles
+      const roles = await UserService.getUserRoles(userId);
       console.log("LoginPage: User roles retrieved:", roles);
       
       // Check if user has the required role (if specified)
-      if (requiredRole && !roles.includes(requiredRole as Enums<"app_role">)) {
+      if (requiredRole && !roles.includes(requiredRole)) {
         toast({
           title: "Access denied",
           description: `You don't have the required role: ${requiredRole}`,
@@ -109,26 +95,23 @@ export default function LoginPage() {
     setLoginError("");
     
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password
-      });
+      const result = await UserService.loginUser(data.email, data.password);
       
-      if (error) {
-        setLoginError(error.message);
+      if (!result.success) {
+        setLoginError(result.error || "Login failed");
         return;
       }
       
       // Successfully logged in
-      if (authData.user) {
-        console.log("LoginPage: Successful login for user:", authData.user.id);
+      if (result.data) {
+        console.log("LoginPage: Successful login for user:", result.data.id);
         
         // For the demo, if email contains 2fa, simulate 2FA
         if (data.email.includes("2fa")) {
           navigate("/auth/2fa", { state: { email: data.email } });
         } else {
           // Otherwise, fetch user roles and redirect
-          await handleUserRoleRedirect(authData.user.id);
+          await handleUserRoleRedirect(result.data.id);
         }
       }
     } catch (error: any) {
@@ -251,7 +234,12 @@ export default function LoginPage() {
                 className="w-full bg-venu-orange hover:bg-venu-dark-orange" 
                 disabled={isLoading}
               >
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Logging in...
+                  </>
+                ) : "Login"}
               </Button>
             </form>
           </Form>

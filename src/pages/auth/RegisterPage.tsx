@@ -10,8 +10,8 @@ import * as z from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, User, Mail, KeyRound, Phone, Shield, AlertCircle } from "lucide-react";
+import { UserService } from "@/services/UserService";
+import { User, Mail, KeyRound, Phone, Shield, AlertCircle, Loader } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const registerFormSchema = z.object({
@@ -51,38 +51,27 @@ export default function RegisterPage() {
     setRegisterError("");
     
     try {
-      // For demo purposes, simulate successful registration
       const { email, password, firstName, lastName, role, phone } = data;
       
-      const { data: authData, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            phone,
-            role,
-            full_name: `${firstName} ${lastName}`
-          }
-        }
+      const result = await UserService.registerUser(email, password, {
+        firstName,
+        lastName,
+        phone,
+        role
       });
       
-      if (error) {
-        setRegisterError(error.message);
+      if (!result.success) {
+        setRegisterError(result.error || "Registration failed");
         return;
       }
       
-      // Successfully registered
-      if (authData.user) {
-        toast({
-          title: "Registration successful",
-          description: "Your account has been created successfully. Please verify your email to continue."
-        });
-        
-        // For the demo, redirect to login page
-        navigate("/auth/login");
-      }
+      toast({
+        title: "Registration successful",
+        description: "Your account has been created. Please log in to continue."
+      });
+      
+      // Redirect to login
+      navigate("/auth/login");
     } catch (error: any) {
       console.error("Error registering:", error);
       setRegisterError(error.message || "An error occurred during registration.");
@@ -96,7 +85,7 @@ export default function RegisterPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl text-center flex items-center justify-center">
-            <UserPlus className="mr-2 h-5 w-5" /> Create Your Account
+            <User className="mr-2 h-5 w-5" /> Create Your Account
           </CardTitle>
           <CardDescription className="text-center">
             Fill out the form below to register a new account
@@ -259,7 +248,12 @@ export default function RegisterPage() {
                 className="w-full bg-venu-orange hover:bg-venu-dark-orange" 
                 disabled={isLoading}
               >
-                {isLoading ? "Creating account..." : "Create Account"}
+                {isLoading ? (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : "Create Account"}
               </Button>
             </form>
           </Form>

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import RedirectLoaderOverlay from "@/components/RedirectLoaderOverlay";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UserService } from "@/services/UserService";
 
 interface AuthTransitionWrapperProps {
   children: React.ReactNode;
@@ -19,11 +20,11 @@ export default function AuthTransitionWrapper({
   children, 
   requireAuth = false,
   allowedRoles = [],
-  redirectTo = "/auth",
+  redirectTo = "/auth/login",
   showFallback = true
 }: AuthTransitionWrapperProps) {
   const { user, initialized, loading: userLoading } = useUser();
-  const { data: roles = [], isLoading: rolesLoading, isError: rolesError } = useUserRoles(user?.id);
+  const { data: roles = [], isLoading: rolesLoading, isError: rolesError, refetch } = useUserRoles(user?.id);
   const navigate = useNavigate();
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [message, setMessage] = useState("Loading...");
@@ -44,6 +45,17 @@ export default function AuthTransitionWrapper({
       }
     };
   }, []);
+
+  // Custom function to fetch roles directly
+  const fetchUserRoles = async (userId: string) => {
+    try {
+      const userRoles = await UserService.getUserRoles(userId);
+      return userRoles;
+    } catch (err) {
+      console.error("Error fetching user roles in AuthTransitionWrapper:", err);
+      return [];
+    }
+  };
 
   useEffect(() => {
     if (!mounted) return;
@@ -74,50 +86,72 @@ export default function AuthTransitionWrapper({
       setMessage("Please log in to continue...");
       redirectAttemptsRef.current += 1;
       
+      // Store current location for redirect after login
+      const currentPath = window.location.pathname;
+      
       // Use timeout to avoid interrupting render and prevent immediate redirect
       redirectTimeoutRef.current = setTimeout(() => {
         if (mounted) {
-          navigate(redirectTo, { 
+          // Include next parameter for redirect after login
+          const redirectUrl = `${redirectTo}?next=${encodeURIComponent(currentPath)}`;
+          navigate(redirectUrl, { 
             replace: true,
-            state: { from: window.location.pathname } 
+            state: { from: currentPath } 
           });
         }
       }, 100);
       return;
     }
 
-    // Wait for roles to load if needed for role check
-    if (user && allowedRoles.length > 0 && rolesLoading) {
-      console.log("AuthTransitionWrapper: Waiting for roles to load...");
-      return;
-    }
-
-    // Check roles if needed
-    if (user && !rolesLoading && allowedRoles.length > 0) {
-      const userRoles = Array.isArray(roles) ? roles : [];
-      const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
+    const checkUserRoles = async () => {
+      if (!user) return;
       
-      if (!hasAllowedRole) {
-        console.log("AuthTransitionWrapper: User lacks required role, redirecting");
-        setMessage("Redirecting to appropriate page...");
-        redirectAttemptsRef.current += 1;
-        
-        const redirectPath = getRedirectPageForRoles(userRoles);
-        
-        // Use timeout to avoid interrupting render
-        redirectTimeoutRef.current = setTimeout(() => {
-          if (mounted) {
-            navigate(redirectPath, { replace: true });
-          }
-        }, 100);
-        return;
+      // First see if we have roles from the hook
+      let userRoles = roles;
+      
+      // If roles are loading or empty, try fetching directly
+      if ((rolesLoading || roles.length === 0) && allowedRoles.length > 0) {
+        setMessage("Checking your permissions...");
+        userRoles = await fetchUserRoles(user.id);
       }
-    }
+      
+      // Check roles if needed
+      if (allowedRoles.length > 0) {
+        const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
+        
+        if (!hasAllowedRole) {
+          console.log("AuthTransitionWrapper: User lacks required role, redirecting");
+          setMessage("Redirecting to appropriate page...");
+          redirectAttemptsRef.current += 1;
+          
+          const redirectPath = getRedirectPageForRoles(userRoles);
+          
+          // Use timeout to avoid interrupting render
+          redirectTimeoutRef.current = setTimeout(() => {
+            if (mounted) {
+              navigate(redirectPath, { replace: true });
+            }
+          }, 100);
+          return false;
+        }
+      }
+      
+      return true;
+    };
     
-    // If we get here, user is authorized
-    console.log("AuthTransitionWrapper: User is authorized, showing content");
-    setIsTransitioning(false);
-  }, [user, roles, rolesLoading, requireAuth, redirectTo, navigate, allowedRoles, mounted, initialized, userLoading]);
+    const processAuthentication = async () => {
+      if (user) {
+        const roleCheckPassed = await checkUserRoles();
+        if (roleCheckPassed) {
+          console.log("AuthTransitionWrapper: User is authorized, showing content");
+          setIsTransitioning(false);
+        }
+      }
+    };
+    
+    processAuthentication();
+    
+  }, [user, roles, rolesLoading, requireAuth, redirectTo, navigate, allowedRoles, mounted, initialized, userLoading, refetch]);
 
   // If in transition and we want to show a fallback
   if (isTransitioning && showFallback) {

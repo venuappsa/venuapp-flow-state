@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -152,7 +151,7 @@ export function DashboardSidebar() {
   return (
     <aside
       className={cn(
-        "flex flex-col border-r transition-all duration-300 h-screen sticky top-0",
+        "flex flex-col border-r transition-all duration-300 h-screen",
         collapsed ? "w-16" : "w-64"
       )}
     >
@@ -220,21 +219,23 @@ export function DashboardSidebar() {
         )}
       </div>
 
-      <ScrollArea className="flex-1 px-3 py-4">
-        <div className="space-y-1">
-          {filteredNavItems.map((item) => (
-            <NavItem
-              key={item.to}
-              to={item.to}
-              label={item.label}
-              icon={item.icon}
-              isActive={pathname === item.to}
-              badge={item.badge}
-              collapsed={collapsed}
-            />
-          ))}
-        </div>
-      </ScrollArea>
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ScrollArea className="h-full px-3 py-4">
+          <div className="space-y-1">
+            {filteredNavItems.map((item) => (
+              <NavItem
+                key={item.to}
+                to={item.to}
+                label={item.label}
+                icon={item.icon}
+                isActive={pathname === item.to}
+                badge={item.badge}
+                collapsed={collapsed}
+              />
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
 
       <div className="border-t p-4 space-y-2">
         {!collapsed && (

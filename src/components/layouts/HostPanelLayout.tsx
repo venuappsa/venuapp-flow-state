@@ -30,17 +30,16 @@ export default function HostPanelLayout({ children }: HostPanelLayoutProps) {
       showFallback={true}
     >
       <div className="flex h-screen overflow-hidden bg-venu-soft-gray/30">
+        {/* Ensure the sidebar takes the full height */}
         <DashboardSidebar />
         <div className="flex-1 flex flex-col">
           <HostHeader />
           {/* Add SystemBanners right under the header */}
           <SystemBanners />
           <div className="flex-1 overflow-auto pt-16">
-            <ScrollArea className="h-full">
-              <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
-                {children || <Outlet />}
-              </main>
-            </ScrollArea>
+            <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
+              {children || <Outlet />}
+            </main>
           </div>
         </div>
       </div>

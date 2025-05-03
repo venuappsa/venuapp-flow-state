@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -252,36 +251,38 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
         )}
       </div>
       
-      <ScrollArea className="flex-1">
-        <nav className="px-2 py-4">
-          {navigationCategories.map((category, index) => (
-            <div key={category.category} className="mb-4">
-              {!collapsed && (
-                <h4 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {category.category}
-                </h4>
-              )}
-              <div className="grid gap-1">
-                {category.items.map((item) => (
-                  <NavItem
-                    key={item.href}
-                    to={item.href}
-                    label={item.label}
-                    icon={item.icon}
-                    isActive={pathname === item.href}
-                    badge={item.badge}
-                    collapsed={collapsed}
-                    onClick={onNavItemClick}
-                  />
-                ))}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <nav className="px-2 py-4">
+            {navigationCategories.map((category, index) => (
+              <div key={category.category} className="mb-4">
+                {!collapsed && (
+                  <h4 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {category.category}
+                  </h4>
+                )}
+                <div className="grid gap-1">
+                  {category.items.map((item) => (
+                    <NavItem
+                      key={item.href}
+                      to={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      isActive={pathname === item.href}
+                      badge={item.badge}
+                      collapsed={collapsed}
+                      onClick={onNavItemClick}
+                    />
+                  ))}
+                </div>
+                {index < navigationCategories.length - 1 && (
+                  <Separator className="my-4 mx-3" />
+                )}
               </div>
-              {index < navigationCategories.length - 1 && (
-                <Separator className="my-4 mx-3" />
-              )}
-            </div>
-          ))}
-        </nav>
-      </ScrollArea>
+            ))}
+          </nav>
+        </ScrollArea>
+      </div>
       
       <div className="mt-auto p-4 border-t">
         {!collapsed && (

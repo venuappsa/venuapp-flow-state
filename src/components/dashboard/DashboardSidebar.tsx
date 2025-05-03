@@ -220,20 +220,22 @@ export function DashboardSidebar() {
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full w-full px-3 py-4">
-          <div className="space-y-1">
-            {filteredNavItems.map((item) => (
-              <NavItem
-                key={item.to}
-                to={item.to}
-                label={item.label}
-                icon={item.icon}
-                isActive={pathname === item.to}
-                badge={item.badge}
-                collapsed={collapsed}
-              />
-            ))}
+      <div className="flex-1 h-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="px-3 py-4">
+            <div className="space-y-1">
+              {filteredNavItems.map((item) => (
+                <NavItem
+                  key={item.to}
+                  to={item.to}
+                  label={item.label}
+                  icon={item.icon}
+                  isActive={pathname === item.to}
+                  badge={item.badge}
+                  collapsed={collapsed}
+                />
+              ))}
+            </div>
           </div>
         </ScrollArea>
       </div>

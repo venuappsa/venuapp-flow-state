@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -60,11 +59,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
-      {!isLoading && (
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <SystemBanners />
-        </div>
-      )}
+      {/* Remove the fixed position banner from here as it will be positioned within each layout */}
       <Routes>
         {/* Home Route */}
         <Route path="/" element={<Home />} />

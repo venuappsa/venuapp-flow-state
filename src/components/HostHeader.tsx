@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -19,6 +18,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
+import AuthService from "@/services/AuthService";
 
 export default function HostHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -63,21 +63,9 @@ export default function HostHeader() {
     .substring(0, 2);
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account"
-      });
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Error signing out",
-        description: "Please try again",
-        variant: "destructive"
-      });
+    const success = await AuthService.signOut();
+    if (success) {
+      navigate("/auth");
     }
   };
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -286,17 +285,13 @@ export default function AdminReportsPage() {
                   className="h-[300px]"
                 >
                   <PieArcSeries innerRadius={40}>
-                    {({ arcPath, arcData, onMouseEnter, onMouseLeave }) => (
+                    {userTypesData.map((_, index) => (
                       <PieArc
-                        key={`arc-${arcData.index}`}
-                        arcPath={arcPath}
-                        color={arcData.color}
+                        key={`arc-${index}`}
+                        color={["#8B5CF6", "#10B981", "#F59E0B"][index % 3]}
                         strokeWidth={2}
-                        onMouseEnter={onMouseEnter}
-                        onMouseLeave={onMouseLeave}
-                        tooltip
                       />
-                    )}
+                    ))}
                   </PieArcSeries>
                 </PieChart>
               </div>
@@ -326,17 +321,13 @@ export default function AdminReportsPage() {
                   className="h-[300px]"
                 >
                   <PieArcSeries innerRadius={40}>
-                    {({ arcPath, arcData, onMouseEnter, onMouseLeave }) => (
+                    {eventCategoriesData.map((_, index) => (
                       <PieArc
-                        key={`arc-${arcData.index}`}
-                        arcPath={arcPath}
-                        color={arcData.color}
+                        key={`arc-${index}`}
+                        color={["#F59E0B", "#10B981", "#8B5CF6", "#3B82F6"][index % 4]}
                         strokeWidth={2}
-                        onMouseEnter={onMouseEnter}
-                        onMouseLeave={onMouseLeave}
-                        tooltip
                       />
-                    )}
+                    ))}
                   </PieArcSeries>
                 </PieChart>
               </div>
@@ -366,17 +357,13 @@ export default function AdminReportsPage() {
                   className="h-[300px]"
                 >
                   <PieArcSeries innerRadius={40}>
-                    {({ arcPath, arcData, onMouseEnter, onMouseLeave }) => (
+                    {revenueSourcesData.map((_, index) => (
                       <PieArc
-                        key={`arc-${arcData.index}`}
-                        arcPath={arcPath}
-                        color={arcData.color}
+                        key={`arc-${index}`}
+                        color={["#3B82F6", "#10B981", "#F59E0B"][index % 3]}
                         strokeWidth={2}
-                        onMouseEnter={onMouseEnter}
-                        onMouseLeave={onMouseLeave}
-                        tooltip
                       />
-                    )}
+                    ))}
                   </PieArcSeries>
                 </PieChart>
               </div>

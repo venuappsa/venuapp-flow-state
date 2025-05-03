@@ -195,7 +195,8 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
   ];
   
   return (
-    <div className={cn("flex h-full flex-col bg-background border-r relative", 
+    <div className={cn(
+      "flex h-full flex-col bg-background border-r",
       className,
       collapsed ? "w-16" : "w-64"
     )}>
@@ -252,7 +253,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
         )}
       </div>
       
-      <div className="flex-1 h-0 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <ScrollArea className="h-full">
           <div className="px-2 py-4">
             {navigationCategories.map((category, index) => (

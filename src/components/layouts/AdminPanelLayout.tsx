@@ -25,7 +25,7 @@ export default function AdminPanelLayout({ children }: AdminPanelLayoutProps) {
     >
       <div className="flex h-screen overflow-hidden bg-background">
         {/* Sidebar with proper height */}
-        <CollapsibleAdminSidebar className="hidden md:block h-screen" />
+        <CollapsibleAdminSidebar className="hidden md:flex h-screen" />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <AdminHeader />
           {/* Add SystemBanners right under the header */}

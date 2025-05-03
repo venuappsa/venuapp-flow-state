@@ -220,7 +220,7 @@ export function DashboardSidebar() {
         )}
       </div>
 
-      <div className="flex-1 h-0 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <ScrollArea className="h-full">
           <div className="px-3 py-4">
             <div className="space-y-1">

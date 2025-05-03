@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, BrowserRouter } from "react-router-dom";
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { usePlatformSettings } from '@/contexts/PlatformSettingsContext';
@@ -59,6 +59,14 @@ import VendorSettingsPage from './pages/vendor/VendorSettingsPage';
 // Fetchman pages
 import FetchmanDashboardPage from './pages/fetchman/FetchmanDashboardPage';
 import FetchmanOnboardingPage from './pages/fetchman/FetchmanOnboardingPage';
+import FetchmanPanelLayout from './components/layouts/FetchmanPanelLayout';
+import AuthProtected from './components/AuthProtected';
+import FetchmanEarningsPage from './pages/fetchman/FetchmanEarningsPage';
+import FetchmanSettingsPage from './pages/fetchman/FetchmanSettingsPage';
+import FetchmanSchedulePage from './pages/fetchman/FetchmanSchedulePage';
+import FetchmanAssignmentsPage from './pages/fetchman/FetchmanAssignmentsPage';
+import FetchmanNotificationsPage from './pages/fetchman/FetchmanNotificationsPage';
+import FetchmanMessagesPage from './pages/fetchman/FetchmanMessagesPage';
 
 // Other components
 import SystemBanners from './components/banners/SystemBanners';
@@ -73,7 +81,7 @@ function App() {
   };
 
   return (
-    <>
+    <BrowserRouter>
       <ScrollToTop />
       <SystemBanners />
       <Routes>
@@ -289,29 +297,40 @@ function App() {
           </AuthTransitionWrapper>
         } />
         
-        {/* Fetchman Panel Routes */}
-        <Route path="/fetchman" element={
-          <AuthTransitionWrapper requireAuth={true} allowedRoles={["fetchman"]}>
-            <FetchmanDashboardPage />
-          </AuthTransitionWrapper>
-        } />
-        <Route path="/fetchman/dashboard" element={
-          <AuthTransitionWrapper requireAuth={true} allowedRoles={["fetchman"]}>
-            <FetchmanDashboardPage />
-          </AuthTransitionWrapper>
-        } />
-        <Route path="/fetchman/onboarding" element={
-          <AuthTransitionWrapper requireAuth={true} allowedRoles={["fetchman"]}>
-            <FetchmanOnboardingPage />
-          </AuthTransitionWrapper>
-        } />
+        {/* Fetchman Routes */}
+        <Route
+          path="/fetchman"
+          element={
+            <AuthProtected requiredRoles={["fetchman"]}>
+              <FetchmanPanelLayout />
+            </AuthProtected>
+          }
+        >
+          <Route index element={<FetchmanDashboardPage />} />
+          <Route path="dashboard" element={<FetchmanDashboardPage />} />
+          <Route path="earnings" element={<FetchmanEarningsPage />} />
+          <Route path="schedule" element={<FetchmanSchedulePage />} />
+          <Route path="assignments" element={<FetchmanAssignmentsPage />} />
+          <Route path="notifications" element={<FetchmanNotificationsPage />} />
+          <Route path="messages" element={<FetchmanMessagesPage />} />
+          <Route path="settings" element={<FetchmanSettingsPage />} />
+        </Route>
+        
+        <Route 
+          path="/fetchman/onboarding" 
+          element={
+            <AuthProtected>
+              <FetchmanOnboardingPage />
+            </AuthProtected>
+          } 
+        />
         
         {/* Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
       <SonnerToaster />
-    </>
+    </BrowserRouter>
   );
 }
 

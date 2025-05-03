@@ -188,7 +188,17 @@ export const UserService = {
   /**
    * Create a fetchman profile for an existing user
    */
-  createFetchmanProfile: async (userId: string, data: any): Promise<boolean> => {
+  createFetchmanProfile: async (userId: string, data: {
+    vehicle_type: string;
+    work_hours: string;
+    service_area: string;
+    phone_number: string;
+    identity_number: string;
+    has_own_transport: boolean;
+    bank_account_number: string;
+    bank_name: string;
+    branch_code: string;
+  }): Promise<boolean> => {
     try {
       // Add fetchman role if not exists
       const { error: roleError } = await supabase
@@ -205,7 +215,7 @@ export const UserService = {
         return false;
       }
 
-      // Create fetchman profile - we'll need to create this table later
+      // Create fetchman profile
       const { error: profileError } = await supabase
         .from('fetchman_profiles')
         .insert({
@@ -262,7 +272,9 @@ export const UserService = {
         case "merchant":
           tableName = "vendor_profiles";
           break;
-        // We'll add fetchman later once we create the table
+        case "fetchman":
+          tableName = "fetchman_profiles";
+          break;
         default:
           return null;
       }

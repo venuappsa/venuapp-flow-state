@@ -138,6 +138,138 @@ export type Database = {
         }
         Relationships: []
       }
+      fetchman_deliveries: {
+        Row: {
+          completion_time: string | null
+          created_at: string
+          dropoff_location: string
+          event_id: string | null
+          fee: number
+          fetchman_id: string | null
+          id: string
+          items: Json | null
+          notes: string | null
+          pickup_location: string
+          rating: number | null
+          scheduled_time: string
+          status: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          completion_time?: string | null
+          created_at?: string
+          dropoff_location: string
+          event_id?: string | null
+          fee: number
+          fetchman_id?: string | null
+          id?: string
+          items?: Json | null
+          notes?: string | null
+          pickup_location: string
+          rating?: number | null
+          scheduled_time: string
+          status?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          completion_time?: string | null
+          created_at?: string
+          dropoff_location?: string
+          event_id?: string | null
+          fee?: number
+          fetchman_id?: string | null
+          id?: string
+          items?: Json | null
+          notes?: string | null
+          pickup_location?: string
+          rating?: number | null
+          scheduled_time?: string
+          status?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fetchman_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fetchman_deliveries_fetchman_id_fkey"
+            columns: ["fetchman_id"]
+            isOneToOne: false
+            referencedRelation: "fetchman_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      fetchman_profiles: {
+        Row: {
+          bank_account_number: string
+          bank_name: string
+          branch_code: string
+          created_at: string
+          current_location: Json | null
+          has_own_transport: boolean
+          id: string
+          identity_number: string
+          is_suspended: boolean | null
+          phone_number: string
+          rating: number | null
+          service_area: string
+          total_deliveries: number | null
+          updated_at: string
+          user_id: string
+          vehicle_type: string
+          verification_status: string
+          work_hours: string
+        }
+        Insert: {
+          bank_account_number: string
+          bank_name: string
+          branch_code: string
+          created_at?: string
+          current_location?: Json | null
+          has_own_transport?: boolean
+          id?: string
+          identity_number: string
+          is_suspended?: boolean | null
+          phone_number: string
+          rating?: number | null
+          service_area: string
+          total_deliveries?: number | null
+          updated_at?: string
+          user_id: string
+          vehicle_type: string
+          verification_status?: string
+          work_hours: string
+        }
+        Update: {
+          bank_account_number?: string
+          bank_name?: string
+          branch_code?: string
+          created_at?: string
+          current_location?: Json | null
+          has_own_transport?: boolean
+          id?: string
+          identity_number?: string
+          is_suspended?: boolean | null
+          phone_number?: string
+          rating?: number | null
+          service_area?: string
+          total_deliveries?: number | null
+          updated_at?: string
+          user_id?: string
+          vehicle_type?: string
+          verification_status?: string
+          work_hours?: string
+        }
+        Relationships: []
+      }
       host_profiles: {
         Row: {
           company_name: string | null

@@ -1,146 +1,183 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@/hooks/useUser";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useUser } from "@/hooks/useUser";
+import { useToast } from "@/components/ui/use-toast";
+import { UserService } from "@/services/UserService";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader, Truck, Clock, MapPin, Smartphone, CreditCard } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { UserService } from "@/services/UserService";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader, MapPin, Truck, Clock, Briefcase, CreditCard, AlertCircle } from "lucide-react";
 
-const fetchmanFormSchema = z.object({
-  vehicleType: z.enum(["bicycle", "scooter", "motorcycle", "car", "van"]),
-  workHours: z.string().min(1, "Please specify your available work hours"),
-  serviceArea: z.string().min(2, "Please specify your service area"),
-  phoneNumber: z.string().min(10, "Please enter a valid phone number"),
-  identityNumber: z.string().min(6, "Please enter a valid identity number"),
-  hasOwnTransport: z.boolean(),
-  bankAccountNumber: z.string().min(5, "Please enter a valid bank account number"),
-  bankName: z.string().min(2, "Please enter your bank name"),
-  branchCode: z.string().min(4, "Please enter your branch code"),
-  termsAgreed: z.boolean().refine(val => val === true, {
-    message: "You must agree to the terms and conditions",
-  }),
+const fetchmanSchema = z.object({
+  vehicle_type: z.string().min(1, "Vehicle type is required"),
+  work_hours: z.string().min(1, "Work hours are required"),
+  service_area: z.string().min(1, "Service area is required"),
+  phone_number: z.string().min(10, "Phone number must be at least 10 digits"),
+  identity_number: z.string().min(6, "ID number is required"),
+  has_own_transport: z.boolean(),
+  bank_account_number: z.string().min(6, "Bank account number is required"),
+  bank_name: z.string().min(2, "Bank name is required"),
+  branch_code: z.string().min(1, "Branch code is required"),
 });
 
 export default function FetchmanOnboardingPage() {
   const { user } = useUser();
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   
-  const form = useForm<z.infer<typeof fetchmanFormSchema>>({
-    resolver: zodResolver(fetchmanFormSchema),
+  const form = useForm<z.infer<typeof fetchmanSchema>>({
+    resolver: zodResolver(fetchmanSchema),
     defaultValues: {
-      vehicleType: "scooter",
-      workHours: "",
-      serviceArea: "",
-      phoneNumber: "",
-      identityNumber: "",
-      hasOwnTransport: false,
-      bankAccountNumber: "",
-      bankName: "",
-      branchCode: "",
-      termsAgreed: false,
-    }
+      vehicle_type: "",
+      work_hours: "Full-time (9AM-5PM, Mon-Fri)",
+      service_area: "",
+      phone_number: "",
+      identity_number: "",
+      has_own_transport: false,
+      bank_account_number: "",
+      bank_name: "",
+      branch_code: "",
+    },
   });
   
-  const onSubmit = async (data: z.infer<typeof fetchmanFormSchema>) => {
+  const onSubmit = async (values: z.infer<typeof fetchmanSchema>) => {
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to continue with fetchman registration",
-        variant: "destructive"
-      });
-      navigate("/auth/login");
+      setErrorMessage("You must be logged in to complete your profile");
       return;
     }
     
-    setIsSubmitting(true);
+    setIsLoading(true);
+    setErrorMessage("");
     
     try {
-      const success = await UserService.createFetchmanProfile(user.id, {
-        vehicle_type: data.vehicleType,
-        work_hours: data.workHours,
-        service_area: data.serviceArea,
-        phone_number: data.phoneNumber,
-        identity_number: data.identityNumber,
-        has_own_transport: data.hasOwnTransport,
-        bank_account_number: data.bankAccountNumber,
-        bank_name: data.bankName,
-        branch_code: data.branchCode,
-      });
+      const success = await UserService.createFetchmanProfile(user.id, values);
       
       if (success) {
         toast({
-          title: "Registration successful",
-          description: "Your fetchman profile has been created. You will be notified when approved."
+          title: "Profile created successfully",
+          description: "Your fetchman profile has been set up. You can now start accepting deliveries.",
         });
+        
+        // Redirect to dashboard
         navigate("/fetchman/dashboard");
       } else {
-        toast({
-          title: "Registration failed",
-          description: "There was an error creating your fetchman profile. Please try again.",
-          variant: "destructive"
-        });
+        setErrorMessage("There was an error creating your profile. Please try again.");
       }
-    } catch (error) {
-      console.error("Error during fetchman registration:", error);
-      toast({
-        title: "Registration error",
-        description: "An unexpected error occurred. Please try again later.",
-        variant: "destructive"
-      });
+    } catch (error: any) {
+      console.error("Error during fetchman onboarding:", error);
+      setErrorMessage(error.message || "An unexpected error occurred. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
   
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <div className="container max-w-3xl py-8 mx-auto">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold flex items-center justify-center">
+          <Truck className="mr-2 h-6 w-6" />
+          Complete Your Fetchman Profile
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Enter your details below to start your journey as a Fetchman delivery driver
+        </p>
+      </div>
+      
+      {errorMessage && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+      
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl flex items-center">
-            <Truck className="mr-2" /> Fetchman Registration
-          </CardTitle>
+          <CardTitle>Personal & Vehicle Information</CardTitle>
           <CardDescription>
-            Complete this form to register as a Fetchman and start providing delivery services
+            Tell us about yourself and your transportation
           </CardDescription>
         </CardHeader>
         
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="vehicleType"
+                  name="phone_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="+27 71 234 5678" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        We'll use this to contact you about deliveries
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="identity_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ID Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter your ID number" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Required for verification and payment processing
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Separator className="my-6" />
+                <h3 className="text-lg font-medium flex items-center">
+                  <Truck className="mr-2 h-5 w-5" /> 
+                  Transport Information
+                </h3>
+                
+                <FormField
+                  control={form.control}
+                  name="vehicle_type"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Vehicle Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select your vehicle" />
+                            <SelectValue placeholder="Select your vehicle type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="bicycle">Bicycle</SelectItem>
-                          <SelectItem value="scooter">Scooter</SelectItem>
-                          <SelectItem value="motorcycle">Motorcycle</SelectItem>
                           <SelectItem value="car">Car</SelectItem>
-                          <SelectItem value="van">Van</SelectItem>
+                          <SelectItem value="motorcycle">Motorcycle</SelectItem>
+                          <SelectItem value="bicycle">Bicycle</SelectItem>
+                          <SelectItem value="van">Van/Delivery Vehicle</SelectItem>
+                          <SelectItem value="truck">Small Truck</SelectItem>
+                          <SelectItem value="none">No Vehicle</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        The type of vehicle you'll use for deliveries
+                        Select the primary vehicle you'll use for deliveries
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -149,18 +186,52 @@ export default function FetchmanOnboardingPage() {
                 
                 <FormField
                   control={form.control}
-                  name="workHours"
+                  name="has_own_transport"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Own Transport</FormLabel>
+                        <FormDescription>
+                          Do you have your own reliable transport?
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <Separator className="my-6" />
+                <h3 className="text-lg font-medium flex items-center">
+                  <Clock className="mr-2 h-5 w-5" /> 
+                  Availability & Service Area
+                </h3>
+                
+                <FormField
+                  control={form.control}
+                  name="work_hours"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Available Work Hours</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                          <Input placeholder="e.g. Weekdays 9-5, Weekends 10-4" className="pl-10" {...field} />
-                        </div>
-                      </FormControl>
+                      <FormLabel>Preferred Work Hours</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your preferred work hours" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Full-time (9AM-5PM, Mon-Fri)">Full-time (9AM-5PM, Mon-Fri)</SelectItem>
+                          <SelectItem value="Evenings & Weekends">Evenings & Weekends</SelectItem>
+                          <SelectItem value="Weekends Only">Weekends Only</SelectItem>
+                          <SelectItem value="Flexible Hours">Flexible Hours</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormDescription>
-                        When are you available for deliveries?
+                        When are you typically available for deliveries?
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -169,114 +240,56 @@ export default function FetchmanOnboardingPage() {
                 
                 <FormField
                   control={form.control}
-                  name="serviceArea"
+                  name="service_area"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Service Area</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                          <Input placeholder="e.g. Central Johannesburg, Sandton" className="pl-10" {...field} />
-                        </div>
-                      </FormControl>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-400" />
+                        <FormControl>
+                          <Input placeholder="e.g. Johannesburg Central, Sandton, Rosebank" {...field} />
+                        </FormControl>
+                      </div>
                       <FormDescription>
-                        Areas where you're able to make deliveries
+                        Enter neighborhoods or areas you can service
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                
+                <Separator className="my-6" />
+                <h3 className="text-lg font-medium flex items-center">
+                  <CreditCard className="mr-2 h-5 w-5" /> 
+                  Banking Details
+                </h3>
                 
                 <FormField
                   control={form.control}
-                  name="phoneNumber"
+                  name="bank_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
+                      <FormLabel>Bank Name</FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                          <Input placeholder="+27 21 123 4567" className="pl-10" {...field} />
-                        </div>
+                        <Input placeholder="e.g. Standard Bank, FNB, Absa" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Your contact number for delivery coordination
+                        Your bank name for payment deposits
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="identityNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Identity Number / Passport Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      For verification purposes (secured and encrypted)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="hasOwnTransport"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        I have my own transport for deliveries
-                      </FormLabel>
-                      <FormDescription>
-                        Confirm that you have access to the vehicle type you selected
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              
-              <div className="border p-4 rounded-md bg-gray-50">
-                <h3 className="font-medium mb-4">Banking Details for Payments</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField
                     control={form.control}
-                    name="bankName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bank Name</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                            <Input placeholder="e.g. Standard Bank" className="pl-10" {...field} />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="bankAccountNumber"
+                    name="bank_account_number"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Account Number</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input placeholder="Your account number" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -285,12 +298,12 @@ export default function FetchmanOnboardingPage() {
                   
                   <FormField
                     control={form.control}
-                    name="branchCode"
+                    name="branch_code"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Branch Code</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input placeholder="Your branch code" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -299,55 +312,31 @@ export default function FetchmanOnboardingPage() {
                 </div>
               </div>
               
-              <FormField
-                control={form.control}
-                name="termsAgreed"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        I agree to the Terms and Conditions
-                      </FormLabel>
-                      <FormDescription>
-                        By checking this box, you agree to our{" "}
-                        <a href="/terms" className="text-venu-orange hover:underline">Terms of Service</a>{" "}
-                        and{" "}
-                        <a href="/privacy" className="text-venu-orange hover:underline">Privacy Policy</a>
-                      </FormDescription>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button
-                type="submit"
+              <Button 
+                type="submit" 
                 className="w-full bg-venu-orange hover:bg-venu-dark-orange"
-                disabled={isSubmitting}
+                disabled={isLoading}
               >
-                {isSubmitting ? (
+                {isLoading ? (
                   <>
                     <Loader className="mr-2 h-4 w-4 animate-spin" />
                     Submitting...
                   </>
                 ) : (
-                  "Submit Application"
+                  "Complete Registration & Continue"
                 )}
               </Button>
             </form>
           </Form>
         </CardContent>
         
-        <CardFooter className="flex flex-col text-sm text-gray-500">
-          <p>
-            Your application will be reviewed by our team. You'll be notified when approved.
-          </p>
+        <CardFooter className="flex flex-col space-y-4 border-t bg-gray-50 px-6 py-4">
+          <div className="text-sm text-gray-500">
+            <h4 className="font-medium">What happens next?</h4>
+            <p className="mt-1">
+              After submission, our team will review your details. Once approved, you'll be able to accept delivery assignments in your service area.
+            </p>
+          </div>
         </CardFooter>
       </Card>
     </div>

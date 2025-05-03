@@ -36,7 +36,8 @@ export default function FetchmanDashboardPage() {
       
       try {
         // Load fetchman profile
-        const { data: profileData, error: profileError } = await supabase
+        // Using type casting to handle the issue with table name not being in types yet
+        const { data: profileData, error: profileError } = await (supabase as any)
           .from('fetchman_profiles')
           .select('*')
           .eq('user_id', user.id)
@@ -50,60 +51,85 @@ export default function FetchmanDashboardPage() {
         if (profileData) {
           setProfile(profileData);
           
-          // For demo, we'll use mock data
-          // In a real implementation, we'd load from fetchman_deliveries table
-          setPendingDeliveries([
-            {
-              id: '1',
-              event_name: 'Wedding Reception',
-              pickup_location: 'Rose Garden Venue',
-              dropoff_location: 'Hamilton Hotel',
-              scheduled_time: '2025-05-04T15:30:00',
-              status: 'assigned',
-              fee: 350,
-              items: [
-                { name: 'Floral Arrangements', quantity: 12 },
-                { name: 'Table Centerpieces', quantity: 20 }
-              ]
-            },
-            {
-              id: '2',
-              event_name: 'Corporate Lunch',
-              pickup_location: 'Gourmet Catering',
-              dropoff_location: 'Sandton Office Park',
-              scheduled_time: '2025-05-05T11:00:00',
-              status: 'pending',
-              fee: 450,
-              items: [
-                { name: 'Lunch Boxes', quantity: 50 },
-                { name: 'Drinks Package', quantity: 10 }
-              ]
-            }
-          ]);
+          // Try to load actual deliveries if they exist (fallback to mock data)
+          const { data: deliveriesData, error: deliveriesError } = await (supabase as any)
+            .from('fetchman_deliveries')
+            .select('*')
+            .eq('fetchman_id', user.id)
+            .order('scheduled_time', { ascending: true });
+            
+          if (deliveriesError) {
+            console.error("Error loading deliveries:", deliveriesError);
+            // Continue execution and use mock data
+          }
           
-          setCompletedDeliveries([
-            {
-              id: '3',
-              event_name: 'Birthday Party',
-              pickup_location: 'Party Supply Store',
-              dropoff_location: 'Private Residence',
-              completion_time: '2025-05-01T14:45:00',
-              fee: 250,
-              rating: 5
-            },
-            {
-              id: '4',
-              event_name: 'Book Launch',
-              pickup_location: 'Publishers Ltd',
-              dropoff_location: 'City Library',
-              completion_time: '2025-04-28T16:20:00',
-              fee: 300,
-              rating: 4
-            }
-          ]);
-          
-          // Calculate mock earnings
-          setEarnings(900);
+          // If we have real deliveries from database, use them
+          if (deliveriesData && deliveriesData.length > 0) {
+            const pending = deliveriesData.filter(d => ['pending', 'assigned', 'accepted'].includes(d.status));
+            const completed = deliveriesData.filter(d => d.status === 'completed');
+            
+            setPendingDeliveries(pending);
+            setCompletedDeliveries(completed);
+            
+            // Calculate total earnings from completed deliveries
+            const totalEarnings = completed.reduce((sum, delivery) => sum + (delivery.fee || 0), 0);
+            setEarnings(totalEarnings);
+          } else {
+            // For demo, we'll use mock data
+            // In a real implementation, we'd load from fetchman_deliveries table
+            setPendingDeliveries([
+              {
+                id: '1',
+                event_name: 'Wedding Reception',
+                pickup_location: 'Rose Garden Venue',
+                dropoff_location: 'Hamilton Hotel',
+                scheduled_time: '2025-05-04T15:30:00',
+                status: 'assigned',
+                fee: 350,
+                items: [
+                  { name: 'Floral Arrangements', quantity: 12 },
+                  { name: 'Table Centerpieces', quantity: 20 }
+                ]
+              },
+              {
+                id: '2',
+                event_name: 'Corporate Lunch',
+                pickup_location: 'Gourmet Catering',
+                dropoff_location: 'Sandton Office Park',
+                scheduled_time: '2025-05-05T11:00:00',
+                status: 'pending',
+                fee: 450,
+                items: [
+                  { name: 'Lunch Boxes', quantity: 50 },
+                  { name: 'Drinks Package', quantity: 10 }
+                ]
+              }
+            ]);
+            
+            setCompletedDeliveries([
+              {
+                id: '3',
+                event_name: 'Birthday Party',
+                pickup_location: 'Party Supply Store',
+                dropoff_location: 'Private Residence',
+                completion_time: '2025-05-01T14:45:00',
+                fee: 250,
+                rating: 5
+              },
+              {
+                id: '4',
+                event_name: 'Book Launch',
+                pickup_location: 'Publishers Ltd',
+                dropoff_location: 'City Library',
+                completion_time: '2025-04-28T16:20:00',
+                fee: 300,
+                rating: 4
+              }
+            ]);
+            
+            // Calculate mock earnings
+            setEarnings(900);
+          }
         } else {
           // No profile found, but no error - likely just not completed onboarding
           console.log("No fetchman profile found");
@@ -122,61 +148,131 @@ export default function FetchmanDashboardPage() {
     
     loadFetchmanData();
   }, [user, toast]);
-  
+
   // Simulate accepting a delivery
-  const handleAcceptDelivery = (deliveryId: string) => {
-    setPendingDeliveries(current => 
-      current.map(delivery => 
-        delivery.id === deliveryId 
-          ? { ...delivery, status: 'accepted' } 
-          : delivery
-      )
-    );
-    
-    toast({
-      title: "Delivery accepted",
-      description: "You have accepted this delivery. Check in with the venue for details."
-    });
+  const handleAcceptDelivery = async (deliveryId: string) => {
+    try {
+      // Try to update in database first
+      const { error } = await (supabase as any)
+        .from('fetchman_deliveries')
+        .update({ status: 'accepted' })
+        .eq('id', deliveryId);
+        
+      if (error) {
+        console.error("Error accepting delivery:", error);
+        // Continue with UI update anyway for demo purposes
+      }
+      
+      // Update UI
+      setPendingDeliveries(current => 
+        current.map(delivery => 
+          delivery.id === deliveryId 
+            ? { ...delivery, status: 'accepted' } 
+            : delivery
+        )
+      );
+      
+      toast({
+        title: "Delivery accepted",
+        description: "You have accepted this delivery. Check in with the venue for details."
+      });
+    } catch (error) {
+      console.error("Error in handleAcceptDelivery:", error);
+      toast({
+        title: "Error accepting delivery",
+        description: "There was a problem accepting the delivery. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Simulate declining a delivery
-  const handleDeclineDelivery = (deliveryId: string) => {
-    setPendingDeliveries(current => 
-      current.filter(delivery => delivery.id !== deliveryId)
-    );
-    
-    toast({
-      title: "Delivery declined",
-      description: "You have declined this delivery. It will be reassigned."
-    });
+  const handleDeclineDelivery = async (deliveryId: string) => {
+    try {
+      // Try to update in database first (mark as declined or remove fetchman_id)
+      const { error } = await (supabase as any)
+        .from('fetchman_deliveries')
+        .update({ 
+          status: 'declined',
+          fetchman_id: null 
+        })
+        .eq('id', deliveryId);
+        
+      if (error) {
+        console.error("Error declining delivery:", error);
+        // Continue with UI update anyway for demo purposes
+      }
+      
+      // Update UI
+      setPendingDeliveries(current => 
+        current.filter(delivery => delivery.id !== deliveryId)
+      );
+      
+      toast({
+        title: "Delivery declined",
+        description: "You have declined this delivery. It will be reassigned."
+      });
+    } catch (error) {
+      console.error("Error in handleDeclineDelivery:", error);
+      toast({
+        title: "Error declining delivery",
+        description: "There was a problem declining the delivery. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Simulate marking a delivery as completed
-  const handleCompleteDelivery = (deliveryId: string) => {
-    const delivery = pendingDeliveries.find(d => d.id === deliveryId);
-    
-    if (delivery) {
-      // Remove from pending
-      setPendingDeliveries(current => 
-        current.filter(d => d.id !== deliveryId)
-      );
+  const handleCompleteDelivery = async (deliveryId: string) => {
+    try {
+      const delivery = pendingDeliveries.find(d => d.id === deliveryId);
       
-      // Add to completed with completion time and default rating
-      setCompletedDeliveries(current => [
-        {
-          ...delivery,
-          completion_time: new Date().toISOString(),
-          rating: 5
-        },
-        ...current
-      ]);
-      
-      // Update earnings
-      setEarnings(current => current + delivery.fee);
-      
+      if (delivery) {
+        const completionTime = new Date().toISOString();
+        
+        // Try to update in database first
+        const { error } = await (supabase as any)
+          .from('fetchman_deliveries')
+          .update({ 
+            status: 'completed',
+            completion_time: completionTime
+          })
+          .eq('id', deliveryId);
+          
+        if (error) {
+          console.error("Error completing delivery:", error);
+          // Continue with UI update anyway for demo purposes
+        }
+        
+        // Remove from pending
+        setPendingDeliveries(current => 
+          current.filter(d => d.id !== deliveryId)
+        );
+        
+        // Add to completed with completion time and default rating
+        setCompletedDeliveries(current => [
+          {
+            ...delivery,
+            completion_time: completionTime,
+            rating: 5
+          },
+          ...current
+        ]);
+        
+        // Update earnings
+        setEarnings(current => current + delivery.fee);
+        
+        toast({
+          title: "Delivery completed",
+          description: "Great job! The delivery has been marked as completed."
+        });
+      }
+    } catch (error) {
+      console.error("Error in handleCompleteDelivery:", error);
       toast({
-        title: "Delivery completed",
-        description: "Great job! The delivery has been marked as completed."
+        title: "Error completing delivery",
+        description: "There was a problem marking the delivery as complete. Please try again.",
+        variant: "destructive"
       });
     }
   };

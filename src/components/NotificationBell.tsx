@@ -159,7 +159,7 @@ export default function NotificationBell({ className }: NotificationBellProps) {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-80 z-50">
         <DropdownMenuLabel className="flex justify-between items-center">
           <span>Notifications</span>
           {totalUnreadCount > 0 && (

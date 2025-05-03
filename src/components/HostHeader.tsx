@@ -148,7 +148,7 @@ export default function HostHeader() {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuContent align="end" className="w-80 z-50">
               <DropdownMenuLabel className="flex justify-between items-center">
                 <span>Messages</span>
                 <Button variant="ghost" size="sm" className="text-xs h-6" asChild>
@@ -190,7 +190,7 @@ export default function HostHeader() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 z-50">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

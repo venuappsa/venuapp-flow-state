@@ -120,7 +120,7 @@ const VendorHeader = () => {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuContent align="end" className="w-80 z-50">
               <DropdownMenuLabel className="flex justify-between items-center">
                 <span>Messages</span>
                 <Button variant="ghost" size="sm" className="text-xs h-6" asChild>
@@ -163,7 +163,7 @@ const VendorHeader = () => {
                 <User className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="z-50">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

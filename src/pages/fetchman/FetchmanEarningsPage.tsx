@@ -8,6 +8,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface EarningsData {
   date: string;
@@ -16,6 +17,7 @@ interface EarningsData {
 
 export default function FetchmanEarningsPage() {
   const { user } = useUser();
+  const navigate = useNavigate();
   const [fetchmanProfile, setFetchmanProfile] = useState<any>(null);
   const [earningsData, setEarningsData] = useState<EarningsData[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);

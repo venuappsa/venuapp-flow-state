@@ -23,13 +23,18 @@ export interface FetchmanProfile {
   emergency_contact_phone?: string;
   emergency_contact_email?: string;
   emergency_contact_relationship?: string;
+  // Add the missing banking fields
+  bank_name?: string;
+  bank_account_number?: string;
+  branch_code?: string;
+  // Make the user field handle the possible error state
   user?: {
     id: string;
     email: string;
-    name?: string;
-    surname?: string;
-    phone?: string;
-  };
+    name?: string | null;
+    surname?: string | null;
+    phone?: string | null;
+  } | null;
 }
 
 export function useAllFetchmanProfiles(filter?: { status?: string }) {
@@ -66,7 +71,16 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           throw new Error(error.message);
         }
         
-        return (data || []) as FetchmanProfile[];
+        // Process each profile to ensure user exists or is null
+        const processedData = (data || []).map(profile => {
+          // If user has error property, it means the relation failed
+          if (profile.user && 'error' in profile.user) {
+            return { ...profile, user: null };
+          }
+          return profile;
+        }) as FetchmanProfile[];
+        
+        return processedData;
       } catch (error: any) {
         console.error("Error in all fetchman profiles query:", error);
         toast({

@@ -2,39 +2,30 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAllFetchmanProfiles } from "@/hooks/useAllFetchmanProfiles";
-import { useAllFetchmanAssignments } from "@/hooks/useFetchmanAssignments";
-import { format } from "date-fns";
 import {
-  AlertCircle,
-  CheckCircle,
-  Check,
-  XCircle,
-  Ban,
-  User,
-  Calendar,
-  FileText,
-  Upload,
-  Trash2,
-  Shield,
-  Clock,
-  RefreshCw,
-  ArrowRight,
-  ChevronRight,
-  Send,
-  MessageSquare
-} from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useAllFetchmanProfiles, FetchmanProfile } from "@/hooks/useAllFetchmanProfiles";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { AlertTriangle, CheckCircle, Search, ShieldAlert, Star, Truck, UserCog } from "lucide-react";
 
 export default function AdminFetchmanPage() {
-  const [selectedFetchman, setSelectedFetchman] = useState<any | null>(null);
+  const [selectedFetchman, setSelectedFetchman] = useState<FetchmanProfile | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [showBlacklistDialog, setShowBlacklistDialog] = useState(false);
   const [showPromoteDialog, setShowPromoteDialog] = useState(false);
@@ -51,9 +42,16 @@ export default function AdminFetchmanPage() {
   });
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [messageText, setMessageText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const statusFilter = activeTab !== "all" ? { status: activeTab } : undefined;
-  
+  const statusBadges: Record<string, JSX.Element> = {
+    active: <Badge className="bg-green-500">Active</Badge>,
+    suspended: <Badge className="bg-yellow-500">Suspended</Badge>,
+    pending: <Badge className="bg-blue-500">Pending</Badge>,
+    blacklisted: <Badge className="bg-red-500">Blacklisted</Badge>,
+  };
+
   const { 
     fetchmen, 
     isLoading: isLoadingFetchmen, 
@@ -66,10 +64,19 @@ export default function AdminFetchmanPage() {
     isCreatingAssignment
   } = useAllFetchmanProfiles(statusFilter);
 
-  const { 
-    data: assignments, 
-    isLoading: isLoadingAssignments
-  } = useAllFetchmanAssignments({ entityType: assignmentData.entityType });
+  const filteredFetchmen = fetchmen.filter((fetchman) => {
+    const lowerCaseSearch = searchQuery.toLowerCase();
+    return (
+      fetchman.user?.name?.toLowerCase().includes(lowerCaseSearch) ||
+      fetchman.user?.email?.toLowerCase().includes(lowerCaseSearch) ||
+      fetchman.user?.name?.includes(lowerCaseSearch) ||
+      fetchman.user?.email?.includes(lowerCaseSearch)
+    );
+  });
+
+  const handleSelectFetchman = (fetchman: FetchmanProfile) => {
+    setSelectedFetchman(fetchman);
+  };
 
   const handleBlacklist = async () => {
     if (selectedFetchman) {
@@ -124,13 +131,6 @@ export default function AdminFetchmanPage() {
     setMessageText("");
   };
 
-  const statusBadges: Record<string, JSX.Element> = {
-    active: <Badge className="bg-green-500">Active</Badge>,
-    suspended: <Badge className="bg-yellow-500">Suspended</Badge>,
-    pending: <Badge className="bg-blue-500">Pending</Badge>,
-    blacklisted: <Badge className="bg-red-500">Blacklisted</Badge>,
-  };
-
   if (isLoadingFetchmen) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -143,500 +143,564 @@ export default function AdminFetchmanPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Fetchman Management</h1>
-        <p className="text-gray-500">Manage fetchmen, their assignments, and promotions</p>
-      </div>
+    <div className="container mx-auto p-6 max-w-7xl">
+      <h1 className="text-3xl font-bold mb-2">Fetchman Management</h1>
+      <p className="text-gray-500 mb-6">Manage fetchman profiles, assignments, and promotions.</p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Fetchman List Panel */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-xl">Fetchmen</CardTitle>
-            <Tabs defaultValue="all" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-4 w-full">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="suspended">Suspended</TabsTrigger>
-                <TabsTrigger value="blacklisted">Blacklisted</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[500px]">
-              <div className="space-y-2">
-                {fetchmen.length > 0 ? (
-                  fetchmen.map((fetchman) => (
-                    <div
-                      key={fetchman.id}
-                      className={`p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors ${
-                        selectedFetchman?.id === fetchman.id ? "border-venu-orange bg-venu-orange/5" : "border-gray-200"
-                      }`}
-                      onClick={() => setSelectedFetchman(fetchman)}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-medium">{fetchman.user?.email || "No email"}</h3>
-                          <p className="text-sm text-gray-500">
-                            {fetchman.user?.name || ""} {fetchman.user?.surname || ""}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {statusBadges[fetchman.verification_status] || <Badge>Unknown</Badge>}
-                          <ChevronRight size={16} className="text-gray-400" />
-                        </div>
-                      </div>
-                      <div className="mt-2 text-xs text-gray-500">
-                        {fetchman.phone_number && (
-                          <p>📞 {fetchman.phone_number}</p>
-                        )}
-                        <p>Role: {fetchman.role || "Fetchman"}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No fetchmen found</p>
-                  </div>
-                )}
+      <Tabs defaultValue="profiles">
+        <TabsList className="mb-8">
+          <TabsTrigger value="profiles">Profiles</TabsTrigger>
+          <TabsTrigger value="verification">Verification Queue</TabsTrigger>
+          <TabsTrigger value="assignments">Assignments</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="profiles">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>All Fetchman Profiles</CardTitle>
+                <CardDescription>View and manage fetchman profiles</CardDescription>
               </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-
-        {/* Fetchman Detail Panel */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-xl">
-              {selectedFetchman ? (
-                <div className="flex justify-between items-center">
-                  <span>
-                    Fetchman Profile: {selectedFetchman.user?.name || ""} {selectedFetchman.user?.surname || ""}
-                  </span>
-                  <div className="space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setShowMessageDialog(true)}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-1" /> Message
-                    </Button>
-                  </div>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input 
+                    placeholder="Search fetchmen..." 
+                    className="pl-9 w-[250px]"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="verified">Verified</SelectItem>
+                    <SelectItem value="declined">Declined</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Loading fetchman profiles...</p>
+                </div>
+              ) : filteredFetchmen.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No fetchman profiles match your criteria.</p>
                 </div>
               ) : (
-                "Select a Fetchman"
-              )}
-            </CardTitle>
-          </CardHeader>
-
-          {!selectedFetchman ? (
-            <CardContent className="text-center py-16 text-gray-500">
-              <User size={64} className="mx-auto text-gray-300" />
-              <p className="mt-4">Select a fetchman from the list to view details</p>
-            </CardContent>
-          ) : (
-            <div>
-              <Tabs defaultValue="profile">
-                <CardHeader className="px-6 pt-0 pb-2">
-                  <TabsList className="grid grid-cols-5 w-full">
-                    <TabsTrigger value="profile">Profile</TabsTrigger>
-                    <TabsTrigger value="assignments">Assignments</TabsTrigger>
-                    <TabsTrigger value="documents">Documents</TabsTrigger>
-                    <TabsTrigger value="promotions">Promotions</TabsTrigger>
-                    <TabsTrigger value="messages">Messages</TabsTrigger>
-                  </TabsList>
-                </CardHeader>
-
-                <TabsContent value="profile">
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <h3 className="font-semibold">Personal Information</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <Label>First Name</Label>
-                            <p className="text-sm">{selectedFetchman.user?.name || "Not provided"}</p>
+                <div className="space-y-4">
+                  {filteredFetchmen.map((fetchman) => (
+                    <div
+                      key={fetchman.id}
+                      className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => handleSelectFetchman(fetchman)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div 
+                            className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
+                          >
+                            {fetchman.user?.name?.charAt(0) || fetchman.user?.email?.charAt(0) || "F"}
                           </div>
                           <div>
-                            <Label>Last Name</Label>
-                            <p className="text-sm">{selectedFetchman.user?.surname || "Not provided"}</p>
+                            <h3 className="font-medium">{fetchman.user?.email || "No email available"}</h3>
+                            <p className="text-sm text-gray-500">
+                              {fetchman.user?.name || ""} {fetchman.user?.surname || ""}
+                            </p>
                           </div>
                         </div>
-                        <div>
-                          <Label>Email</Label>
-                          <p className="text-sm">{selectedFetchman.user?.email || "Not provided"}</p>
-                        </div>
-                        <div>
-                          <Label>Phone Number</Label>
-                          <p className="text-sm">{selectedFetchman.phone_number || "Not provided"}</p>
-                        </div>
-                        <div>
-                          <Label>Address</Label>
-                          <p className="text-sm">{selectedFetchman.address || "Not provided"}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <h3 className="font-semibold">Professional Details</h3>
-                        <div>
-                          <Label>Current Role</Label>
-                          <p className="text-sm font-medium">
-                            {selectedFetchman.role || "Fetchman"}
-                          </p>
-                        </div>
-                        <div>
-                          <Label>Vehicle Type</Label>
-                          <p className="text-sm">
-                            {selectedFetchman.vehicle_type || "Not specified"}
-                          </p>
-                        </div>
-                        <div>
-                          <Label>Service Area</Label>
-                          <p className="text-sm">
-                            {selectedFetchman.service_area || "Not specified"}
-                          </p>
-                        </div>
-                        <div>
-                          <Label>Work Hours</Label>
-                          <p className="text-sm">
-                            {selectedFetchman.work_hours || "Not specified"}
-                          </p>
+                        <div className="flex items-center space-x-2">
+                          <Badge 
+                            variant={
+                              fetchman.verification_status === "verified" ? "success" :
+                              fetchman.verification_status === "pending" ? "outline" : "destructive"
+                            }
+                            className="capitalize"
+                          >
+                            {fetchman.verification_status}
+                          </Badge>
+                          {fetchman.is_suspended && (
+                            <Badge variant="warning">Suspended</Badge>
+                          )}
+                          {fetchman.is_blacklisted && (
+                            <Badge variant="destructive">Blacklisted</Badge>
+                          )}
+                          {fetchman.role && fetchman.role !== "fetchman" && (
+                            <Badge variant="secondary" className="capitalize">
+                              {fetchman.role}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="verification">
+          {/* ... keep existing code (verification queue content) */}
+        </TabsContent>
+        
+        <TabsContent value="assignments">
+          {/* ... keep existing code (assignments content) */}
+        </TabsContent>
+      </Tabs>
+      
+      {/* Selected Fetchman Profile Dialog */}
+      {selectedFetchman && (
+        <Dialog open={!!selectedFetchman} onOpenChange={() => setSelectedFetchman(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <div>
+                  Fetchman Profile: {selectedFetchman.user?.name || ""} {selectedFetchman.user?.surname || ""}
+                </div>
+              </DialogTitle>
+              <DialogDescription>
+                View and manage fetchman profile details
+              </DialogDescription>
+            </DialogHeader>
+            
+            <CardHeader>
+              <CardTitle className="text-xl">
+                {selectedFetchman ? (
+                  <div className="flex justify-between items-center">
+                    <span>
+                      Fetchman Profile: {selectedFetchman.user?.name || ""} {selectedFetchman.user?.surname || ""}
+                    </span>
+                    <div className="space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowMessageDialog(true)}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" /> Message
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  "Select a Fetchman"
+                )}
+              </CardTitle>
+            </CardHeader>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                      <div className="space-y-2">
-                        <h3 className="font-semibold">Mobility & Work Areas</h3>
-                        <div>
-                          <Label>Has Own Transport</Label>
-                          <p className="text-sm">
-                            {selectedFetchman.has_own_transport ? "Yes" : "No"}
-                          </p>
+            {!selectedFetchman ? (
+              <CardContent className="text-center py-16 text-gray-500">
+                <User size={64} className="mx-auto text-gray-300" />
+                <p className="mt-4">Select a fetchman from the list to view details</p>
+              </CardContent>
+            ) : (
+              <div>
+                <Tabs defaultValue="profile">
+                  <CardHeader className="px-6 pt-0 pb-2">
+                    <TabsList className="grid grid-cols-5 w-full">
+                      <TabsTrigger value="profile">Profile</TabsTrigger>
+                      <TabsTrigger value="assignments">Assignments</TabsTrigger>
+                      <TabsTrigger value="documents">Documents</TabsTrigger>
+                      <TabsTrigger value="promotions">Promotions</TabsTrigger>
+                      <TabsTrigger value="messages">Messages</TabsTrigger>
+                    </TabsList>
+                  </CardHeader>
+
+                  <TabsContent value="profile">
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <h3 className="font-semibold">Personal Information</h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <Label>First Name</Label>
+                              <p className="text-sm">{selectedFetchman.user?.name || "Not provided"}</p>
+                            </div>
+                            <div>
+                              <Label>Last Name</Label>
+                              <p className="text-sm">{selectedFetchman.user?.surname || "Not provided"}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <p className="text-sm">{selectedFetchman.user?.email || "Not provided"}</p>
+                          </div>
+                          <div>
+                            <Label>Phone Number</Label>
+                            <p className="text-sm">{selectedFetchman.phone_number || "Not provided"}</p>
+                          </div>
+                          <div>
+                            <Label>Address</Label>
+                            <p className="text-sm">{selectedFetchman.address || "Not provided"}</p>
+                          </div>
                         </div>
-                        <div>
-                          <Label>Mobility Preference</Label>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {selectedFetchman.mobility_preference ? (
-                              Object.entries(selectedFetchman.mobility_preference)
-                                .filter(([_, value]) => value === true)
-                                .map(([key]) => (
-                                  <Badge key={key} variant="outline" className="bg-blue-50">
-                                    {key.replace('_', ' ')}
+                        
+                        <div className="space-y-2">
+                          <h3 className="font-semibold">Professional Details</h3>
+                          <div>
+                            <Label>Current Role</Label>
+                            <p className="text-sm font-medium">
+                              {selectedFetchman.role || "Fetchman"}
+                            </p>
+                          </div>
+                          <div>
+                            <Label>Vehicle Type</Label>
+                            <p className="text-sm">
+                              {selectedFetchman.vehicle_type || "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <Label>Service Area</Label>
+                            <p className="text-sm">
+                              {selectedFetchman.service_area || "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <Label>Work Hours</Label>
+                            <p className="text-sm">
+                              {selectedFetchman.work_hours || "Not specified"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                        <div className="space-y-2">
+                          <h3 className="font-semibold">Mobility & Work Areas</h3>
+                          <div>
+                            <Label>Has Own Transport</Label>
+                            <p className="text-sm">
+                              {selectedFetchman.has_own_transport ? "Yes" : "No"}
+                            </p>
+                          </div>
+                          <div>
+                            <Label>Mobility Preference</Label>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {selectedFetchman.mobility_preference ? (
+                                Object.entries(selectedFetchman.mobility_preference)
+                                  .filter(([_, value]) => value === true)
+                                  .map(([key]) => (
+                                    <Badge key={key} variant="outline" className="bg-blue-50">
+                                      {key.replace('_', ' ')}
+                                    </Badge>
+                                  ))
+                              ) : (
+                                <span className="text-sm text-gray-500">Not specified</span>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Work Areas</Label>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {selectedFetchman.work_areas && selectedFetchman.work_areas.length > 0 ? (
+                                selectedFetchman.work_areas.map((area: string) => (
+                                  <Badge key={area} variant="outline" className="bg-green-50">
+                                    {area}
                                   </Badge>
                                 ))
-                            ) : (
-                              <span className="text-sm text-gray-500">Not specified</span>
-                            )}
+                              ) : (
+                                <span className="text-sm text-gray-500">Not specified</span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div>
-                          <Label>Work Areas</Label>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {selectedFetchman.work_areas && selectedFetchman.work_areas.length > 0 ? (
-                              selectedFetchman.work_areas.map((area: string) => (
-                                <Badge key={area} variant="outline" className="bg-green-50">
-                                  {area}
-                                </Badge>
-                              ))
-                            ) : (
-                              <span className="text-sm text-gray-500">Not specified</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <h3 className="font-semibold">Emergency Contact</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <Label>Name</Label>
-                            <p className="text-sm">
-                              {selectedFetchman.emergency_contact_name || "Not provided"}
-                            </p>
-                          </div>
-                          <div>
-                            <Label>Relationship</Label>
-                            <p className="text-sm">
-                              {selectedFetchman.emergency_contact_relationship || "Not provided"}
-                            </p>
-                          </div>
-                        </div>
-                        <div>
-                          <Label>Phone</Label>
-                          <p className="text-sm">
-                            {selectedFetchman.emergency_contact_phone || "Not provided"}
-                          </p>
-                        </div>
-                        <div>
-                          <Label>Email</Label>
-                          <p className="text-sm">
-                            {selectedFetchman.emergency_contact_email || "Not provided"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t">
-                      <h3 className="font-semibold mb-3">Account Control</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {!selectedFetchman.is_blacklisted && !selectedFetchman.is_suspended && (
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => updateStatus({
-                              fetchmanId: selectedFetchman.id,
-                              action: "suspend"
-                            })}
-                            disabled={isUpdatingStatus}
-                          >
-                            <Ban className="h-4 w-4 mr-2" />
-                            Suspend Account
-                          </Button>
-                        )}
                         
-                        {selectedFetchman.is_suspended && !selectedFetchman.is_blacklisted && (
+                        <div className="space-y-2">
+                          <h3 className="font-semibold">Emergency Contact</h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <Label>Name</Label>
+                              <p className="text-sm">
+                                {selectedFetchman.emergency_contact_name || "Not provided"}
+                              </p>
+                            </div>
+                            <div>
+                              <Label>Relationship</Label>
+                              <p className="text-sm">
+                                {selectedFetchman.emergency_contact_relationship || "Not provided"}
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Phone</Label>
+                            <p className="text-sm">
+                              {selectedFetchman.emergency_contact_phone || "Not provided"}
+                            </p>
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <p className="text-sm">
+                              {selectedFetchman.emergency_contact_email || "Not provided"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t">
+                        <h3 className="font-semibold mb-3">Account Control</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {!selectedFetchman.is_blacklisted && !selectedFetchman.is_suspended && (
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => updateStatus({
+                                fetchmanId: selectedFetchman.id,
+                                action: "suspend"
+                              })}
+                              disabled={isUpdatingStatus}
+                            >
+                              <Ban className="h-4 w-4 mr-2" />
+                              Suspend Account
+                            </Button>
+                          )}
+                          
+                          {selectedFetchman.is_suspended && !selectedFetchman.is_blacklisted && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => updateStatus({
+                                fetchmanId: selectedFetchman.id,
+                                action: "reinstate"
+                              })}
+                              disabled={isUpdatingStatus}
+                            >
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                              Reinstate Account
+                            </Button>
+                          )}
+                          
+                          {!selectedFetchman.is_blacklisted && (
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => setShowBlacklistDialog(true)}
+                              disabled={isUpdatingStatus}
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Blacklist
+                            </Button>
+                          )}
+                          
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            onClick={() => setShowPromoteDialog(true)}
+                          >
+                            <ArrowRight className="h-4 w-4 mr-2" />
+                            Promote
+                          </Button>
+                          
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => updateStatus({
-                              fetchmanId: selectedFetchman.id,
-                              action: "reinstate"
-                            })}
-                            disabled={isUpdatingStatus}
+                            onClick={() => setShowAssignDialog(true)}
                           >
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Reinstate Account
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Create Assignment
                           </Button>
-                        )}
-                        
-                        {!selectedFetchman.is_blacklisted && (
+                        </div>
+                      </div>
+                    </CardContent>
+                  </TabsContent>
+
+                  <TabsContent value="assignments">
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between">
+                          <h3 className="font-semibold">Assignment History</h3>
                           <Button 
-                            variant="destructive" 
+                            variant="outline" 
                             size="sm"
-                            onClick={() => setShowBlacklistDialog(true)}
-                            disabled={isUpdatingStatus}
+                            onClick={() => setShowAssignDialog(true)}
                           >
-                            <Shield className="h-4 w-4 mr-2" />
-                            Blacklist
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Create Assignment
                           </Button>
-                        )}
-                        
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          onClick={() => setShowPromoteDialog(true)}
-                        >
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Promote
-                        </Button>
-                        
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setShowAssignDialog(true)}
-                        >
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Create Assignment
-                        </Button>
+                        </div>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Entity</TableHead>
+                              <TableHead>Start Date</TableHead>
+                              <TableHead>End Date</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {/* This would be populated with actual assignments */}
+                            <TableRow>
+                              <TableCell>Event</TableCell>
+                              <TableCell>Summer Festival</TableCell>
+                              <TableCell>2023-06-01</TableCell>
+                              <TableCell>2023-06-05</TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-500">Completed</Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell>Vendor</TableCell>
+                              <TableCell>Food Truck Co.</TableCell>
+                              <TableCell>2023-05-15</TableCell>
+                              <TableCell>2023-05-20</TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-500">Completed</Badge>
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
                       </div>
-                    </div>
-                  </CardContent>
-                </TabsContent>
+                    </CardContent>
+                  </TabsContent>
 
-                <TabsContent value="assignments">
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between">
-                        <h3 className="font-semibold">Assignment History</h3>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setShowAssignDialog(true)}
-                        >
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Create Assignment
-                        </Button>
-                      </div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Entity</TableHead>
-                            <TableHead>Start Date</TableHead>
-                            <TableHead>End Date</TableHead>
-                            <TableHead>Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {/* This would be populated with actual assignments */}
-                          <TableRow>
-                            <TableCell>Event</TableCell>
-                            <TableCell>Summer Festival</TableCell>
-                            <TableCell>2023-06-01</TableCell>
-                            <TableCell>2023-06-05</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-500">Completed</Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>Vendor</TableCell>
-                            <TableCell>Food Truck Co.</TableCell>
-                            <TableCell>2023-05-15</TableCell>
-                            <TableCell>2023-05-20</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-500">Completed</Badge>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </TabsContent>
-
-                <TabsContent value="documents">
-                  <CardContent>
-                    <h3 className="font-semibold mb-4">Documents</h3>
-                    <div className="space-y-4">
-                      <div className="border rounded-md p-3">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 mr-3 text-blue-600" />
-                            <div>
-                              <h4 className="font-medium">Resume.pdf</h4>
-                              <p className="text-xs text-gray-500">Uploaded on 2023-05-10</p>
+                  <TabsContent value="documents">
+                    <CardContent>
+                      <h3 className="font-semibold mb-4">Documents</h3>
+                      <div className="space-y-4">
+                        <div className="border rounded-md p-3">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center">
+                              <FileText className="h-5 w-5 mr-3 text-blue-600" />
+                              <div>
+                                <h4 className="font-medium">Resume.pdf</h4>
+                                <p className="text-xs text-gray-500">Uploaded on 2023-05-10</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge className="bg-green-500">Approved</Badge>
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4 text-gray-500" />
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge className="bg-green-500">Approved</Badge>
-                            <Button variant="ghost" size="icon">
-                              <Trash2 className="h-4 w-4 text-gray-500" />
-                            </Button>
-                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="border rounded-md p-3">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 mr-3 text-blue-600" />
-                            <div>
-                              <h4 className="font-medium">Qualification.pdf</h4>
-                              <p className="text-xs text-gray-500">Uploaded on 2023-05-12</p>
+                        
+                        <div className="border rounded-md p-3">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center">
+                              <FileText className="h-5 w-5 mr-3 text-blue-600" />
+                              <div>
+                                <h4 className="font-medium">Qualification.pdf</h4>
+                                <p className="text-xs text-gray-500">Uploaded on 2023-05-12</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge className="bg-yellow-500">Pending</Badge>
-                            <Button variant="ghost" size="icon">
-                              <Trash2 className="h-4 w-4 text-gray-500" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4">
-                        <Button variant="outline" className="w-full">
-                          <Upload className="h-4 w-4 mr-2" />
-                          Upload Document
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </TabsContent>
-
-                <TabsContent value="promotions">
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between">
-                        <h3 className="font-semibold">Promotion History</h3>
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          onClick={() => setShowPromoteDialog(true)}
-                        >
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Promote
-                        </Button>
-                      </div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Previous Role</TableHead>
-                            <TableHead>New Role</TableHead>
-                            <TableHead>Notes</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {/* This would be populated with actual promotion data */}
-                          <TableRow>
-                            <TableCell>2023-04-15</TableCell>
-                            <TableCell>Fetchman</TableCell>
-                            <TableCell>Team Leader</TableCell>
-                            <TableCell>Excellent performance during holiday season</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </TabsContent>
-
-                <TabsContent value="messages">
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between">
-                        <h3 className="font-semibold">Message History</h3>
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          onClick={() => setShowMessageDialog(true)}
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          New Message
-                        </Button>
-                      </div>
-                      <div className="border rounded-md p-4 space-y-4 h-[300px] overflow-y-auto">
-                        {/* Admin message */}
-                        <div className="flex justify-end">
-                          <div className="bg-blue-100 p-3 rounded-lg max-w-[80%]">
-                            <p>Hello there! Just checking in about your upcoming assignment.</p>
-                            <p className="text-xs text-right text-gray-500 mt-1">
-                              Admin - 2023-06-01 10:30
-                            </p>
+                            <div className="flex items-center space-x-2">
+                              <Badge className="bg-yellow-500">Pending</Badge>
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4 text-gray-500" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                         
-                        {/* Fetchman response */}
-                        <div className="flex justify-start">
-                          <div className="bg-gray-100 p-3 rounded-lg max-w-[80%]">
-                            <p>Hi! Yes, I'm all prepared for it. Looking forward to it!</p>
-                            <p className="text-xs text-right text-gray-500 mt-1">
-                              Fetchman - 2023-06-01 10:35
-                            </p>
-                          </div>
+                        <div className="mt-4">
+                          <Button variant="outline" className="w-full">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Document
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex gap-2 mt-2">
-                        <Input 
-                          placeholder="Type your message..."
-                          value={messageText}
-                          onChange={(e) => setMessageText(e.target.value)}
-                        />
-                        <Button onClick={handleSendMessage}>
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-        </Card>
-      </div>
+                    </CardContent>
+                  </TabsContent>
 
+                  <TabsContent value="promotions">
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between">
+                          <h3 className="font-semibold">Promotion History</h3>
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            onClick={() => setShowPromoteDialog(true)}
+                          >
+                            <ArrowRight className="h-4 w-4 mr-2" />
+                            Promote
+                          </Button>
+                        </div>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Previous Role</TableHead>
+                              <TableHead>New Role</TableHead>
+                              <TableHead>Notes</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {/* This would be populated with actual promotion data */}
+                            <TableRow>
+                              <TableCell>2023-04-15</TableCell>
+                              <TableCell>Fetchman</TableCell>
+                              <TableCell>Team Leader</TableCell>
+                              <TableCell>Excellent performance during holiday season</TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </TabsContent>
+
+                  <TabsContent value="messages">
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between">
+                          <h3 className="font-semibold">Message History</h3>
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            onClick={() => setShowMessageDialog(true)}
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            New Message
+                          </Button>
+                        </div>
+                        <div className="border rounded-md p-4 space-y-4 h-[300px] overflow-y-auto">
+                          {/* Admin message */}
+                          <div className="flex justify-end">
+                            <div className="bg-blue-100 p-3 rounded-lg max-w-[80%]">
+                              <p>Hello there! Just checking in about your upcoming assignment.</p>
+                              <p className="text-xs text-right text-gray-500 mt-1">
+                                Admin - 2023-06-01 10:30
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Fetchman response */}
+                          <div className="flex justify-start">
+                            <div className="bg-gray-100 p-3 rounded-lg max-w-[80%]">
+                              <p>Hi! Yes, I'm all prepared for it. Looking forward to it!</p>
+                              <p className="text-xs text-right text-gray-500 mt-1">
+                                Fetchman - 2023-06-01 10:35
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2 mt-2">
+                          <Input 
+                            placeholder="Type your message..."
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                          />
+                          <Button onClick={handleSendMessage}>
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
+      
       {/* Dialogs */}
       <Dialog open={showBlacklistDialog} onOpenChange={setShowBlacklistDialog}>
         <DialogContent>

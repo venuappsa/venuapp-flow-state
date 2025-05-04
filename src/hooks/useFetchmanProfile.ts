@@ -41,6 +41,11 @@ export function useFetchmanProfile(userId?: string) {
           throw new Error(error.message);
         }
         
+        // Handle case where user has error property
+        if (data && data.user && 'error' in data.user) {
+          return { ...data, user: null } as FetchmanProfile;
+        }
+        
         return data as FetchmanProfile | null;
       } catch (error: any) {
         console.error("Error in fetchman profile query:", error);

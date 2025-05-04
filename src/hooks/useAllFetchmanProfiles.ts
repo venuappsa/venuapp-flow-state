@@ -93,7 +93,8 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           let userData = null;
           
           // Add proper null checks before accessing profile properties
-          if (profile.profile && typeof profile.profile === 'object' && !('error' in profile.profile)) {
+          // Fixed error: 'profile.profile' is possibly 'null'
+          if (profile.profile && typeof profile.profile === 'object' && !('error' in (profile.profile as object))) {
             const safeProfile = profile.profile as {
               id: string;
               email: string;

@@ -47,7 +47,8 @@ export function useFetchmanProfile(userId?: string) {
 
         // Create a standardized profile object with proper null checks
         let profileData = null;
-        if (data.profile && typeof data.profile === 'object' && !('error' in data.profile)) {
+        // Fixed error: 'data.profile' is possibly 'null'
+        if (data.profile && typeof data.profile === 'object' && !('error' in (data.profile as object))) {
           const safeProfile = data.profile as {
             id: string;
             email: string;

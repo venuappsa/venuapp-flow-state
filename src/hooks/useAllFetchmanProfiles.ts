@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -91,14 +92,15 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           // Create a standardized user object from profile relationship
           let userData = null;
           
-          // Add null check before accessing profile properties
+          // Add proper null checks before accessing profile properties
           if (profile.profile && typeof profile.profile === 'object' && !('error' in profile.profile)) {
+            const safeProfile = profile.profile;
             userData = {
-              id: profile.profile?.id ?? '',
-              email: profile.profile?.email ?? '',
-              name: profile.profile?.name ?? null,
-              surname: profile.profile?.surname ?? null,
-              phone: profile.profile?.phone ?? null
+              id: safeProfile?.id || '',
+              email: safeProfile?.email || '',
+              name: safeProfile?.name || null,
+              surname: safeProfile?.surname || null,
+              phone: safeProfile?.phone || null
             };
           }
           
@@ -170,9 +172,9 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      // Add null check before accessing item.profile
+      // Improved null check before accessing item.profile
       const missingProfiles = data.filter(item => {
-        return !item.profile || (item.profile && typeof item.profile === 'object' && 'error' in item.profile);
+        return !item.profile || (item.profile && typeof item.profile === 'object' && ('error' in item.profile));
       });
       
       if (missingProfiles.length > 0) {

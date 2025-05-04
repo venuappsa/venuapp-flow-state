@@ -29,6 +29,8 @@ import FetchmanMessagesPage from "@/pages/fetchman/FetchmanMessagesPage";
 import FetchmanAssignmentsPage from "@/pages/fetchman/FetchmanAssignmentsPage";
 import AdminFetchmanPage from "@/pages/admin/AdminFetchmanPage";
 import Index from "@/pages/Index";
+import AuthPage from "@/pages/AuthPage";
+import LoginPage from "@/pages/auth/LoginPage";
 
 function App() {
   const queryClient = new QueryClient({
@@ -45,6 +47,10 @@ function App() {
       <Routes>
         {/* Home/Landing Page */}
         <Route path="/" element={<Index />} />
+        
+        {/* Auth routes */}
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
         
         {/* Admin routes */}
         <Route path="/admin" element={<AdminPanelLayout />}>

@@ -1,4 +1,3 @@
-
 import { ReactNode, useState, useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -17,7 +16,7 @@ interface AuthProtectedProps {
 const AuthProtected = ({ 
   children, 
   requiredRoles = [], 
-  redirectTo = "/auth" 
+  redirectTo = "/" 
 }: AuthProtectedProps) => {
   const location = useLocation();
   const { user, loading: userLoading, initialized } = useUser();

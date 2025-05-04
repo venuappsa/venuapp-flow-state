@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LogoutSelfTest from './LogoutSelfTest';
+import LoginSelfTest from './LoginSelfTest';
 
 export function FetchmanFeaturesSelfTest() {
   const [open, setOpen] = useState(false);
@@ -38,6 +39,7 @@ export function FetchmanFeaturesSelfTest() {
           </TabsList>
           
           <TabsContent value="auth" className="space-y-4">
+            <LoginSelfTest />
             <LogoutSelfTest />
           </TabsContent>
           

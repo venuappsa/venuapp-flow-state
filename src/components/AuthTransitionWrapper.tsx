@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -22,7 +21,7 @@ export default function AuthTransitionWrapper({
   children, 
   requireAuth = false,
   allowedRoles = [],
-  redirectTo = "/auth/login",
+  redirectTo = "/",
   showFallback = true
 }: AuthTransitionWrapperProps) {
   const { user, initialized, loading: userLoading } = useUser();

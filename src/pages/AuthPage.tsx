@@ -61,8 +61,19 @@ export default function AuthPage() {
           
           // Navigate to appropriate dashboard based on role or to the 'next' URL if specified
           if (nextParam) {
-            console.log("AuthPage: Redirecting to requested page:", nextParam);
-            navigate(nextParam);
+            // Verify the nextParam is a valid route to prevent 404s
+            const isValidRoute = verifyRouteExists(nextParam);
+            
+            if (isValidRoute) {
+              console.log("AuthPage: Redirecting to requested page:", nextParam);
+              navigate(nextParam);
+            } else {
+              console.log("AuthPage: Requested page may not exist:", nextParam);
+              // Use role-based redirect instead of potentially invalid next param
+              const redirectPath = getRedirectPageForRoles(roles);
+              console.log("AuthPage: Using role-based redirect instead:", redirectPath);
+              navigate(redirectPath);
+            }
           } else {
             const redirectPath = getRedirectPageForRoles(roles);
             console.log("AuthPage: Redirecting to role dashboard:", redirectPath);
@@ -77,6 +88,18 @@ export default function AuthPage() {
       fetchUserRolesAndRedirect();
     }
   }, [user, initialized, navigate, nextParam, toast]);
+
+  // Simple helper to verify if a route exists in the application
+  // This is a basic check that just confirms the main path exists
+  const verifyRouteExists = (path: string): boolean => {
+    // Extract the base path (e.g., /admin, /fetchman, etc.)
+    const basePath = path.split('/')[1];
+    
+    // Check against the known routes defined in App.tsx
+    const knownRoutes = ['', 'auth', 'admin', 'fetchman', 'host', 'vendor'];
+    
+    return knownRoutes.includes(basePath);
+  };
 
   // Function to fetch user roles and redirect based on those roles
   const handleUserRoleRedirect = async (userId: string) => {
@@ -102,8 +125,25 @@ export default function AuthPage() {
       
       // Redirect to next param if it exists, otherwise use role-based redirect
       if (nextParam) {
-        console.log("AuthPage: Redirecting to requested page:", nextParam);
-        navigate(nextParam);
+        // Verify the nextParam is a valid route to prevent 404s
+        const isValidRoute = verifyRouteExists(nextParam);
+        
+        if (isValidRoute) {
+          console.log("AuthPage: Redirecting to requested page:", nextParam);
+          navigate(nextParam);
+        } else {
+          console.log("AuthPage: Requested page may not exist:", nextParam);
+          // Use role-based redirect instead of potentially invalid next param
+          const redirectPath = getRedirectPageForRoles(roles);
+          console.log("AuthPage: Using role-based redirect instead:", redirectPath);
+          
+          toast({
+            title: "Login successful",
+            description: "Redirecting you to your dashboard",
+          });
+          
+          navigate(redirectPath);
+        }
       } else {
         // Determine redirect based on actual roles
         const redirectPath = getRedirectPageForRoles(roles);

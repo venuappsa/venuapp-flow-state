@@ -25,22 +25,22 @@ export const getRedirectPageForRoles = (roles: string[]): string => {
   // Role priority: admin > host > merchant > fetchman > customer
   if (hasRole("admin")) {
     console.log("Admin role found, redirecting to admin dashboard");
-    return "/admin"; // Updated from "/admin/dashboard" to "/admin"
+    return "/admin"; // This matches the route in App.tsx
   }
   
   if (hasRole("host")) {
     console.log("Host role found, redirecting to host dashboard");
-    return "/host/dashboard";
+    return "/host"; // Updated to match actual route paths
   }
   
   if (hasRole("merchant")) {
     console.log("Merchant role found, redirecting to vendor dashboard");
-    return "/vendor/dashboard";
+    return "/vendor"; // Updated to match actual route paths
   }
   
   if (hasRole("fetchman")) {
     console.log("Fetchman role found, redirecting to fetchman dashboard");
-    return "/fetchman/dashboard";  
+    return "/fetchman"; // This matches the route in App.tsx
   }
   
   if (hasRole("customer")) {

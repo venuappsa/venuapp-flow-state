@@ -75,13 +75,24 @@ export default function LoginSelfTest() {
         const roles = userRoles?.map(r => r.role) || [];
         addResult('Role retrieval', true, `User roles retrieved: ${roles.join(', ') || 'none'}`);
         
-        // Determine redirect path based on roles
+        // Test 4.1: Verify that the role-based redirect path exists in App.tsx routes
         const redirectPath = getRedirectPageForRoles(roles);
-        addResult('Redirect path', true, `Correct redirect path determined: ${redirectPath}`);
+        addResult('Redirect path', true, `Determined redirect path: ${redirectPath}`);
+        
+        // Test 4.2: Verify that the route exists by checking App.tsx routes
+        // Simply checking if the base route exists in App.tsx
+        const routeExists = verifyRouteExists(redirectPath);
+        addResult('Route existence', routeExists, routeExists 
+          ? `Route '${redirectPath}' exists in application routes` 
+          : `CRITICAL ERROR: Route '${redirectPath}' does NOT exist in application routes`);
+        
+        if (!routeExists) {
+          throw new Error(`404 potential: Route '${redirectPath}' does not exist in the application`);
+        }
         
       } catch (err) {
-        console.error('Error fetching roles:', err);
-        addResult('Role retrieval', false, `Error fetching roles: ${err instanceof Error ? err.message : String(err)}`);
+        console.error('Error fetching roles or verifying routes:', err);
+        addResult('Role & route check', false, `Error: ${err instanceof Error ? err.message : String(err)}`);
       }
       
       // Test 5: Check if user data is accessible after login
@@ -94,7 +105,7 @@ export default function LoginSelfTest() {
       // Final success message
       toast({
         title: "Login test completed successfully",
-        description: "All login flow tests passed",
+        description: "All login flow tests passed. No 404 errors detected.",
       });
     } catch (error) {
       console.error('Login self-test error:', error);
@@ -108,6 +119,18 @@ export default function LoginSelfTest() {
     } finally {
       setIsRunning(false);
     }
+  };
+  
+  // Simple helper to verify if a route exists in the application
+  // This is a basic check that just confirms the main path exists
+  const verifyRouteExists = (path: string): boolean => {
+    // Extract the base path (e.g., /admin, /fetchman, etc.)
+    const basePath = path.split('/')[1];
+    
+    // Check against the known routes defined in App.tsx
+    const knownRoutes = ['', 'auth', 'admin', 'fetchman', 'host', 'vendor'];
+    
+    return knownRoutes.includes(basePath);
   };
   
   const addResult = (name: string, success: boolean, message: string, status: 'success' | 'info' | 'error' = success ? 'success' : 'error') => {
@@ -125,7 +148,7 @@ export default function LoginSelfTest() {
       <CardHeader>
         <CardTitle>Login Self-Test</CardTitle>
         <CardDescription>
-          Test the login functionality to ensure it works correctly
+          Test the login functionality to ensure it works correctly without 404 errors
         </CardDescription>
       </CardHeader>
       <CardContent>

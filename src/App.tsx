@@ -58,6 +58,9 @@ function App() {
           <Route path="vendors" element={<AdminVendorPerformancePage />} />
           <Route path="payments" element={<AdminPaymentsPage />} />
           <Route path="fetchman" element={<AdminFetchmanPage />} />
+          
+          {/* Legacy route support - redirect /admin/dashboard to /admin */}
+          <Route path="dashboard" element={<Navigate to="/admin" replace />} />
         </Route>
         
         {/* Fetchman routes */}
@@ -70,7 +73,18 @@ function App() {
           <Route path="onboarding" element={<FetchmanOnboardingPage />} />
           <Route path="notifications" element={<FetchmanNotificationsPage />} />
           <Route path="messages" element={<FetchmanMessagesPage />} />
+          
+          {/* Legacy route support - redirect /fetchman/dashboard to /fetchman */}
+          <Route path="dashboard" element={<Navigate to="/fetchman" replace />} />
         </Route>
+        
+        {/* Add host routes with redirection support */}
+        <Route path="/host" element={<Navigate to="/fetchman" replace />} />
+        <Route path="/host/*" element={<Navigate to="/fetchman" replace />} />
+        
+        {/* Add vendor routes with redirection support */}
+        <Route path="/vendor" element={<Navigate to="/fetchman" replace />} />
+        <Route path="/vendor/*" element={<Navigate to="/fetchman" replace />} />
         
         {/* Catch all not found */}
         <Route path="*" element={<NotFound />} />

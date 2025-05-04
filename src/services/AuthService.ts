@@ -160,5 +160,56 @@ export const AuthService = {
       console.error("AuthService: Exception checking session:", e);
       return false;
     }
+  },
+
+  /**
+   * Attempt to refresh the user's session
+   * @returns Promise<boolean> indicating if refresh was successful
+   */
+  refreshSession: async (): Promise<boolean> => {
+    try {
+      console.log("AuthService: Attempting to refresh session");
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error) {
+        console.error("AuthService: Error refreshing session:", error);
+        return false;
+      }
+      
+      return !!data.session;
+    } catch (e) {
+      console.error("AuthService: Exception refreshing session:", e);
+      return false;
+    }
+  },
+  
+  /**
+   * Handle 404 errors during authentication redirects
+   * @param targetPath The path that caused a 404
+   * @returns A safe fallback path
+   */
+  handleAuthRedirect404: (targetPath: string): string => {
+    console.log("AuthService: Handling potential 404 redirect for path:", targetPath);
+    
+    // Extract the base path
+    const basePath = targetPath.split('/')[1];
+    
+    // Map to known valid routes
+    const validRouteMap: Record<string, string> = {
+      'admin': '/admin',
+      'host': '/host',
+      'vendor': '/vendor',
+      'fetchman': '/fetchman',
+      'customer': '/'
+    };
+    
+    const safeRoute = validRouteMap[basePath] || '/';
+    
+    // Log and return safe route
+    if (safeRoute !== targetPath) {
+      console.log(`AuthService: Redirecting from potentially invalid route '${targetPath}' to safe route '${safeRoute}'`);
+    }
+    
+    return safeRoute;
   }
 };

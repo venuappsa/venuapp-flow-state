@@ -26,6 +26,9 @@ export interface FetchmanProfile {
   bank_name?: string;
   bank_account_number?: string;
   branch_code?: string;
+  // Additional fields
+  rating?: number;
+  total_deliveries?: number;
   // User profile fields
   user?: {
     id: string;
@@ -90,23 +93,39 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           
           if (profile.profile && typeof profile.profile === 'object' && !('error' in profile.profile)) {
             userData = {
-              id: profile.profile.id,
-              email: profile.profile.email,
-              name: profile.profile.name || null,
-              surname: profile.profile.surname || null,
-              phone: profile.profile.phone || null
+              id: profile.profile.id ?? '',
+              email: profile.profile.email ?? '',
+              name: profile.profile.name ?? null,
+              surname: profile.profile.surname ?? null,
+              phone: profile.profile.phone ?? null
             };
+          }
+          
+          // Convert work_areas from Json to string[] if needed
+          let workAreas: string[] = [];
+          if (profile.work_areas) {
+            if (Array.isArray(profile.work_areas)) {
+              workAreas = profile.work_areas as string[];
+            } else if (typeof profile.work_areas === 'string') {
+              try {
+                // Try to parse if it's a JSON string
+                workAreas = JSON.parse(profile.work_areas);
+              } catch {
+                workAreas = [];
+              }
+            }
           }
           
           // Return object with consistent structure
           return { 
             ...profile, 
+            work_areas: workAreas,
             user: userData,
             profile: userData // Keep both for backward compatibility
-          };
+          } as FetchmanProfile;
         });
         
-        return processedData as FetchmanProfile[];
+        return processedData;
       } catch (error: any) {
         console.error("Error in all fetchman profiles query:", error);
         toast({

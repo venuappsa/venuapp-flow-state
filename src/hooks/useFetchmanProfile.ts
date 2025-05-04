@@ -49,17 +49,32 @@ export function useFetchmanProfile(userId?: string) {
         let profileData = null;
         if (data.profile && typeof data.profile === 'object' && !('error' in data.profile)) {
           profileData = {
-            id: data.profile.id,
-            email: data.profile.email,
-            name: data.profile.name || null,
-            surname: data.profile.surname || null,
-            phone: data.profile.phone || null
+            id: data.profile.id ?? '',
+            email: data.profile.email ?? '',
+            name: data.profile.name ?? null,
+            surname: data.profile.surname ?? null,
+            phone: data.profile.phone ?? null
           };
+        }
+        
+        // Convert work_areas from Json to string[] if needed
+        let workAreas: string[] = [];
+        if (data.work_areas) {
+          if (Array.isArray(data.work_areas)) {
+            workAreas = data.work_areas as string[];
+          } else if (typeof data.work_areas === 'string') {
+            try {
+              workAreas = JSON.parse(data.work_areas);
+            } catch {
+              workAreas = [];
+            }
+          }
         }
         
         // Transform for consistent interface
         const result: FetchmanProfile = {
           ...data,
+          work_areas: workAreas,
           user: profileData,
           profile: profileData
         };

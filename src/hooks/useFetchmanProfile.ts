@@ -48,13 +48,20 @@ export function useFetchmanProfile(userId?: string) {
         // Create a standardized profile object with proper null checks
         let profileData = null;
         if (data.profile && typeof data.profile === 'object' && !('error' in data.profile)) {
-          const safeProfile = data.profile;
+          const safeProfile = data.profile as {
+            id: string;
+            email: string;
+            name: string | null;
+            surname: string | null;
+            phone: string | null;
+          };
+          
           profileData = {
-            id: safeProfile?.id || '',
-            email: safeProfile?.email || '',
-            name: safeProfile?.name || null,
-            surname: safeProfile?.surname || null,
-            phone: safeProfile?.phone || null
+            id: safeProfile.id || '',
+            email: safeProfile.email || '',
+            name: safeProfile.name,
+            surname: safeProfile.surname,
+            phone: safeProfile.phone
           };
         }
         
@@ -128,8 +135,12 @@ export function useFetchmanProfile(userId?: string) {
         };
       }
       
-      // Improved null check before accessing data.profile
-      if (!data.profile || (data.profile && typeof data.profile === 'object' && ('error' in data.profile))) {
+      // Safely check before accessing data.profile
+      if (!data.profile || (
+        data.profile && 
+        typeof data.profile === 'object' && 
+        'error' in (data.profile as object)
+      )) {
         return { 
           success: false, 
           message: "Fetchman profile found, but profile relation is missing" 

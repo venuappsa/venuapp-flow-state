@@ -94,13 +94,20 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           
           // Add proper null checks before accessing profile properties
           if (profile.profile && typeof profile.profile === 'object' && !('error' in profile.profile)) {
-            const safeProfile = profile.profile;
+            const safeProfile = profile.profile as {
+              id: string;
+              email: string;
+              name: string | null;
+              surname: string | null;
+              phone: string | null;
+            };
+            
             userData = {
-              id: safeProfile?.id || '',
-              email: safeProfile?.email || '',
-              name: safeProfile?.name || null,
-              surname: safeProfile?.surname || null,
-              phone: safeProfile?.phone || null
+              id: safeProfile.id || '',
+              email: safeProfile.email || '',
+              name: safeProfile.name,
+              surname: safeProfile.surname,
+              phone: safeProfile.phone
             };
           }
           
@@ -172,9 +179,13 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      // Improved null check before accessing item.profile
+      // Safely check for missing profiles
       const missingProfiles = data.filter(item => {
-        return !item.profile || (item.profile && typeof item.profile === 'object' && ('error' in item.profile));
+        return !item.profile || (
+          item.profile && 
+          typeof item.profile === 'object' && 
+          'error' in (item.profile as object)
+        );
       });
       
       if (missingProfiles.length > 0) {

@@ -20,7 +20,7 @@ export function useFetchmanProfile(userId?: string) {
       if (!targetUserId) return null;
       
       try {
-        // Use the established relationship between fetchman_profiles and profiles tables
+        // Use explicit aliases in the query to avoid column name conflicts
         const { data, error } = await supabase
           .from('fetchman_profiles')
           .select(`
@@ -47,23 +47,30 @@ export function useFetchmanProfile(userId?: string) {
 
         // Create a standardized profile object with proper null checks
         let profileData = null;
-        // Fixed error: 'data.profile' is possibly 'null'
-        if (data.profile && typeof data.profile === 'object' && !('error' in (data.profile as object))) {
+        
+        // Improved null checking and type safety
+        if (data.profile && 
+            typeof data.profile === 'object' && 
+            data.profile !== null &&
+            !('error' in (data.profile as object))) {
+          
           const safeProfile = data.profile as {
             id: string;
             email: string;
             name: string | null;
             surname: string | null;
             phone: string | null;
-          };
+          } | null;
           
-          profileData = {
-            id: safeProfile.id || '',
-            email: safeProfile.email || '',
-            name: safeProfile.name,
-            surname: safeProfile.surname,
-            phone: safeProfile.phone
-          };
+          if (safeProfile) {
+            profileData = {
+              id: safeProfile.id || '',
+              email: safeProfile.email || '',
+              name: safeProfile.name,
+              surname: safeProfile.surname,
+              phone: safeProfile.phone
+            };
+          }
         }
         
         // Convert work_areas from Json to string[] if needed
@@ -107,6 +114,7 @@ export function useFetchmanProfile(userId?: string) {
     if (!targetUserId) return { success: false, message: "No user ID provided" };
     
     try {
+      // Use explicit alias to avoid column name conflicts
       const { data, error } = await supabase
         .from('fetchman_profiles')
         .select(`
@@ -136,7 +144,7 @@ export function useFetchmanProfile(userId?: string) {
         };
       }
       
-      // Safely check before accessing data.profile
+      // Improved null checking with type safety
       if (!data.profile || (
         data.profile && 
         typeof data.profile === 'object' && 

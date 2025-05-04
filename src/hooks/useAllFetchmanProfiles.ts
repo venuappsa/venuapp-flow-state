@@ -61,7 +61,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
     queryKey: ["all-fetchman-profiles", filter],
     queryFn: async () => {
       try {
-        // Build query with profile relationship
+        // Build query with profile relationship using explicit aliases
         let query = supabase
           .from('fetchman_profiles')
           .select(`
@@ -93,23 +93,29 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           let userData = null;
           
           // Add proper null checks before accessing profile properties
-          // Fixed error: 'profile.profile' is possibly 'null'
-          if (profile.profile && typeof profile.profile === 'object' && !('error' in (profile.profile as object))) {
+          // Use type assertion to handle null checking
+          if (profile.profile && 
+              typeof profile.profile === 'object' && 
+              profile.profile !== null &&
+              !('error' in (profile.profile as object))) {
+            
             const safeProfile = profile.profile as {
               id: string;
               email: string;
               name: string | null;
               surname: string | null;
               phone: string | null;
-            };
+            } | null;
             
-            userData = {
-              id: safeProfile.id || '',
-              email: safeProfile.email || '',
-              name: safeProfile.name,
-              surname: safeProfile.surname,
-              phone: safeProfile.phone
-            };
+            if (safeProfile) {
+              userData = {
+                id: safeProfile.id || '',
+                email: safeProfile.email || '',
+                name: safeProfile.name,
+                surname: safeProfile.surname,
+                phone: safeProfile.phone
+              };
+            }
           }
           
           // Convert work_areas from Json to string[] if needed
@@ -152,6 +158,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
   // Function to test the relationship across all fetchman profiles
   const testProfilesRelationship = async () => {
     try {
+      // Use explicit aliasing in the query to avoid column name conflicts
       const { data, error } = await supabase
         .from('fetchman_profiles')
         .select(`
@@ -180,7 +187,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      // Safely check for missing profiles
+      // Safely check for missing profiles with improved type checking
       const missingProfiles = data.filter(item => {
         return !item.profile || (
           item.profile && 

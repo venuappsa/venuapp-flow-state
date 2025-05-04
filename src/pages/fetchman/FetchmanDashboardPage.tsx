@@ -24,12 +24,13 @@ export default function FetchmanDashboardPage() {
       if (!user?.id || !profile) return;
       
       try {
+        // Fix the query to avoid column alias issues
         const { data, error } = await supabase
           .from('fetchman_deliveries')
           .select(`
             *,
-            events (*),
-            vendor_profiles (*)
+            events:event_id (*),
+            vendor_profiles:vendor_id (*)
           `)
           .eq('fetchman_id', profile.id)
           .in('status', ['pending', 'accepted', 'in_progress'])
@@ -37,12 +38,22 @@ export default function FetchmanDashboardPage() {
         
         if (error) {
           console.error("Error fetching active deliveries:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load delivery data: " + error.message,
+            variant: "destructive",
+          });
           return;
         }
         
         setActiveDeliveries(data || []);
       } catch (err) {
         console.error("Error fetching active deliveries:", err);
+        toast({
+          title: "Error",
+          description: "Failed to load deliveries: " + String(err),
+          variant: "destructive",
+        });
       } finally {
         setDeliveryLoading(false);
       }
@@ -179,6 +190,11 @@ export default function FetchmanDashboardPage() {
       });
     } catch (err) {
       console.error("Error in updateDeliveryStatus:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while updating the delivery status.",
+        variant: "destructive",
+      });
     }
   };
 

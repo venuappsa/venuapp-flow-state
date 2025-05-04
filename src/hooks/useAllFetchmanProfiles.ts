@@ -4,6 +4,34 @@ import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface FetchmanProfile {
+  id: string;
+  user_id: string;
+  phone_number?: string;
+  address?: string;
+  vehicle_type?: string;
+  service_area?: string;
+  work_hours?: string;
+  verification_status: string;
+  is_suspended?: boolean;
+  is_blacklisted?: boolean;
+  role?: string;
+  has_own_transport: boolean;
+  mobility_preference?: any;
+  work_areas?: string[];
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_email?: string;
+  emergency_contact_relationship?: string;
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+    surname?: string;
+    phone?: string;
+  };
+}
+
 export function useAllFetchmanProfiles(filter?: { status?: string }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -38,7 +66,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           throw new Error(error.message);
         }
         
-        return data || [];
+        return (data || []) as FetchmanProfile[];
       } catch (error: any) {
         console.error("Error in all fetchman profiles query:", error);
         toast({

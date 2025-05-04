@@ -4,6 +4,7 @@ import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
+import { FetchmanProfile } from "./useAllFetchmanProfiles";
 
 export function useFetchmanProfile(userId?: string) {
   const { user } = useUser();
@@ -40,7 +41,7 @@ export function useFetchmanProfile(userId?: string) {
           throw new Error(error.message);
         }
         
-        return data;
+        return data as FetchmanProfile | null;
       } catch (error: any) {
         console.error("Error in fetchman profile query:", error);
         toast({

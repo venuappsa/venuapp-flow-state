@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -180,7 +179,7 @@ export default function AdminFetchmanPage() {
                         <div>
                           <h3 className="font-medium">{fetchman.user?.email || "No email"}</h3>
                           <p className="text-sm text-gray-500">
-                            {fetchman.user?.name} {fetchman.user?.surname}
+                            {fetchman.user?.name || ""} {fetchman.user?.surname || ""}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -213,7 +212,7 @@ export default function AdminFetchmanPage() {
               {selectedFetchman ? (
                 <div className="flex justify-between items-center">
                   <span>
-                    Fetchman Profile: {selectedFetchman.user?.name} {selectedFetchman.user?.surname}
+                    Fetchman Profile: {selectedFetchman.user?.name || ""} {selectedFetchman.user?.surname || ""}
                   </span>
                   <div className="space-x-2">
                     <Button

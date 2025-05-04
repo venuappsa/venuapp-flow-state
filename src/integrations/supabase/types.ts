@@ -138,6 +138,62 @@ export type Database = {
         }
         Relationships: []
       }
+      fetchman_assignments: {
+        Row: {
+          assigned_by: string | null
+          brief_url: string | null
+          created_at: string | null
+          end_date: string
+          entity_id: string
+          entity_type: string
+          fetchman_id: string | null
+          id: string
+          notes: string | null
+          notification_sent: boolean | null
+          start_date: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          brief_url?: string | null
+          created_at?: string | null
+          end_date: string
+          entity_id: string
+          entity_type: string
+          fetchman_id?: string | null
+          id?: string
+          notes?: string | null
+          notification_sent?: boolean | null
+          start_date: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          brief_url?: string | null
+          created_at?: string | null
+          end_date?: string
+          entity_id?: string
+          entity_type?: string
+          fetchman_id?: string | null
+          id?: string
+          notes?: string | null
+          notification_sent?: boolean | null
+          start_date?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fetchman_assignments_fetchman_id_fkey"
+            columns: ["fetchman_id"]
+            isOneToOne: false
+            referencedRelation: "fetchman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fetchman_blacklist: {
         Row: {
           blacklist_date: string
@@ -242,18 +298,117 @@ export type Database = {
           },
         ]
       }
+      fetchman_documents: {
+        Row: {
+          created_at: string | null
+          document_type: string
+          fetchman_id: string | null
+          file_name: string
+          file_url: string
+          id: string
+          status: string
+          updated_at: string | null
+          uploaded_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_type: string
+          fetchman_id?: string | null
+          file_name: string
+          file_url: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+          uploaded_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_type?: string
+          fetchman_id?: string | null
+          file_name?: string
+          file_url?: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fetchman_documents_fetchman_id_fkey"
+            columns: ["fetchman_id"]
+            isOneToOne: false
+            referencedRelation: "fetchman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fetchman_messages: {
+        Row: {
+          admin_id: string | null
+          fetchman_id: string | null
+          id: string
+          message: string
+          parent_id: string | null
+          read: boolean | null
+          sender_role: string
+          sent_at: string | null
+        }
+        Insert: {
+          admin_id?: string | null
+          fetchman_id?: string | null
+          id?: string
+          message: string
+          parent_id?: string | null
+          read?: boolean | null
+          sender_role: string
+          sent_at?: string | null
+        }
+        Update: {
+          admin_id?: string | null
+          fetchman_id?: string | null
+          id?: string
+          message?: string
+          parent_id?: string | null
+          read?: boolean | null
+          sender_role?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fetchman_messages_fetchman_id_fkey"
+            columns: ["fetchman_id"]
+            isOneToOne: false
+            referencedRelation: "fetchman_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fetchman_messages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "fetchman_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fetchman_profiles: {
         Row: {
+          address: string | null
           bank_account_number: string
           bank_name: string
           branch_code: string
           created_at: string
           current_location: Json | null
+          cv_url: string | null
+          emergency_contact_email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
           has_own_transport: boolean
           id: string
           identity_number: string
           is_blacklisted: boolean | null
           is_suspended: boolean | null
+          mobility_preference: Json | null
           phone_number: string
           rating: number | null
           role: string | null
@@ -263,19 +418,27 @@ export type Database = {
           user_id: string
           vehicle_type: string
           verification_status: string
+          work_areas: Json | null
           work_hours: string
         }
         Insert: {
+          address?: string | null
           bank_account_number: string
           bank_name: string
           branch_code: string
           created_at?: string
           current_location?: Json | null
+          cv_url?: string | null
+          emergency_contact_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           has_own_transport?: boolean
           id?: string
           identity_number: string
           is_blacklisted?: boolean | null
           is_suspended?: boolean | null
+          mobility_preference?: Json | null
           phone_number: string
           rating?: number | null
           role?: string | null
@@ -285,19 +448,27 @@ export type Database = {
           user_id: string
           vehicle_type: string
           verification_status?: string
+          work_areas?: Json | null
           work_hours: string
         }
         Update: {
+          address?: string | null
           bank_account_number?: string
           bank_name?: string
           branch_code?: string
           created_at?: string
           current_location?: Json | null
+          cv_url?: string | null
+          emergency_contact_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           has_own_transport?: boolean
           id?: string
           identity_number?: string
           is_blacklisted?: boolean | null
           is_suspended?: boolean | null
+          mobility_preference?: Json | null
           phone_number?: string
           rating?: number | null
           role?: string | null
@@ -307,6 +478,7 @@ export type Database = {
           user_id?: string
           vehicle_type?: string
           verification_status?: string
+          work_areas?: Json | null
           work_hours?: string
         }
         Relationships: []

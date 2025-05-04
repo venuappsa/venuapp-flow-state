@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -34,7 +33,10 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  Truck
+  Truck,
+  ShieldCheck,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 
 interface CollapsibleAdminSidebarProps {
@@ -88,7 +90,7 @@ const NavItem = ({ to, label, icon, isActive, badge, collapsed, onClick }: NavIt
   </Link>
 );
 
-export function CollapsibleAdminSidebar({ className, onNavItemClick }: CollapsibleAdminSidebarProps) {
+export function CollapsibleAdminSidebar({ className }: { className?: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -314,3 +316,17 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
     </div>
   );
 }
+
+const LinkItem = ({ href, prefetch, end, children }: { href: string, prefetch?: "intent" | "force", end?: boolean, children: React.ReactNode }) => (
+  <Link
+    to={href}
+    prefetch={prefetch}
+    end={end}
+    className={cn(
+      "flex items-center gap-2 rounded-lg px-3 py-2 transition-all",
+      "hover:bg-accent hover:text-accent-foreground"
+    )}
+  >
+    {children}
+  </Link>
+);

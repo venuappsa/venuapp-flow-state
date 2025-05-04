@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -12,6 +11,9 @@ import {
   ChevronLeft,
   Bell,
   MessageSquare,
+  Clipboard,
+  CalendarClock,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -58,50 +60,44 @@ const SidebarItem = ({
   </Link>
 );
 
+const routes = [
+  {
+    path: "/fetchman",
+    end: true,
+    icon: <LayoutDashboard className="mr-2 h-4 w-4" />,
+    label: "Dashboard",
+  },
+  {
+    path: "/fetchman/assignments",
+    icon: <Clipboard className="mr-2 h-4 w-4" />,
+    label: "Assignments",
+  },
+  {
+    path: "/fetchman/schedule",
+    icon: <CalendarClock className="mr-2 h-4 w-4" />,
+    label: "Schedule",
+  },
+  {
+    path: "/fetchman/earnings",
+    icon: <Wallet className="mr-2 h-4 w-4" />,
+    label: "Earnings",
+  },
+  {
+    path: "/fetchman/messages",
+    icon: <MessageSquare className="mr-2 h-4 w-4" />,
+    label: "Messages",
+  },
+  {
+    path: "/fetchman/settings",
+    icon: <Settings className="mr-2 h-4 w-4" />,
+    label: "Settings",
+  },
+];
+
 export default function FetchmanSidebar() {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { unreadCount } = useNotifications();
-
-  const navItems = [
-    {
-      icon: <LayoutDashboard size={20} />,
-      label: "Dashboard",
-      path: "/fetchman/dashboard",
-    },
-    {
-      icon: <CalendarCheck size={20} />,
-      label: "Assignments",
-      path: "/fetchman/assignments",
-    },
-    {
-      icon: <Clock size={20} />,
-      label: "Schedule",
-      path: "/fetchman/schedule",
-    },
-    {
-      icon: <MessageSquare size={20} />,
-      label: "Messages",
-      path: "/fetchman/messages",
-      badgeCount: 3,
-    },
-    {
-      icon: <Bell size={20} />,
-      label: "Notifications",
-      path: "/fetchman/notifications",
-      badgeCount: unreadCount,
-    },
-    {
-      icon: <DollarSign size={20} />,
-      label: "Earnings",
-      path: "/fetchman/earnings",
-    },
-    {
-      icon: <Settings size={20} />,
-      label: "Settings",
-      path: "/fetchman/settings",
-    },
-  ];
 
   return (
     <div
@@ -131,7 +127,7 @@ export default function FetchmanSidebar() {
       </div>
       <ScrollArea className="flex-1 p-3">
         <nav className="space-y-2">
-          {navItems.map((item) => (
+          {routes.map((item) => (
             <SidebarItem
               key={item.path}
               icon={item.icon}

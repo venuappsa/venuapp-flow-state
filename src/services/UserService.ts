@@ -13,6 +13,17 @@ interface FetchmanProfileData {
   bank_account_number: string;
   bank_name: string;
   branch_code: string;
+  address?: string;
+  mobility_preference?: {
+    own_car: boolean;
+    public_transport: boolean;
+    family_friends: boolean;
+  };
+  work_areas?: string[];
+  emergency_contact_name?: string;
+  emergency_contact_relationship?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_email?: string;
 }
 
 // Define the interface for registration data
@@ -21,6 +32,35 @@ interface RegistrationData {
   lastName: string;
   phone: string;
   role: "admin" | "host" | "merchant" | "fetchman" | "customer"; // Using a string literal type to match Supabase's expected type
+}
+
+// Define the interface for document uploads
+interface FetchmanDocumentData {
+  fetchmanId: string;
+  documentType: string;
+  fileUrl: string;
+  fileName: string;
+}
+
+// Define the interface for assignment data
+interface FetchmanAssignmentData {
+  fetchmanId: string;
+  assignedBy: string;
+  entityType: "event" | "vendor" | "host";
+  entityId: string;
+  startDate: string;
+  endDate: string;
+  notes?: string;
+  briefUrl?: string;
+}
+
+// Define the interface for message data
+interface FetchmanMessageData {
+  fetchmanId: string;
+  adminId?: string;
+  message: string;
+  senderRole: "admin" | "fetchman";
+  parentId?: string;
 }
 
 export const UserService = {
@@ -311,6 +351,13 @@ export const UserService = {
             bank_account_number: profileData.bank_account_number,
             bank_name: profileData.bank_name,
             branch_code: profileData.branch_code,
+            address: profileData.address,
+            mobility_preference: profileData.mobility_preference,
+            work_areas: profileData.work_areas,
+            emergency_contact_name: profileData.emergency_contact_name,
+            emergency_contact_relationship: profileData.emergency_contact_relationship,
+            emergency_contact_phone: profileData.emergency_contact_phone,
+            emergency_contact_email: profileData.emergency_contact_email,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', userId);
@@ -335,7 +382,14 @@ export const UserService = {
             has_own_transport: profileData.has_own_transport,
             bank_account_number: profileData.bank_account_number,
             bank_name: profileData.bank_name,
-            branch_code: profileData.branch_code
+            branch_code: profileData.branch_code,
+            address: profileData.address,
+            mobility_preference: profileData.mobility_preference,
+            work_areas: profileData.work_areas,
+            emergency_contact_name: profileData.emergency_contact_name,
+            emergency_contact_relationship: profileData.emergency_contact_relationship,
+            emergency_contact_phone: profileData.emergency_contact_phone,
+            emergency_contact_email: profileData.emergency_contact_email
           });
           
         if (insertError) {
@@ -375,6 +429,520 @@ export const UserService = {
       return result;
     } catch (error: any) {
       console.error("UserService: Exception creating/updating fetchman profile:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Upload a document for a fetchman
+   * @param fetchmanId Fetchman profile ID
+   * @param documentType Type of document (e.g., 'cv', 'qualification')
+   * @param file The file to upload
+   * @returns Result object with success status and error/data
+   */
+  uploadFetchmanDocument: async (fetchmanId: string, documentType: string, file: File): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Uploading document for fetchman:", fetchmanId);
+      
+      // Upload file to storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${fetchmanId}/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('fetchman_documents')
+        .upload(filePath, file);
+        
+      if (uploadError) {
+        console.error("UserService: Error uploading file:", uploadError);
+        return { success: false, error: uploadError.message };
+      }
+      
+      // Get public URL
+      const { data: urlData } = await supabase.storage
+        .from('fetchman_documents')
+        .getPublicUrl(filePath);
+
+      const fileUrl = urlData.publicUrl;
+      
+      // Create document record
+      const { data: documentData, error: documentError } = await supabase
+        .from('fetchman_documents')
+        .insert({
+          fetchman_id: fetchmanId,
+          document_type: documentType,
+          file_url: fileUrl,
+          file_name: file.name
+        })
+        .select('*')
+        .single();
+        
+      if (documentError) {
+        console.error("UserService: Error creating document record:", documentError);
+        return { success: false, error: documentError.message };
+      }
+
+      // If document is CV, update fetchman_profile.cv_url
+      if (documentType === 'cv') {
+        const { error: updateError } = await supabase
+          .from('fetchman_profiles')
+          .update({ cv_url: fileUrl })
+          .eq('id', fetchmanId);
+          
+        if (updateError) {
+          console.error("UserService: Error updating CV URL:", updateError);
+          // Don't fail the whole operation if this update fails
+        }
+      }
+      
+      return { success: true, data: documentData };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception uploading document:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred during document upload." 
+      };
+    }
+  },
+
+  /**
+   * Get fetchman profile by user ID
+   * @param userId User ID
+   * @returns Result object with success status and profile data
+   */
+  getFetchmanProfileByUserId: async (userId: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Getting fetchman profile for user:", userId);
+      
+      const { data, error } = await supabase
+        .from('fetchman_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+        
+      if (error) {
+        console.error("UserService: Error getting fetchman profile:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception getting fetchman profile:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Get all fetchman profiles with optional filter
+   * @param filterOptions Optional filter options
+   * @returns Result object with success status and profiles data
+   */
+  getAllFetchmanProfiles: async (filterOptions?: { status?: string }): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Getting all fetchman profiles");
+      
+      let query = supabase
+        .from('fetchman_profiles')
+        .select('*, profiles(name, surname, email)');
+
+      if (filterOptions?.status) {
+        query = query.eq('verification_status', filterOptions.status);
+      }
+      
+      const { data, error } = await query;
+        
+      if (error) {
+        console.error("UserService: Error getting fetchman profiles:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception getting fetchman profiles:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Create new assignment for a fetchman
+   * @param assignmentData Assignment data
+   * @returns Result object with success status and assignment data
+   */
+  createFetchmanAssignment: async (assignmentData: FetchmanAssignmentData): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Creating fetchman assignment");
+      
+      const { data, error } = await supabase
+        .from('fetchman_assignments')
+        .insert({
+          fetchman_id: assignmentData.fetchmanId,
+          assigned_by: assignmentData.assignedBy,
+          entity_type: assignmentData.entityType,
+          entity_id: assignmentData.entityId,
+          start_date: assignmentData.startDate,
+          end_date: assignmentData.endDate,
+          notes: assignmentData.notes,
+          brief_url: assignmentData.briefUrl,
+          status: new Date(assignmentData.startDate) > new Date() ? 'upcoming' : 'active'
+        })
+        .select('*')
+        .single();
+        
+      if (error) {
+        console.error("UserService: Error creating fetchman assignment:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception creating fetchman assignment:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Get assignments for a fetchman
+   * @param fetchmanId Fetchman ID
+   * @param status Optional status filter
+   * @returns Result object with success status and assignments data
+   */
+  getFetchmanAssignments: async (fetchmanId: string, status?: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Getting assignments for fetchman:", fetchmanId);
+      
+      let query = supabase
+        .from('fetchman_assignments')
+        .select('*')
+        .eq('fetchman_id', fetchmanId);
+        
+      if (status) {
+        query = query.eq('status', status);
+      }
+        
+      const { data, error } = await query.order('start_date', { ascending: false });
+        
+      if (error) {
+        console.error("UserService: Error getting fetchman assignments:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception getting fetchman assignments:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Get all assignments with optional filters
+   * @param filterOptions Optional filter options 
+   * @returns Result object with success status and assignments data
+   */
+  getAllAssignments: async (filterOptions?: { entityType?: string; entityId?: string; status?: string }): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Getting all fetchman assignments");
+      
+      let query = supabase
+        .from('fetchman_assignments')
+        .select('*, fetchman_profiles(id, user_id, phone_number)');
+        
+      if (filterOptions?.entityType) {
+        query = query.eq('entity_type', filterOptions.entityType);
+      }
+        
+      if (filterOptions?.entityId) {
+        query = query.eq('entity_id', filterOptions.entityId);
+      }
+        
+      if (filterOptions?.status) {
+        query = query.eq('status', filterOptions.status);
+      }
+        
+      const { data, error } = await query.order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error("UserService: Error getting all assignments:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception getting all assignments:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Send a message between admin and fetchman
+   * @param messageData Message data
+   * @returns Result object with success status and message data
+   */
+  sendFetchmanMessage: async (messageData: FetchmanMessageData): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Sending fetchman message");
+      
+      const { data, error } = await supabase
+        .from('fetchman_messages')
+        .insert({
+          fetchman_id: messageData.fetchmanId,
+          admin_id: messageData.adminId,
+          message: messageData.message,
+          sender_role: messageData.senderRole,
+          parent_id: messageData.parentId
+        })
+        .select('*')
+        .single();
+        
+      if (error) {
+        console.error("UserService: Error sending fetchman message:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception sending fetchman message:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Get messages for a fetchman
+   * @param fetchmanId Fetchman ID
+   * @returns Result object with success status and messages data
+   */
+  getFetchmanMessages: async (fetchmanId: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      console.log("UserService: Getting messages for fetchman:", fetchmanId);
+      
+      const { data, error } = await supabase
+        .from('fetchman_messages')
+        .select('*')
+        .eq('fetchman_id', fetchmanId)
+        .order('sent_at', { ascending: false });
+        
+      if (error) {
+        console.error("UserService: Error getting fetchman messages:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception getting fetchman messages:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Mark messages as read
+   * @param messageIds Array of message IDs to mark as read
+   * @returns Result object with success status
+   */
+  markMessagesAsRead: async (messageIds: string[]): Promise<{ success: boolean; error?: string }> => {
+    try {
+      console.log("UserService: Marking messages as read");
+      
+      const { error } = await supabase
+        .from('fetchman_messages')
+        .update({ read: true })
+        .in('id', messageIds);
+        
+      if (error) {
+        console.error("UserService: Error marking messages as read:", error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception marking messages as read:", error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Update fetchman account status (suspend/reinstate/blacklist)
+   * @param fetchmanId Fetchman ID
+   * @param action Action to perform (suspend, reinstate, blacklist)
+   * @param reason Reason for action (optional)
+   * @returns Result object with success status
+   */
+  updateFetchmanStatus: async (fetchmanId: string, action: 'suspend' | 'reinstate' | 'blacklist', reason?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      console.log(`UserService: ${action} fetchman:`, fetchmanId);
+      
+      if (action === 'suspend') {
+        const { error } = await supabase
+          .from('fetchman_profiles')
+          .update({ is_suspended: true })
+          .eq('id', fetchmanId);
+          
+        if (error) {
+          console.error("UserService: Error suspending fetchman:", error);
+          return { success: false, error: error.message };
+        }
+      } 
+      else if (action === 'reinstate') {
+        const { error } = await supabase
+          .from('fetchman_profiles')
+          .update({ 
+            is_suspended: false,
+            is_blacklisted: false
+          })
+          .eq('id', fetchmanId);
+          
+        if (error) {
+          console.error("UserService: Error reinstating fetchman:", error);
+          return { success: false, error: error.message };
+        }
+      }
+      else if (action === 'blacklist' && reason) {
+        // First mark as blacklisted in profile
+        const { error: updateError } = await supabase
+          .from('fetchman_profiles')
+          .update({ 
+            is_blacklisted: true,
+            is_suspended: true
+          })
+          .eq('id', fetchmanId);
+          
+        if (updateError) {
+          console.error("UserService: Error blacklisting fetchman profile:", updateError);
+          return { success: false, error: updateError.message };
+        }
+        
+        // Get admin user ID
+        const { data: session } = await supabase.auth.getSession();
+        const adminId = session.session?.user.id;
+        
+        if (!adminId) {
+          return { success: false, error: "No admin ID available for blacklist action" };
+        }
+        
+        // Add to blacklist table with reason
+        const { error: blacklistError } = await supabase
+          .from('fetchman_blacklist')
+          .insert({
+            fetchman_id: fetchmanId,
+            blacklisted_by: adminId,
+            reason: reason
+          });
+          
+        if (blacklistError) {
+          console.error("UserService: Error adding to blacklist:", blacklistError);
+          return { success: false, error: blacklistError.message };
+        }
+      }
+      
+      return { success: true };
+      
+    } catch (error: any) {
+      console.error(`UserService: Exception during fetchman ${action}:`, error);
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred." 
+      };
+    }
+  },
+
+  /**
+   * Promote fetchman to a new role
+   * @param fetchmanId Fetchman ID
+   * @param newRole New role to promote to
+   * @param notes Optional notes about promotion
+   * @returns Result object with success status
+   */
+  promoteFetchman: async (fetchmanId: string, newRole: string, notes?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      console.log(`UserService: Promoting fetchman ${fetchmanId} to ${newRole}`);
+      
+      // Get current role
+      const { data: fetchmanData, error: fetchError } = await supabase
+        .from('fetchman_profiles')
+        .select('role')
+        .eq('id', fetchmanId)
+        .single();
+        
+      if (fetchError) {
+        console.error("UserService: Error getting fetchman role:", fetchError);
+        return { success: false, error: fetchError.message };
+      }
+      
+      const previousRole = fetchmanData.role || 'fetchman';
+      
+      // Update role in profile
+      const { error: updateError } = await supabase
+        .from('fetchman_profiles')
+        .update({ role: newRole })
+        .eq('id', fetchmanId);
+        
+      if (updateError) {
+        console.error("UserService: Error updating fetchman role:", updateError);
+        return { success: false, error: updateError.message };
+      }
+      
+      // Get admin user ID
+      const { data: session } = await supabase.auth.getSession();
+      const adminId = session.session?.user.id;
+      
+      if (!adminId) {
+        return { success: false, error: "No admin ID available for promotion action" };
+      }
+      
+      // Add promotion record
+      const { error: promotionError } = await supabase
+        .from('fetchman_promotions')
+        .insert({
+          fetchman_id: fetchmanId,
+          previous_role: previousRole,
+          new_role: newRole,
+          promoted_by: adminId,
+          notes: notes
+        });
+        
+      if (promotionError) {
+        console.error("UserService: Error recording promotion:", promotionError);
+        return { success: false, error: promotionError.message };
+      }
+      
+      return { success: true };
+      
+    } catch (error: any) {
+      console.error("UserService: Exception promoting fetchman:", error);
       return { 
         success: false, 
         error: error.message || "An unexpected error occurred." 

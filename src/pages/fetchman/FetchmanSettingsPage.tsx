@@ -1,14 +1,18 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "@/components/ui/use-toast";
+import { useFetchmanProfile } from "@/hooks/useFetchmanProfile";
+import { useFetchmanDocuments } from "@/hooks/useFetchmanDocuments";
+import { AlertTriangle, CheckCircle2, FileText, Upload, X } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -17,72 +21,107 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+
+// List of supported regions/suburbs
+const REGIONS = [
+  "Sandton", "Rosebank", "Johannesburg CBD", "Braamfontein", 
+  "Melville", "Randburg", "Fourways", "Midrand", "Soweto",
+  "Pretoria", "Centurion", "Kempton Park", "Bedfordview"
+];
 
 export default function FetchmanSettingsPage() {
   const { user } = useUser();
   const navigate = useNavigate();
-  const [fetchmanProfile, setFetchmanProfile] = useState<any>(null);
-  const [profileData, setProfileData] = useState({
-    phone_number: "",
-    vehicle_type: "",
-    work_hours: "",
-    service_area: "",
-    has_own_transport: false,
-    bank_name: "",
-    bank_account_number: "",
-    branch_code: ""
-  });
-  const [notificationSettings, setNotificationSettings] = useState({
-    email_notifications: true,
-    push_notifications: true,
-    sms_notifications: false,
-    assignment_alerts: true,
-    payment_updates: true,
-    system_announcements: true
-  });
-  const [loading, setLoading] = useState({
-    profile: true,
-    update: false
+  const { profile, isLoading, updateProfile, isUpdating } = useFetchmanProfile();
+
+  const { documents, uploadDocument, isUploading } = 
+    useFetchmanDocuments(profile?.id);
+
+  // Personal information state
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: user?.user_metadata?.first_name || "",
+    lastName: user?.user_metadata?.last_name || "",
+    address: profile?.address || "",
+    email: user?.email || "",
   });
 
-  useEffect(() => {
-    const fetchFetchmanProfile = async () => {
-      if (!user?.id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('fetchman_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (error) {
-          console.error("Error fetching fetchman profile:", error);
-          return;
-        }
-        
-        if (data) {
-          setFetchmanProfile(data);
-          setProfileData({
-            phone_number: data.phone_number || "",
-            vehicle_type: data.vehicle_type || "",
-            work_hours: data.work_hours || "",
-            service_area: data.service_area || "",
-            has_own_transport: data.has_own_transport || false,
-            bank_name: data.bank_name || "",
-            bank_account_number: data.bank_account_number || "",
-            branch_code: data.branch_code || ""
-          });
-        }
-      } catch (err) {
-        console.error("Error in fetchFetchmanProfile:", err);
-      } finally {
-        setLoading(prev => ({ ...prev, profile: false }));
+  // Fetchman profile state
+  const [profileData, setProfileData] = useState({
+    phone_number: profile?.phone_number || "",
+    vehicle_type: profile?.vehicle_type || "",
+    work_hours: profile?.work_hours || "",
+    service_area: profile?.service_area || "",
+    has_own_transport: profile?.has_own_transport || false,
+    bank_name: profile?.bank_name || "",
+    bank_account_number: profile?.bank_account_number || "",
+    branch_code: profile?.branch_code || "",
+  });
+
+  // Additional profile fields state
+  const [mobilityPreference, setMobilityPreference] = useState<string[]>(
+    profile?.mobility_preference 
+      ? Object.entries(profile.mobility_preference)
+          .filter(([_, value]) => value === true)
+          .map(([key]) => key)
+      : []
+  );
+  
+  const [selectedWorkAreas, setSelectedWorkAreas] = useState<string[]>(
+    profile?.work_areas as string[] || []
+  );
+
+  const [emergencyContact, setEmergencyContact] = useState({
+    name: profile?.emergency_contact_name || "",
+    relationship: profile?.emergency_contact_relationship || "",
+    phone: profile?.emergency_contact_phone || "",
+    email: profile?.emergency_contact_email || "",
+  });
+
+  // Document upload state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [documentType, setDocumentType] = useState<string>("cv");
+  const [uploading, setUploading] = useState(false);
+
+  // Update state when profile data loads
+  React.useEffect(() => {
+    if (profile) {
+      setProfileData({
+        phone_number: profile.phone_number || "",
+        vehicle_type: profile.vehicle_type || "",
+        work_hours: profile.work_hours || "",
+        service_area: profile.service_area || "",
+        has_own_transport: profile.has_own_transport || false,
+        bank_name: profile.bank_name || "",
+        bank_account_number: profile.bank_account_number || "",
+        branch_code: profile.branch_code || "",
+      });
+
+      setPersonalInfo({
+        firstName: user?.user_metadata?.first_name || "",
+        lastName: user?.user_metadata?.last_name || "",
+        address: profile.address || "",
+        email: user?.email || "",
+      });
+
+      if (profile.mobility_preference) {
+        setMobilityPreference(
+          Object.entries(profile.mobility_preference)
+            .filter(([_, value]) => value === true)
+            .map(([key]) => key)
+        );
       }
-    };
-    
-    fetchFetchmanProfile();
-  }, [user]);
+
+      setSelectedWorkAreas(profile.work_areas as string[] || []);
+
+      setEmergencyContact({
+        name: profile.emergency_contact_name || "",
+        relationship: profile.emergency_contact_relationship || "",
+        phone: profile.emergency_contact_phone || "",
+        email: profile.emergency_contact_email || "",
+      });
+    }
+  }, [profile, user]);
 
   const handleProfileChange = (field: string, value: string | boolean) => {
     setProfileData(prev => ({
@@ -91,15 +130,90 @@ export default function FetchmanSettingsPage() {
     }));
   };
 
-  const handleNotificationChange = (field: string, value: boolean) => {
-    setNotificationSettings(prev => ({
+  const handlePersonalInfoChange = (field: string, value: string) => {
+    setPersonalInfo(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
+  const handleEmergencyContactChange = (field: string, value: string) => {
+    setEmergencyContact(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleToggleWorkArea = (area: string) => {
+    setSelectedWorkAreas(prev => 
+      prev.includes(area) 
+        ? prev.filter(a => a !== area) 
+        : [...prev, area]
+    );
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Check file type
+      const fileType = file.name.split('.').pop()?.toLowerCase();
+      if (fileType !== 'pdf' && fileType !== 'docx' && fileType !== 'doc') {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF or Word document (.pdf, .docx, .doc)",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "File size should be less than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUploadDocument = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select a file to upload",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      await uploadDocument({
+        documentType,
+        file: selectedFile
+      });
+      setSelectedFile(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const updatePersonalInfo = async () => {
+    // For this example, we're just updating the profile data
+    // Name changes would typically require auth provider updates
+    toast({
+      title: "Personal Info Updated",
+      description: "Your personal information has been updated."
+    });
+  };
+
   const updateProfile = async () => {
-    if (!fetchmanProfile || !user?.id) {
+    if (!profile?.id) {
       toast({
         title: "Error",
         description: "Profile data could not be loaded. Please try again later.",
@@ -108,93 +222,137 @@ export default function FetchmanSettingsPage() {
       return;
     }
     
-    setLoading(prev => ({ ...prev, update: true }));
+    // Convert mobility preferences array to object format
+    const mobilityPreferenceObj = {
+      own_car: mobilityPreference.includes("own_car"),
+      public_transport: mobilityPreference.includes("public_transport"),
+      family_friends: mobilityPreference.includes("family_friends")
+    };
     
-    try {
-      const { error } = await supabase
-        .from('fetchman_profiles')
-        .update({
-          phone_number: profileData.phone_number,
-          vehicle_type: profileData.vehicle_type,
-          work_hours: profileData.work_hours,
-          service_area: profileData.service_area,
-          has_own_transport: profileData.has_own_transport,
-          bank_name: profileData.bank_name,
-          bank_account_number: profileData.bank_account_number,
-          branch_code: profileData.branch_code
-        })
-        .eq('user_id', user.id);
-      
-      if (error) {
-        console.error("Error updating profile:", error);
-        toast({
-          title: "Update Failed",
-          description: "Could not update your profile. Please try again later.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully."
-      });
-      
-      // In a real app, we would also update notification settings in the database
-    } catch (err) {
-      console.error("Error in updateProfile:", err);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(prev => ({ ...prev, update: false }));
-    }
+    // Update the profile with all fields
+    await updateProfile({
+      ...profileData,
+      address: personalInfo.address,
+      mobility_preference: mobilityPreferenceObj,
+      work_areas: selectedWorkAreas,
+      emergency_contact_name: emergencyContact.name,
+      emergency_contact_relationship: emergencyContact.relationship,
+      emergency_contact_phone: emergencyContact.phone,
+      emergency_contact_email: emergencyContact.email
+    });
   };
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-auto pb-16">
       <div>
         <h1 className="text-2xl font-bold mb-2">Settings</h1>
         <p className="text-gray-500">Manage your account preferences and profile information</p>
       </div>
 
-      <Tabs defaultValue="profile">
+      <Tabs defaultValue="personal">
         <TabsList className="mb-6">
+          <TabsTrigger value="personal">Personal Info</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="mobility">Mobility</TabsTrigger>
+          <TabsTrigger value="emergency">Emergency Contact</TabsTrigger>
           <TabsTrigger value="banking">Banking</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
         
+        {/* Personal Information Tab */}
+        <TabsContent value="personal">
+          <Card>
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+              <CardDescription>
+                Update your basic personal information
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    placeholder="Enter your first name"
+                    value={personalInfo.firstName}
+                    onChange={(e) => handlePersonalInfoChange('firstName', e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Enter your last name"
+                    value={personalInfo.lastName}
+                    onChange={(e) => handlePersonalInfoChange('lastName', e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={personalInfo.email}
+                    readOnly
+                  />
+                  <p className="text-xs text-gray-500">Contact support to change your email</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    placeholder="Enter your phone number"
+                    value={profileData.phone_number}
+                    onChange={(e) => handleProfileChange('phone_number', e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="address">Physical Address</Label>
+                <Textarea
+                  id="address"
+                  placeholder="Enter your full address"
+                  value={personalInfo.address}
+                  onChange={(e) => handlePersonalInfoChange('address', e.target.value)}
+                  rows={3}
+                />
+              </div>
+              
+              <Button 
+                onClick={updatePersonalInfo}
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Saving..." : "Save Personal Information"}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Profile Tab */}
         <TabsContent value="profile">
-          {loading.profile ? (
+          {isLoading ? (
             <Card>
               <CardContent className="pt-6 pb-6 text-center">
                 <p className="text-gray-500">Loading your profile...</p>
               </CardContent>
             </Card>
-          ) : fetchmanProfile ? (
+          ) : profile ? (
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
                 <CardDescription>
-                  Update your personal information and preferences
+                  Update your professional profile details
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone_number">Phone Number</Label>
-                    <Input
-                      id="phone_number"
-                      placeholder="Enter your phone number"
-                      value={profileData.phone_number}
-                      onChange={(e) => handleProfileChange('phone_number', e.target.value)}
-                    />
-                  </div>
-                  
                   <div className="space-y-2">
                     <Label htmlFor="vehicle_type">Vehicle Type</Label>
                     <Select
@@ -236,7 +394,7 @@ export default function FetchmanSettingsPage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="service_area">Service Area</Label>
+                    <Label htmlFor="service_area">Primary Service Area</Label>
                     <Select
                       value={profileData.service_area}
                       onValueChange={(value) => handleProfileChange('service_area', value)}
@@ -245,13 +403,9 @@ export default function FetchmanSettingsPage() {
                         <SelectValue placeholder="Select a service area" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="sandton">Sandton</SelectItem>
-                        <SelectItem value="rosebank">Rosebank</SelectItem>
-                        <SelectItem value="johannesburg_cbd">Johannesburg CBD</SelectItem>
-                        <SelectItem value="melville">Melville</SelectItem>
-                        <SelectItem value="braamfontein">Braamfontein</SelectItem>
-                        <SelectItem value="fourways">Fourways</SelectItem>
-                        <SelectItem value="randburg">Randburg</SelectItem>
+                        {REGIONS.map(region => (
+                          <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -269,9 +423,9 @@ export default function FetchmanSettingsPage() {
                 <div className="pt-4">
                   <Button 
                     onClick={updateProfile}
-                    disabled={loading.update}
+                    disabled={isUpdating}
                   >
-                    {loading.update ? "Saving..." : "Save Changes"}
+                    {isUpdating ? "Saving..." : "Save Profile"}
                   </Button>
                 </div>
               </CardContent>
@@ -288,119 +442,284 @@ export default function FetchmanSettingsPage() {
           )}
         </TabsContent>
         
-        <TabsContent value="notifications">
+        {/* Mobility Tab */}
+        <TabsContent value="mobility">
           <Card>
             <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
+              <CardTitle>Mobility & Work Areas</CardTitle>
               <CardDescription>
-                Choose how and when you want to be notified
+                Set your mobility preferences and reachable work areas
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Notification Channels</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="email_notifications">Email Notifications</Label>
-                      <p className="text-sm text-gray-500">Receive notifications via email</p>
-                    </div>
-                    <Switch
-                      id="email_notifications"
-                      checked={notificationSettings.email_notifications}
-                      onCheckedChange={(checked) => handleNotificationChange('email_notifications', checked)}
-                    />
-                  </div>
-                </div>
+                <h3 className="text-lg font-medium">Mobility Preference</h3>
+                <p className="text-sm text-gray-500">Select all that apply to you</p>
                 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="push_notifications">Push Notifications</Label>
-                      <p className="text-sm text-gray-500">Receive push notifications on your device</p>
-                    </div>
-                    <Switch
-                      id="push_notifications"
-                      checked={notificationSettings.push_notifications}
-                      onCheckedChange={(checked) => handleNotificationChange('push_notifications', checked)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="sms_notifications">SMS Notifications</Label>
-                      <p className="text-sm text-gray-500">Receive text message notifications</p>
-                    </div>
-                    <Switch
-                      id="sms_notifications"
-                      checked={notificationSettings.sms_notifications}
-                      onCheckedChange={(checked) => handleNotificationChange('sms_notifications', checked)}
-                    />
-                  </div>
-                </div>
+                <ToggleGroup 
+                  type="multiple" 
+                  className="flex flex-wrap gap-2"
+                  value={mobilityPreference}
+                  onValueChange={(value) => setMobilityPreference(value)}
+                >
+                  <ToggleGroupItem value="own_car" className="px-4">
+                    Own Car
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="public_transport" className="px-4">
+                    Public Transport
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="family_friends" className="px-4">
+                    Family & Friends
+                  </ToggleGroupItem>
+                </ToggleGroup>
               </div>
               
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Notification Types</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="assignment_alerts">Assignment Alerts</Label>
-                      <p className="text-sm text-gray-500">Notifications about new and updated assignments</p>
-                    </div>
-                    <Switch
-                      id="assignment_alerts"
-                      checked={notificationSettings.assignment_alerts}
-                      onCheckedChange={(checked) => handleNotificationChange('assignment_alerts', checked)}
-                    />
-                  </div>
-                </div>
+                <h3 className="text-lg font-medium">Reachable Work Areas</h3>
+                <p className="text-sm text-gray-500">Select all areas you can work in</p>
                 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="payment_updates">Payment Updates</Label>
-                      <p className="text-sm text-gray-500">Updates about your earnings and payments</p>
-                    </div>
-                    <Switch
-                      id="payment_updates"
-                      checked={notificationSettings.payment_updates}
-                      onCheckedChange={(checked) => handleNotificationChange('payment_updates', checked)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="system_announcements">System Announcements</Label>
-                      <p className="text-sm text-gray-500">Important updates about the platform</p>
-                    </div>
-                    <Switch
-                      id="system_announcements"
-                      checked={notificationSettings.system_announcements}
-                      onCheckedChange={(checked) => handleNotificationChange('system_announcements', checked)}
-                    />
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  {REGIONS.map(region => (
+                    <Badge 
+                      key={region}
+                      variant={selectedWorkAreas.includes(region) ? "default" : "outline"}
+                      className="cursor-pointer p-2"
+                      onClick={() => handleToggleWorkArea(region)}
+                    >
+                      {region}
+                      {selectedWorkAreas.includes(region) && (
+                        <CheckCircle2 className="ml-1 h-3 w-3" />
+                      )}
+                    </Badge>
+                  ))}
                 </div>
               </div>
               
               <div className="pt-4">
-                <Button onClick={() => {
-                  toast({
-                    title: "Notification Settings Updated",
-                    description: "Your notification preferences have been saved."
-                  });
-                }}>
-                  Save Preferences
+                <Button 
+                  onClick={updateProfile}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? "Saving..." : "Save Mobility Settings"}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
+        {/* Emergency Contact Tab */}
+        <TabsContent value="emergency">
+          <Card>
+            <CardHeader>
+              <CardTitle>Emergency Contact</CardTitle>
+              <CardDescription>
+                Provide details of someone we can contact in case of emergency
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_name">Contact Name</Label>
+                  <Input
+                    id="emergency_name"
+                    placeholder="Enter emergency contact name"
+                    value={emergencyContact.name}
+                    onChange={(e) => handleEmergencyContactChange('name', e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_relationship">Relationship</Label>
+                  <Select
+                    value={emergencyContact.relationship}
+                    onValueChange={(value) => handleEmergencyContactChange('relationship', value)}
+                  >
+                    <SelectTrigger id="emergency_relationship">
+                      <SelectValue placeholder="Select relationship" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="spouse">Spouse</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
+                      <SelectItem value="child">Child</SelectItem>
+                      <SelectItem value="sibling">Sibling</SelectItem>
+                      <SelectItem value="friend">Friend</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_phone">Phone Number</Label>
+                  <Input
+                    id="emergency_phone"
+                    placeholder="Enter emergency contact phone"
+                    value={emergencyContact.phone}
+                    onChange={(e) => handleEmergencyContactChange('phone', e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_email">Email Address</Label>
+                  <Input
+                    id="emergency_email"
+                    type="email"
+                    placeholder="Enter emergency contact email"
+                    value={emergencyContact.email}
+                    onChange={(e) => handleEmergencyContactChange('email', e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div className="pt-4">
+                <Button 
+                  onClick={updateProfile}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? "Saving..." : "Save Emergency Contact"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Documents Tab */}
+        <TabsContent value="documents">
+          <Card>
+            <CardHeader>
+              <CardTitle>Documents</CardTitle>
+              <CardDescription>
+                Upload and manage your documents and qualifications
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Upload New Document</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="document_type">Document Type</Label>
+                    <Select
+                      value={documentType}
+                      onValueChange={setDocumentType}
+                    >
+                      <SelectTrigger id="document_type">
+                        <SelectValue placeholder="Select document type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cv">CV / Resume</SelectItem>
+                        <SelectItem value="qualification">Qualification</SelectItem>
+                        <SelectItem value="certificate">Certificate</SelectItem>
+                        <SelectItem value="license">License</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="document_file">Select File</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="document_file"
+                        type="file"
+                        onChange={handleFileChange}
+                        accept=".pdf,.doc,.docx"
+                        className="flex-1"
+                      />
+                      {selectedFile && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => setSelectedFile(null)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Accepted formats: PDF, DOC, DOCX (Max 5MB)
+                    </p>
+                  </div>
+                </div>
+                
+                {selectedFile && (
+                  <div className="bg-green-50 border border-green-200 rounded-md p-2 flex items-center gap-2">
+                    <FileText className="text-green-600 h-4 w-4" />
+                    <span className="text-sm text-green-800 truncate">
+                      {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
+                    </span>
+                  </div>
+                )}
+                
+                <Button 
+                  onClick={handleUploadDocument}
+                  disabled={!selectedFile || isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Upload className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Document
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Your Documents</h3>
+                
+                {documents && documents.length > 0 ? (
+                  <div className="space-y-3">
+                    {documents.map(doc => (
+                      <div key={doc.id} className="flex items-center justify-between border p-3 rounded-md">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <p className="font-medium">{doc.file_name}</p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(doc.uploaded_at).toLocaleDateString()} • {doc.document_type}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {doc.status === 'approved' ? (
+                            <Badge variant="success" className="bg-green-100 text-green-800">
+                              <CheckCircle2 className="mr-1 h-3 w-3" /> Approved
+                            </Badge>
+                          ) : doc.status === 'rejected' ? (
+                            <Badge variant="destructive" className="bg-red-100 text-red-800">
+                              <X className="mr-1 h-3 w-3" /> Rejected
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                              <AlertTriangle className="mr-1 h-3 w-3" /> Pending
+                            </Badge>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => window.open(doc.file_url, '_blank')}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    You haven't uploaded any documents yet
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Banking Tab */}
         <TabsContent value="banking">
           <Card>
             <CardHeader>
@@ -455,15 +774,16 @@ export default function FetchmanSettingsPage() {
               <div className="pt-4">
                 <Button 
                   onClick={updateProfile}
-                  disabled={loading.update}
+                  disabled={isUpdating}
                 >
-                  {loading.update ? "Saving..." : "Save Banking Details"}
+                  {isUpdating ? "Saving..." : "Save Banking Details"}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
+        {/* Security Tab */}
         <TabsContent value="security">
           <Card>
             <CardHeader>

@@ -1,33 +1,49 @@
 
-import React from "react";
+import React, { useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import FetchmanHeader from "@/components/fetchman/FetchmanHeader";
 import FetchmanSidebar from "@/components/fetchman/FetchmanSidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
+import SystemBanners from "@/components/banners/SystemBanners";
+import { FetchmanFeaturesSelfTest } from "@/components/fetchman/FetchmanFeaturesSelfTest";
 
 interface FetchmanPanelLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-const FetchmanPanelLayout = ({ children }: FetchmanPanelLayoutProps) => {
+export default function FetchmanPanelLayout({ children }: FetchmanPanelLayoutProps) {
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
   return (
-    <AuthTransitionWrapper
-      requireAuth={true}
-      allowedRoles={["fetchman"]}
+    <AuthTransitionWrapper 
+      requireAuth={true} 
+      allowedRoles={["fetchman"]} 
       showFallback={true}
-      redirectTo="/auth"
     >
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <FetchmanHeader />
-        <div className="flex-1 flex pt-16">
-          <FetchmanSidebar />
-          <ScrollArea className="flex-1 h-[calc(100vh-4rem)]">
-            <main className="flex-1 p-6 overflow-auto">{children}</main>
-          </ScrollArea>
+      <div className="flex h-screen overflow-hidden bg-background">
+        <FetchmanSidebar className="hidden md:flex h-screen" />
+        
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+          <FetchmanHeader />
+          
+          <SystemBanners />
+          
+          <div className="flex-1 overflow-auto">
+            {/* Add Fetchman Self-Test floating button */}
+            <div className="fixed bottom-4 right-4 z-50">
+              <FetchmanFeaturesSelfTest />
+            </div>
+            
+            <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
+              {children || <Outlet />}
+            </main>
+          </div>
         </div>
       </div>
     </AuthTransitionWrapper>
   );
-};
-
-export default FetchmanPanelLayout;
+}

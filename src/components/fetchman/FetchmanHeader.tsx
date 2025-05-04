@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -32,12 +33,44 @@ const FetchmanHeader = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSignOut = async () => {
-    const success = await AuthService.signOut();
-    if (success) {
-      forceClearUser(); // Backup local state clearing
-      navigate("/auth");
+    if (isLoggingOut) return; // Prevent multiple clicks
+    
+    setIsLoggingOut(true);
+    try {
+      const success = await AuthService.signOut();
+      
+      if (success) {
+        // Clear local user state first
+        forceClearUser();
+        
+        // Show success message
+        toast({
+          title: "Logged out successfully",
+          description: "You have been logged out of your account."
+        });
+        
+        // Redirect to the root route (/) which contains the login/auth page
+        navigate("/", { replace: true });
+      } else {
+        // Handle failed logout
+        toast({
+          title: "Logout failed",
+          description: "There was an issue logging out. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error during logout",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -156,9 +189,13 @@ const FetchmanHeader = () => {
                 </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="flex items-center cursor-pointer text-red-500 focus:text-red-500">
+              <DropdownMenuItem 
+                onClick={handleSignOut} 
+                disabled={isLoggingOut}
+                className="flex items-center cursor-pointer text-red-500 focus:text-red-500"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
+                <span>{isLoggingOut ? "Signing out..." : "Sign out"}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

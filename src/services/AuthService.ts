@@ -12,11 +12,13 @@ export const AuthService = {
    */
   signOut: async (): Promise<boolean> => {
     try {
+      console.log("AuthService: Attempting to sign out user");
+      
       // First invalidate the session with Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error("Error during sign out:", error);
+        console.error("AuthService: Error during sign out:", error);
         
         // Show user-friendly error message
         toast({
@@ -28,15 +30,11 @@ export const AuthService = {
         return false;
       }
       
-      // If successful, show confirmation toast
-      toast({
-        title: "Signed out successfully",
-        description: "You have been signed out of your account"
-      });
+      console.log("AuthService: User signed out successfully");
       
       return true;
     } catch (e) {
-      console.error("Exception during sign out process:", e);
+      console.error("AuthService: Exception during sign out process:", e);
       
       // Show user-friendly error message for unexpected errors
       toast({

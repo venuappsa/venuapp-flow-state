@@ -33,7 +33,7 @@ const REGIONS = [
 export default function FetchmanSettingsPage() {
   const { user } = useUser();
   const navigate = useNavigate();
-  const { profile, isLoading, updateProfile, isUpdating } = useFetchmanProfile();
+  const { profile, isLoading, updateProfile: saveProfile, isUpdating } = useFetchmanProfile();
 
   const { documents, uploadDocument, isUploading } = 
     useFetchmanDocuments(profile?.id);
@@ -212,7 +212,7 @@ export default function FetchmanSettingsPage() {
     });
   };
 
-  const updateProfile = async () => {
+  const handleUpdateProfile = async () => {
     if (!profile?.id) {
       toast({
         title: "Error",
@@ -230,7 +230,7 @@ export default function FetchmanSettingsPage() {
     };
     
     // Update the profile with all fields
-    await updateProfile({
+    await saveProfile({
       ...profileData,
       address: personalInfo.address,
       mobility_preference: mobilityPreferenceObj,

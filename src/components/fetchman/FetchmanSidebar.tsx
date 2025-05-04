@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -60,7 +61,15 @@ const SidebarItem = ({
   </Link>
 );
 
-const routes = [
+interface RouteItem {
+  path: string;
+  end?: boolean;
+  icon: React.ReactNode;
+  label: string;
+  badgeCount?: number;
+}
+
+const routes: RouteItem[] = [
   {
     path: "/fetchman",
     end: true,
@@ -86,6 +95,7 @@ const routes = [
     path: "/fetchman/messages",
     icon: <MessageSquare className="mr-2 h-4 w-4" />,
     label: "Messages",
+    badgeCount: 0,
   },
   {
     path: "/fetchman/settings",

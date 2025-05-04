@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +23,33 @@ import { Input } from "@/components/ui/input";
 import { useAllFetchmanProfiles, FetchmanProfile } from "@/hooks/useAllFetchmanProfiles";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { AlertTriangle, CheckCircle, Search, ShieldAlert, Star, Truck, UserCog } from "lucide-react";
+import { 
+  AlertTriangle, 
+  CheckCircle, 
+  Search, 
+  ShieldAlert, 
+  Star, 
+  Truck, 
+  UserCog,
+  MessageSquare,
+  User,
+  Ban,
+  RefreshCw,
+  Shield,
+  ArrowRight,
+  Calendar,
+  Upload,
+  FileText,
+  Trash2
+} from "lucide-react";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 
 export default function AdminFetchmanPage() {
   const [selectedFetchman, setSelectedFetchman] = useState<FetchmanProfile | null>(null);
@@ -43,7 +70,7 @@ export default function AdminFetchmanPage() {
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<{ status?: string }>({});
 
   const statusBadges: Record<string, JSX.Element> = {
     active: <Badge className="bg-green-500">Active</Badge>,
@@ -171,12 +198,12 @@ export default function AdminFetchmanPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter.status} onValueChange={(value) => setStatusFilter(value ? { status: value } : {})}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="">All Statuses</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="verified">Verified</SelectItem>
                     <SelectItem value="declined">Declined</SelectItem>
@@ -185,7 +212,7 @@ export default function AdminFetchmanPage() {
               </div>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
+              {isLoadingFetchmen ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">Loading fetchman profiles...</p>
                 </div>
@@ -226,7 +253,7 @@ export default function AdminFetchmanPage() {
                             {fetchman.verification_status}
                           </Badge>
                           {fetchman.is_suspended && (
-                            <Badge variant="warning">Suspended</Badge>
+                            <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Suspended</Badge>
                           )}
                           {fetchman.is_blacklisted && (
                             <Badge variant="destructive">Blacklisted</Badge>

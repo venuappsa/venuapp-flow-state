@@ -43,10 +43,12 @@ export function useFetchmanProfile(userId?: string) {
         
         // Handle case where user has error property
         if (data && data.user && 'error' in data.user) {
-          return { ...data, user: null } as FetchmanProfile;
+          // Use type assertion after modifying the data
+          return { ...data, user: null } as unknown as FetchmanProfile;
         }
         
-        return data as FetchmanProfile | null;
+        // Use type assertion after we've ensured the data is valid
+        return data as unknown as FetchmanProfile | null;
       } catch (error: any) {
         console.error("Error in fetchman profile query:", error);
         toast({
@@ -94,7 +96,7 @@ export function useFetchmanProfile(userId?: string) {
         };
       }
       
-      if (!data.user) {
+      if (!data.user || ('error' in data.user)) {
         return { 
           success: false, 
           message: "Fetchman profile found, but profile relation is missing" 

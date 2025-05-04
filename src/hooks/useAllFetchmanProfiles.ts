@@ -23,11 +23,11 @@ export interface FetchmanProfile {
   emergency_contact_phone?: string;
   emergency_contact_email?: string;
   emergency_contact_relationship?: string;
-  // Add the missing banking fields
+  // Banking fields
   bank_name?: string;
   bank_account_number?: string;
   branch_code?: string;
-  // Make the user field handle the possible error state
+  // User field that can handle potential error state
   user?: {
     id: string;
     email: string;
@@ -36,6 +36,9 @@ export interface FetchmanProfile {
     phone?: string | null;
   } | null;
 }
+
+// Type to handle Supabase query error responses
+type SelectQueryError = { error: true } & String;
 
 export function useAllFetchmanProfiles(filter?: { status?: string }) {
   const { toast } = useToast();
@@ -78,9 +81,10 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
             return { ...profile, user: null };
           }
           return profile;
-        }) as FetchmanProfile[];
+        });
         
-        return processedData;
+        // Explicit type assertion after we've processed the data
+        return processedData as unknown as FetchmanProfile[];
       } catch (error: any) {
         console.error("Error in all fetchman profiles query:", error);
         toast({
@@ -124,7 +128,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      const missingProfiles = data.filter(item => !item.user);
+      const missingProfiles = data.filter(item => !item.user || ('error' in item.user));
       if (missingProfiles.length > 0) {
         return { 
           success: false, 

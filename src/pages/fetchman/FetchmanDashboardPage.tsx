@@ -147,7 +147,8 @@ export default function FetchmanDashboardPage() {
     }
   };
 
-  const updateDeliveryStatus = async (deliveryId: string, newStatus: string) {
+  // Fixed the function declaration syntax error here
+  const updateDeliveryStatus = async (deliveryId: string, newStatus: string) => {
     try {
       const { error } = await supabase
         .from('fetchman_deliveries')

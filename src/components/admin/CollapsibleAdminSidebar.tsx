@@ -33,7 +33,8 @@ import {
   LifeBuoy,
   AlertCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Truck
 } from "lucide-react";
 
 interface CollapsibleAdminSidebarProps {
@@ -140,6 +141,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
         { href: "/admin/users", label: "Users", icon: <Users size={18} /> },
         { href: "/admin/hosts", label: "Hosts", icon: <Building size={18} /> },
         { href: "/admin/merchants", label: "Merchants", icon: <Store size={18} /> },
+        { href: "/admin/fetchman", label: "Fetchmen", icon: <Truck size={18} /> },
         { href: "/admin/verification", label: "Verification Center", icon: <Shield size={18} />, badge: 7 },
       ]
     },

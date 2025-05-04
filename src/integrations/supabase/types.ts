@@ -138,6 +138,41 @@ export type Database = {
         }
         Relationships: []
       }
+      fetchman_blacklist: {
+        Row: {
+          blacklist_date: string
+          blacklisted_by: string
+          created_at: string
+          fetchman_id: string
+          id: string
+          reason: string
+        }
+        Insert: {
+          blacklist_date?: string
+          blacklisted_by: string
+          created_at?: string
+          fetchman_id: string
+          id?: string
+          reason: string
+        }
+        Update: {
+          blacklist_date?: string
+          blacklisted_by?: string
+          created_at?: string
+          fetchman_id?: string
+          id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fetchman_blacklist_fetchman_id_fkey"
+            columns: ["fetchman_id"]
+            isOneToOne: true
+            referencedRelation: "fetchman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fetchman_deliveries: {
         Row: {
           completion_time: string | null
@@ -217,9 +252,11 @@ export type Database = {
           has_own_transport: boolean
           id: string
           identity_number: string
+          is_blacklisted: boolean | null
           is_suspended: boolean | null
           phone_number: string
           rating: number | null
+          role: string | null
           service_area: string
           total_deliveries: number | null
           updated_at: string
@@ -237,9 +274,11 @@ export type Database = {
           has_own_transport?: boolean
           id?: string
           identity_number: string
+          is_blacklisted?: boolean | null
           is_suspended?: boolean | null
           phone_number: string
           rating?: number | null
+          role?: string | null
           service_area: string
           total_deliveries?: number | null
           updated_at?: string
@@ -257,9 +296,11 @@ export type Database = {
           has_own_transport?: boolean
           id?: string
           identity_number?: string
+          is_blacklisted?: boolean | null
           is_suspended?: boolean | null
           phone_number?: string
           rating?: number | null
+          role?: string | null
           service_area?: string
           total_deliveries?: number | null
           updated_at?: string
@@ -269,6 +310,47 @@ export type Database = {
           work_hours?: string
         }
         Relationships: []
+      }
+      fetchman_promotions: {
+        Row: {
+          created_at: string
+          fetchman_id: string
+          id: string
+          new_role: string
+          notes: string | null
+          previous_role: string | null
+          promoted_by: string
+          promotion_date: string
+        }
+        Insert: {
+          created_at?: string
+          fetchman_id: string
+          id?: string
+          new_role: string
+          notes?: string | null
+          previous_role?: string | null
+          promoted_by: string
+          promotion_date?: string
+        }
+        Update: {
+          created_at?: string
+          fetchman_id?: string
+          id?: string
+          new_role?: string
+          notes?: string | null
+          previous_role?: string | null
+          promoted_by?: string
+          promotion_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fetchman_promotions_fetchman_id_fkey"
+            columns: ["fetchman_id"]
+            isOneToOne: false
+            referencedRelation: "fetchman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       host_profiles: {
         Row: {

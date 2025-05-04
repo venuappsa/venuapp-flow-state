@@ -36,6 +36,7 @@ import AdminSupportPage from './pages/admin/AdminSupportPage';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminVendorPerformancePage from './pages/admin/AdminVendorPerformancePage';
 import AdminEventVendorsPage from './pages/admin/AdminEventVendorsPage';
+import AdminFetchmanPage from './pages/admin/AdminFetchmanPage';
 
 // Host pages
 import HostDashboardPage from './pages/HostDashboardPage';
@@ -148,6 +149,11 @@ function App() {
         <Route path="/admin/verification" element={
           <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
             <AdminVerificationCenterPage />
+          </AuthTransitionWrapper>
+        } />
+        <Route path="/admin/fetchman" element={
+          <AuthTransitionWrapper requireAuth={true} allowedRoles={["admin"]}>
+            <AdminFetchmanPage />
           </AuthTransitionWrapper>
         } />
         

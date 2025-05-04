@@ -422,7 +422,7 @@ export default function FetchmanSettingsPage() {
                 
                 <div className="pt-4">
                   <Button 
-                    onClick={updateProfile}
+                    onClick={handleUpdateProfile}
                     disabled={isUpdating}
                   >
                     {isUpdating ? "Saving..." : "Save Profile"}
@@ -497,7 +497,7 @@ export default function FetchmanSettingsPage() {
               
               <div className="pt-4">
                 <Button 
-                  onClick={updateProfile}
+                  onClick={handleUpdateProfile}
                   disabled={isUpdating}
                 >
                   {isUpdating ? "Saving..." : "Save Mobility Settings"}
@@ -572,7 +572,7 @@ export default function FetchmanSettingsPage() {
               
               <div className="pt-4">
                 <Button 
-                  onClick={updateProfile}
+                  onClick={handleUpdateProfile}
                   disabled={isUpdating}
                 >
                   {isUpdating ? "Saving..." : "Save Emergency Contact"}
@@ -773,7 +773,7 @@ export default function FetchmanSettingsPage() {
               
               <div className="pt-4">
                 <Button 
-                  onClick={updateProfile}
+                  onClick={handleUpdateProfile}
                   disabled={isUpdating}
                 >
                   {isUpdating ? "Saving..." : "Save Banking Details"}

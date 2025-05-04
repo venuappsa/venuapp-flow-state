@@ -1,164 +1,310 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useUser } from '@/hooks/useUser';
+import { useFetchmanProfile } from '@/hooks/useFetchmanProfile';
+import { useAllFetchmanProfiles } from '@/hooks/useAllFetchmanProfiles';
+import { supabase } from "@/integrations/supabase/client";
 import LogoutSelfTest from './LogoutSelfTest';
-import LoginSelfTest from './LoginSelfTest';
-import { useFetchmanProfile } from "@/hooks/useFetchmanProfile";
-import { useAllFetchmanProfiles } from "@/hooks/useAllFetchmanProfiles";
-import { useUser } from "@/hooks/useUser";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, AlertCircle, RefreshCcw } from "lucide-react";
-
-// Add a component to test fetchman profile relationships
-function ProfileRelationshipTest() {
-  const { user } = useUser();
-  const { testProfileRelationship } = useFetchmanProfile(user?.id);
-  const { testProfilesRelationship } = useAllFetchmanProfiles();
-  const [singleResult, setSingleResult] = useState<any>(null);
-  const [allResult, setAllResult] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const runSingleTest = async () => {
-    setIsLoading(true);
-    const result = await testProfileRelationship();
-    setSingleResult(result);
-    setIsLoading(false);
-  };
-  
-  const runAllTest = async () => {
-    setIsLoading(true);
-    const result = await testProfilesRelationship();
-    setAllResult(result);
-    setIsLoading(false);
-  };
-  
-  return (
-    <div className="space-y-4 p-2">
-      <div className="flex flex-col space-y-2">
-        <h3 className="text-lg font-medium">Profile Relationship Tests</h3>
-        <p className="text-sm text-muted-foreground">
-          Test the relationship between fetchman_profiles and profiles tables
-        </p>
-        
-        <div className="space-y-4 mt-2">
-          <div className="flex flex-col space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Current User Test</span>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={runSingleTest} 
-                disabled={isLoading}
-              >
-                {isLoading ? <RefreshCcw className="h-4 w-4 animate-spin" /> : "Run Test"}
-              </Button>
-            </div>
-            
-            {singleResult && (
-              <Alert variant={singleResult.success ? "default" : "destructive"}>
-                {singleResult.success ? (
-                  <CheckCircle2 className="h-4 w-4" />
-                ) : (
-                  <AlertCircle className="h-4 w-4" />
-                )}
-                <AlertTitle>
-                  {singleResult.success ? "Success" : "Error"}
-                </AlertTitle>
-                <AlertDescription className="text-xs">
-                  {singleResult.message}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-          
-          <div className="flex flex-col space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">All Profiles Test</span>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={runAllTest} 
-                disabled={isLoading}
-              >
-                {isLoading ? <RefreshCcw className="h-4 w-4 animate-spin" /> : "Run Test"}
-              </Button>
-            </div>
-            
-            {allResult && (
-              <Alert variant={allResult.success ? "default" : "destructive"}>
-                {allResult.success ? (
-                  <CheckCircle2 className="h-4 w-4" />
-                ) : (
-                  <AlertCircle className="h-4 w-4" />
-                )}
-                <AlertTitle>
-                  {allResult.success ? "Success" : "Error"}
-                </AlertTitle>
-                <AlertDescription className="text-xs">
-                  {allResult.message}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function FetchmanFeaturesSelfTest() {
-  const [open, setOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [activeTest, setActiveTest] = useState("profile");
+  const [isRunning, setIsRunning] = useState(false);
+  const [testResults, setTestResults] = useState<any[]>([]);
+  const { user } = useUser();
   
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button className="bg-venu-orange hover:bg-venu-orange/90">
-          Self Test
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md md:max-w-lg overflow-y-auto">
-        <SheetHeader className="pb-4">
-          <SheetTitle>Fetchman Features Self-Test</SheetTitle>
-          <SheetDescription>
-            Test and verify Fetchman functionality
-          </SheetDescription>
-        </SheetHeader>
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+    if (!isExpanded) {
+      setTestResults([]); // Clear test results when expanding
+    }
+  };
+
+  const runAllTests = async () => {
+    setIsRunning(true);
+    setTestResults([]);
+    
+    try {
+      // Run all test functions
+      await testUserAuth();
+      await testProfileFetch();
+      await testProfilesQuery();
+      await testFetchmanPermissions();
+    } catch (err) {
+      console.error("Error running all tests:", err);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+  
+  const addResult = (name: string, success: boolean, message: string, status: 'success' | 'info' | 'warning' | 'error' = success ? 'success' : 'error') => {
+    setTestResults(prev => [...prev, {
+      name,
+      success,
+      message,
+      status,
+      timestamp: new Date().toISOString()
+    }]);
+  };
+
+  const testUserAuth = async () => {
+    addResult('Starting auth test', true, 'Testing authentication status...', 'info');
+    
+    try {
+      // Check if user is authenticated
+      const isAuthenticated = !!user;
+      addResult('Authentication check', isAuthenticated, 
+        isAuthenticated ? 'User is authenticated' : 'User is not authenticated');
+      
+      if (!isAuthenticated) return;
+      
+      // Test session validity
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const hasValidSession = !!sessionData?.session;
+      
+      addResult('Session validity', hasValidSession, 
+        hasValidSession ? 'User has a valid session' : 'Invalid or expired session');
+      
+      if (sessionError) {
+        addResult('Session error', false, `Session error: ${sessionError.message}`);
+      }
+      
+      // Test user roles
+      const { data: rolesData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
         
-        <Tabs defaultValue="auth" className="w-full">
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="auth">Authentication</TabsTrigger>
-            <TabsTrigger value="assignments">Assignments</TabsTrigger>
-            <TabsTrigger value="relationships">Relationships</TabsTrigger>
-            <TabsTrigger value="api">API Calls</TabsTrigger>
+      const roles = rolesData?.map(r => r.role) || [];
+      addResult('User roles', roles.length > 0, 
+        roles.length > 0 ? `User has roles: ${roles.join(', ')}` : 'User has no roles');
+      
+      const hasFetchmanRole = roles.includes('fetchman');
+      addResult('Fetchman role', hasFetchmanRole, 
+        hasFetchmanRole ? 'User has fetchman role' : 'User does not have fetchman role');
+    } catch (error: any) {
+      addResult('Auth test error', false, `Error: ${error.message || String(error)}`);
+    }
+  };
+
+  const testProfileFetch = async () => {
+    addResult('Starting profile test', true, 'Testing fetchman profile fetch...', 'info');
+    
+    try {
+      if (!user) {
+        addResult('Profile test skipped', false, 'No authenticated user', 'warning');
+        return;
+      }
+      
+      const { profile, error, testProfileRelationship } = useFetchmanProfile(user.id);
+      
+      // Test profile relationship
+      const relationshipTest = await testProfileRelationship();
+      addResult('Profile relationship test', relationshipTest.success, relationshipTest.message);
+      
+      // Check if profile exists
+      addResult('Profile existence', !!profile, 
+        profile ? 'Fetchman profile found' : 'No fetchman profile found');
+      
+      if (profile) {
+        // Check if user relation works
+        addResult('Profile-User relation', !!profile.user, 
+          profile.user ? 'User relation working properly' : 'User relation not working');
+      }
+    } catch (error: any) {
+      addResult('Profile test error', false, `Error: ${error.message || String(error)}`);
+    }
+  };
+
+  const testProfilesQuery = async () => {
+    addResult('Starting profiles list test', true, 'Testing fetchman profiles list...', 'info');
+    
+    try {
+      const { testProfilesRelationship } = useAllFetchmanProfiles();
+      
+      // Test profiles list relationship
+      const relationshipTest = await testProfilesRelationship();
+      addResult('Profiles relationship test', relationshipTest.success, relationshipTest.message);
+      
+      if (relationshipTest.success) {
+        addResult('Profiles data check', true, `Successfully fetched ${relationshipTest.data.length} profiles`);
+      }
+    } catch (error: any) {
+      addResult('Profiles test error', false, `Error: ${error.message || String(error)}`);
+    }
+  };
+
+  const testFetchmanPermissions = async () => {
+    addResult('Starting permissions test', true, 'Testing fetchman permissions...', 'info');
+    
+    try {
+      if (!user) {
+        addResult('Permissions test skipped', false, 'No authenticated user', 'warning');
+        return;
+      }
+      
+      // Test if user can access their own fetchman profile
+      const { data: ownProfileData, error: ownProfileError } = await supabase
+        .from('fetchman_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        
+      addResult('Own profile access', !ownProfileError, 
+        ownProfileError ? `Error accessing own profile: ${ownProfileError.message}` : 'Can access own profile');
+      
+      // Test if user can access assignments
+      const { data: assignmentData, error: assignmentError } = await supabase
+        .from('fetchman_assignments')
+        .select('*')
+        .eq('fetchman_id', ownProfileData?.id)
+        .limit(1);
+        
+      addResult('Assignments access', !assignmentError, 
+        assignmentError ? `Error accessing assignments: ${assignmentError.message}` : 'Can access assignments');
+      
+      // For admin users, test if they can access all profiles
+      const { data: userRolesData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+        
+      const isAdmin = userRolesData?.some(r => r.role === 'admin');
+      
+      if (isAdmin) {
+        // Test if admin can access all profiles
+        const { data: allProfilesData, error: allProfilesError } = await supabase
+          .from('fetchman_profiles')
+          .select('*')
+          .limit(5);
+          
+        addResult('Admin profiles access', !allProfilesError, 
+          allProfilesError ? `Error accessing all profiles: ${allProfilesError.message}` : 'Admin can access all profiles');
+      }
+    } catch (error: any) {
+      addResult('Permissions test error', false, `Error: ${error.message || String(error)}`);
+    }
+  };
+
+  if (!isExpanded) {
+    return (
+      <Button 
+        onClick={toggleExpanded}
+        className="rounded-full p-3 h-12 w-12 bg-primary text-primary-foreground hover:bg-primary/90"
+        aria-label="Run Self-Tests"
+      >
+        <AlertCircle className="h-5 w-5" />
+      </Button>
+    );
+  }
+
+  return (
+    <Card className="w-96 shadow-lg">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle>Fetchman Self-Tests</CardTitle>
+            <CardDescription>Test system functionality</CardDescription>
+          </div>
+          <Button variant="ghost" size="icon" onClick={toggleExpanded}>
+            <XCircle className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        <Tabs defaultValue={activeTest} onValueChange={setActiveTest}>
+          <TabsList className="grid grid-cols-3 mb-4">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="auth">Auth</TabsTrigger>
+            <TabsTrigger value="logout">Logout</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="auth" className="space-y-4">
-            <LoginSelfTest />
+          <TabsContent value="profile">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Test fetchman profiles relationship and data access.
+              </p>
+              
+              <div className="space-y-2">
+                <Button 
+                  onClick={() => {
+                    setTestResults([]);
+                    testProfileFetch();
+                    testProfilesQuery();
+                  }}
+                  disabled={isRunning}
+                  className="w-full"
+                >
+                  {isRunning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Test Profile Features
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="auth">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Test fetchman authentication and permissions.
+              </p>
+              
+              <div className="space-y-2">
+                <Button 
+                  onClick={() => {
+                    setTestResults([]);
+                    testUserAuth();
+                    testFetchmanPermissions();
+                  }}
+                  disabled={isRunning}
+                  className="w-full"
+                >
+                  {isRunning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Test Auth Features
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="logout">
             <LogoutSelfTest />
           </TabsContent>
-          
-          <TabsContent value="assignments">
-            <p className="text-sm text-muted-foreground">Assignment tests coming soon...</p>
-          </TabsContent>
-          
-          <TabsContent value="relationships">
-            <ProfileRelationshipTest />
-          </TabsContent>
-          
-          <TabsContent value="api">
-            <p className="text-sm text-muted-foreground">API tests coming soon...</p>
-          </TabsContent>
         </Tabs>
-      </SheetContent>
-    </Sheet>
+        
+        {testResults.length > 0 && (
+          <div className="mt-4 space-y-2 max-h-64 overflow-auto border rounded-md p-2">
+            {testResults.map((result, index) => (
+              <div key={index} className="flex items-start gap-2 text-sm">
+                {result.success ? 
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" /> : 
+                  <XCircle className="h-4 w-4 text-red-500 mt-0.5" />
+                }
+                <div>
+                  <div className="font-medium">{result.name}</div>
+                  <div className="text-muted-foreground text-xs">{result.message}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+      
+      <CardFooter>
+        <Button 
+          onClick={runAllTests} 
+          disabled={isRunning}
+          className="w-full"
+          variant="outline"
+        >
+          {isRunning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Run All Tests
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

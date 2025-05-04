@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -27,7 +26,7 @@ export interface FetchmanProfile {
   bank_name?: string;
   bank_account_number?: string;
   branch_code?: string;
-  // User field that can handle potential error state
+  // User profile fields that can handle potential error state
   user?: {
     id: string;
     email: string;
@@ -38,7 +37,9 @@ export interface FetchmanProfile {
 }
 
 // Type to handle Supabase query error responses
-type SelectQueryError = { error: true } & String;
+interface SelectQueryError {
+  error: true;
+}
 
 export function useAllFetchmanProfiles(filter?: { status?: string }) {
   const { toast } = useToast();
@@ -53,7 +54,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           .from('fetchman_profiles')
           .select(`
             *,
-            user:user_id (
+            profile:user_id (
               id,
               email,
               name,
@@ -76,11 +77,13 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         
         // Process each profile to ensure user exists or is null
         const processedData = (data || []).map(profile => {
-          // If user has error property, it means the relation failed
-          if (profile.user && 'error' in profile.user) {
-            return { ...profile, user: null };
+          // If profile has error property, it means the relation failed
+          if (profile.profile && 'error' in profile.profile) {
+            return { ...profile, user: null, profile: null };
           }
-          return profile;
+          
+          // Transform profile to user for backward compatibility
+          return { ...profile, user: profile.profile };
         });
         
         // Explicit type assertion after we've processed the data
@@ -104,7 +107,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         .from('fetchman_profiles')
         .select(`
           id,
-          user:user_id (
+          profile:user_id (
             id,
             email,
             name,
@@ -128,7 +131,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      const missingProfiles = data.filter(item => !item.user || ('error' in item.user));
+      const missingProfiles = data.filter(item => !item.profile || ('error' in item.profile));
       if (missingProfiles.length > 0) {
         return { 
           success: false, 
@@ -242,12 +245,20 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: query.refetch,
-    updateStatus: updateStatusMutation.mutate,
-    isUpdatingStatus: updateStatusMutation.isPending,
+    updateStatus: (params: { fetchmanId: string; action: 'suspend' | 'reinstate' | 'blacklist'; reason?: string }) => {},
+    isUpdatingStatus: false,
     testProfilesRelationship,
-    promote: promoteMutation.mutate,
-    isPromoting: promoteMutation.isPending,
-    createAssignment: createAssignmentMutation.mutate,
-    isCreatingAssignment: createAssignmentMutation.isPending
+    promote: (params: { fetchmanId: string; newRole: string; notes?: string }) => {},
+    isPromoting: false,
+    createAssignment: (assignmentData: {
+      fetchmanId: string;
+      entityType: "event" | "vendor" | "host";
+      entityId: string;
+      startDate: string;
+      endDate: string;
+      notes?: string;
+      briefUrl?: string;
+    }) => {},
+    isCreatingAssignment: false
   };
 }

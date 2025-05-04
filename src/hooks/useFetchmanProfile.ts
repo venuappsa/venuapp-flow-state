@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -25,7 +24,7 @@ export function useFetchmanProfile(userId?: string) {
           .from('fetchman_profiles')
           .select(`
             *,
-            user:user_id (
+            profile:user_id (
               id,
               email,
               name, 
@@ -41,14 +40,20 @@ export function useFetchmanProfile(userId?: string) {
           throw new Error(error.message);
         }
         
-        // Handle case where user has error property
-        if (data && data.user && 'error' in data.user) {
-          // Use type assertion after modifying the data
-          return { ...data, user: null } as unknown as FetchmanProfile;
+        if (!data) {
+          return null;
+        }
+
+        // Handle case where profile has error property
+        if (data.profile && 'error' in data.profile) {
+          // Transform for backward compatibility and use type assertion
+          return { ...data, user: null, profile: null } as unknown as FetchmanProfile;
         }
         
-        // Use type assertion after we've ensured the data is valid
-        return data as unknown as FetchmanProfile | null;
+        // Transform profile to user for backward compatibility
+        const result = { ...data, user: data.profile } as unknown as FetchmanProfile;
+        
+        return result;
       } catch (error: any) {
         console.error("Error in fetchman profile query:", error);
         toast({
@@ -71,7 +76,7 @@ export function useFetchmanProfile(userId?: string) {
         .from('fetchman_profiles')
         .select(`
           id,
-          user:user_id (
+          profile:user_id (
             id,
             email,
             name,
@@ -96,7 +101,7 @@ export function useFetchmanProfile(userId?: string) {
         };
       }
       
-      if (!data.user || ('error' in data.user)) {
+      if (!data.profile || ('error' in data.profile)) {
         return { 
           success: false, 
           message: "Fetchman profile found, but profile relation is missing" 

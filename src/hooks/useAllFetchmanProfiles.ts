@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -11,21 +10,96 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
   const query = useQuery({
     queryKey: ["all-fetchman-profiles", filter],
     queryFn: async () => {
-      const { success, data, error } = await UserService.getAllFetchmanProfiles(filter);
-      
-      if (!success) {
-        console.error("Error fetching all fetchman profiles:", error);
+      try {
+        // Build query with profile relationship
+        let query = supabase
+          .from('fetchman_profiles')
+          .select(`
+            *,
+            user:user_id (
+              id,
+              email,
+              name,
+              surname,
+              phone
+            )
+          `);
+        
+        // Apply filters if provided
+        if (filter?.status) {
+          query = query.eq('verification_status', filter.status);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error("Error fetching all fetchman profiles:", error);
+          throw new Error(error.message);
+        }
+        
+        return data || [];
+      } catch (error: any) {
+        console.error("Error in all fetchman profiles query:", error);
         toast({
           title: "Error",
-          description: "Failed to load fetchman profiles: " + error,
+          description: "Failed to load fetchman profiles: " + (error.message || String(error)),
           variant: "destructive",
         });
         return [];
       }
-      
-      return data || [];
     }
   });
+  
+  // Function to test the relationship across all fetchman profiles
+  const testProfilesRelationship = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('fetchman_profiles')
+        .select(`
+          id,
+          user:user_id (
+            id,
+            email
+          )
+        `)
+        .limit(5); // Just check a few to verify
+        
+      if (error) {
+        return { 
+          success: false, 
+          message: `Relationship test failed: ${error.message}`,
+          error 
+        };
+      }
+      
+      if (!data || data.length === 0) {
+        return { 
+          success: false, 
+          message: "No fetchman profiles found" 
+        };
+      }
+      
+      const missingProfiles = data.filter(item => !item.user);
+      if (missingProfiles.length > 0) {
+        return { 
+          success: false, 
+          message: `${missingProfiles.length} fetchman profiles have missing profile relations` 
+        };
+      }
+      
+      return { 
+        success: true, 
+        message: `Relationship test passed for ${data.length} profiles`, 
+        data 
+      };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        message: `Test error: ${error.message || String(error)}`,
+        error 
+      };
+    }
+  };
   
   const updateStatusMutation = useMutation({
     mutationFn: ({ fetchmanId, action, reason }: { fetchmanId: string; action: 'suspend' | 'reinstate' | 'blacklist'; reason?: string }) => {
@@ -121,6 +195,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
     refetch: query.refetch,
     updateStatus: updateStatusMutation.mutate,
     isUpdatingStatus: updateStatusMutation.isPending,
+    testProfilesRelationship,
     promote: promoteMutation.mutate,
     isPromoting: promoteMutation.isPending,
     createAssignment: createAssignmentMutation.mutate,

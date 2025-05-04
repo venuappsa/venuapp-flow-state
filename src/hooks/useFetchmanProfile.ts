@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@/hooks/useUser";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useFetchmanProfile(userId?: string) {
   const { user } = useUser();
@@ -17,22 +18,94 @@ export function useFetchmanProfile(userId?: string) {
     queryFn: async () => {
       if (!targetUserId) return null;
       
-      const { success, data, error } = await UserService.getFetchmanProfileByUserId(targetUserId);
-      
-      if (!success) {
-        console.error("Error fetching fetchman profile:", error);
+      try {
+        // Use the relationship between fetchman_profiles and profiles tables
+        const { data, error } = await supabase
+          .from('fetchman_profiles')
+          .select(`
+            *,
+            user:user_id (
+              id,
+              email,
+              name, 
+              surname,
+              phone
+            )
+          `)
+          .eq('user_id', targetUserId)
+          .maybeSingle();
+        
+        if (error) {
+          console.error("Error fetching fetchman profile:", error);
+          throw new Error(error.message);
+        }
+        
+        return data;
+      } catch (error: any) {
+        console.error("Error in fetchman profile query:", error);
         toast({
           title: "Error",
-          description: "Failed to load profile data: " + error,
+          description: "Failed to load profile data: " + (error.message || String(error)),
           variant: "destructive",
         });
         return null;
       }
-      
-      return data;
     },
     enabled: !!targetUserId
   });
+  
+  // Function to test the relationship between profiles and fetchman_profiles
+  const testProfileRelationship = async () => {
+    if (!targetUserId) return { success: false, message: "No user ID provided" };
+    
+    try {
+      const { data, error } = await supabase
+        .from('fetchman_profiles')
+        .select(`
+          id,
+          user:user_id (
+            id,
+            email
+          )
+        `)
+        .eq('user_id', targetUserId)
+        .maybeSingle();
+        
+      if (error) {
+        return { 
+          success: false, 
+          message: `Relationship test failed: ${error.message}`,
+          error 
+        };
+      }
+      
+      if (!data) {
+        return { 
+          success: false, 
+          message: "No fetchman profile found for this user" 
+        };
+      }
+      
+      if (!data.user) {
+        return { 
+          success: false, 
+          message: "Fetchman profile found, but profile relation is missing" 
+        };
+      }
+      
+      return { 
+        success: true, 
+        message: "Relationship test passed", 
+        data 
+      };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        message: `Test error: ${error.message || String(error)}`,
+        error 
+      };
+    }
+  };
   
   const updateMutation = useMutation({
     mutationFn: (profileData: any) => {
@@ -61,6 +134,7 @@ export function useFetchmanProfile(userId?: string) {
     isError: query.isError,
     refetch: query.refetch,
     updateProfile: updateMutation.mutate,
-    isUpdating: updateMutation.isPending
+    isUpdating: updateMutation.isPending,
+    testProfileRelationship // Include the test function
   };
 }

@@ -12,6 +12,7 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useUser } from '@/hooks/useUser';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { getRedirectPageForRoles } from '@/hooks/useRoleRedirect';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function LoginSelfTest() {
   const [isRunning, setIsRunning] = useState(false);

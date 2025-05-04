@@ -13,13 +13,20 @@ import { useUser } from '@/hooks/useUser';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { getRedirectPageForRoles } from '@/hooks/useRoleRedirect';
 import { supabase } from '@/integrations/supabase/client';
+import { z } from 'zod';
+
+// Define a validation schema for login input
+const LoginSchema = z.object({
+  email: z.string().email('Please enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
 
 export default function LoginSelfTest() {
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<any[]>([]);
   const [email, setEmail] = useState('test@example.com');
   const [password, setPassword] = useState('password123');
-  const { user, initialized } = useUser();
+  const { user, initialized, forceClearUser } = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -30,6 +37,16 @@ export default function LoginSelfTest() {
     setTestResults([]);
     
     try {
+      // Validate input
+      try {
+        LoginSchema.parse({ email, password });
+        addResult('Input validation', true, 'Input validation passed');
+      } catch (validationError: any) {
+        addResult('Input validation', false, validationError.errors?.[0]?.message || 'Invalid email or password');
+        setIsRunning(false);
+        return;
+      }
+      
       // Test 1: Check if already logged in
       const isLoggedIn = !!user;
       addResult('Check current login state', true, isLoggedIn ? 'User is already logged in, will log out first' : 'User is not logged in');
@@ -38,6 +55,7 @@ export default function LoginSelfTest() {
       if (isLoggedIn) {
         addResult('Logging out current user', true, 'Attempting to sign out user before testing login...');
         await AuthService.signOut();
+        forceClearUser(); // Make sure the local state is cleared
         addResult('Logout before test', true, 'Successfully logged out current user');
       }
       
@@ -89,6 +107,10 @@ export default function LoginSelfTest() {
         if (!routeExists) {
           throw new Error(`404 potential: Route '${redirectPath}' does not exist in the application`);
         }
+        
+        // Navigate to the role-specific page
+        addResult('Navigation', true, `Navigating to ${redirectPath}`);
+        navigate(redirectPath);
         
       } catch (err) {
         console.error('Error fetching roles or verifying routes:', err);

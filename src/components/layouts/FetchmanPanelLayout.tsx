@@ -1,50 +1,30 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Outlet } from "react-router-dom";
-import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
-import FetchmanHeader from "@/components/fetchman/FetchmanHeader";
 import FetchmanSidebar from "@/components/fetchman/FetchmanSidebar";
-import SystemBanners from "@/components/banners/SystemBanners";
+import FetchmanHeader from "@/components/fetchman/FetchmanHeader";
 import { FetchmanFeaturesSelfTest } from "@/components/fetchman/FetchmanFeaturesSelfTest";
+import { useUser } from "@/hooks/useUser";
 
-interface FetchmanPanelLayoutProps {
-  children?: React.ReactNode;
-}
-
-export default function FetchmanPanelLayout({ children }: FetchmanPanelLayoutProps) {
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, []);
-
+export default function FetchmanPanelLayout() {
+  const { user } = useUser();
+  
   return (
-    <AuthTransitionWrapper 
-      requireAuth={true} 
-      allowedRoles={["fetchman"]} 
-      showFallback={true}
-    >
-      <div className="flex h-screen overflow-hidden bg-background">
-        {/* Sidebar with proper height - rendered only in the layout */}
-        <FetchmanSidebar className="hidden md:flex h-screen" />
+    <div className="flex h-screen overflow-hidden">
+      <FetchmanSidebar />
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <FetchmanHeader />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50">
+          <Outlet />
+        </main>
         
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
-          <FetchmanHeader />
-          
-          <SystemBanners />
-          
-          <div className="flex-1 overflow-auto">
-            {/* Add Fetchman Self-Test floating button */}
-            <div className="fixed bottom-4 right-4 z-50">
-              <FetchmanFeaturesSelfTest />
-            </div>
-            
-            <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
-              {children || <Outlet />}
-            </main>
+        {/* Self-test floating button, visible only in development */}
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="fixed bottom-4 right-4 z-50">
+            <FetchmanFeaturesSelfTest />
           </div>
-        </div>
+        )}
       </div>
-    </AuthTransitionWrapper>
+    </div>
   );
 }

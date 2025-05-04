@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -27,7 +26,7 @@ export interface FetchmanProfile {
   bank_name?: string;
   bank_account_number?: string;
   branch_code?: string;
-  // User profile fields that can handle potential error state
+  // User profile fields
   user?: {
     id: string;
     email: string;
@@ -42,7 +41,7 @@ export interface FetchmanProfile {
     name?: string | null;
     surname?: string | null;
     phone?: string | null;
-  } | { error: true } | null;
+  } | null;
 }
 
 // Type to handle Supabase query error responses
@@ -86,17 +85,28 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         
         // Process each profile to ensure user exists or is null
         const processedData = (data || []).map(profile => {
-          // If profile has error property, it means the relation failed
-          if (profile.profile && 'error' in profile.profile) {
-            return { ...profile, user: null, profile: null };
+          // Create a standardized user object from profile relationship
+          let userData = null;
+          
+          if (profile.profile && typeof profile.profile === 'object' && !('error' in profile.profile)) {
+            userData = {
+              id: profile.profile.id,
+              email: profile.profile.email,
+              name: profile.profile.name || null,
+              surname: profile.profile.surname || null,
+              phone: profile.profile.phone || null
+            };
           }
           
-          // Transform profile to user for backward compatibility
-          return { ...profile, user: profile.profile };
+          // Return object with consistent structure
+          return { 
+            ...profile, 
+            user: userData,
+            profile: userData // Keep both for backward compatibility
+          };
         });
         
-        // Explicit type assertion after we've processed the data
-        return processedData as unknown as FetchmanProfile[];
+        return processedData as FetchmanProfile[];
       } catch (error: any) {
         console.error("Error in all fetchman profiles query:", error);
         toast({
@@ -140,7 +150,10 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      const missingProfiles = data.filter(item => !item.profile || ('error' in item.profile));
+      const missingProfiles = data.filter(item => {
+        return !item.profile || (typeof item.profile === 'object' && 'error' in item.profile);
+      });
+      
       if (missingProfiles.length > 0) {
         return { 
           success: false, 

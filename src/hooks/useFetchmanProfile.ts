@@ -20,7 +20,7 @@ export function useFetchmanProfile(userId?: string) {
       if (!targetUserId) return null;
       
       try {
-        // Use the relationship between fetchman_profiles and profiles tables
+        // Use the established relationship between fetchman_profiles and profiles tables
         const { data, error } = await supabase
           .from('fetchman_profiles')
           .select(`
@@ -45,14 +45,24 @@ export function useFetchmanProfile(userId?: string) {
           return null;
         }
 
-        // Handle case where profile has error property
-        if (data.profile && 'error' in data.profile) {
-          // Transform for backward compatibility and use type assertion
-          return { ...data, user: null, profile: null } as unknown as FetchmanProfile;
+        // Create a standardized profile object
+        let profileData = null;
+        if (data.profile && typeof data.profile === 'object' && !('error' in data.profile)) {
+          profileData = {
+            id: data.profile.id,
+            email: data.profile.email,
+            name: data.profile.name || null,
+            surname: data.profile.surname || null,
+            phone: data.profile.phone || null
+          };
         }
         
-        // Transform profile to user for backward compatibility
-        const result = { ...data, user: data.profile } as unknown as FetchmanProfile;
+        // Transform for consistent interface
+        const result: FetchmanProfile = {
+          ...data,
+          user: profileData,
+          profile: profileData
+        };
         
         return result;
       } catch (error: any) {
@@ -102,7 +112,7 @@ export function useFetchmanProfile(userId?: string) {
         };
       }
       
-      if (!data.profile || ('error' in data.profile)) {
+      if (!data.profile || (typeof data.profile === 'object' && 'error' in data.profile)) {
         return { 
           success: false, 
           message: "Fetchman profile found, but profile relation is missing" 

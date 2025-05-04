@@ -20,7 +20,7 @@ interface RegistrationData {
   firstName: string;
   lastName: string;
   phone: string;
-  role: string;
+  role: "admin" | "host" | "merchant" | "fetchman" | "customer"; // Using a string literal type to match Supabase's expected type
 }
 
 export const UserService = {
@@ -237,12 +237,13 @@ export const UserService = {
             console.error("UserService: Error creating profile:", profileError);
           }
           
-          // Create user role
+          // Create user role - using the correct type here for the role field
           const { error: roleError } = await supabase
             .from("user_roles")
             .insert({
+              // Note: Supabase expects 'user_id', not 'userId'
               user_id: data.user.id,
-              role: userData.role
+              role: userData.role as "admin" | "host" | "merchant" | "fetchman" | "customer"
             });
             
           if (roleError) {
@@ -356,7 +357,7 @@ export const UserService = {
               .from("user_roles")
               .insert({
                 user_id: userId,
-                role: 'fetchman'
+                role: 'fetchman' as "fetchman" // Cast as literal type to match expected type
               });
               
             if (roleError) {

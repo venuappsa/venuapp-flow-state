@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -91,7 +90,7 @@ interface Promotion {
 
 export default function AdminFetchmanPage() {
   const { user } = useUser();
-  const { data: userRoles } = useUserRoles(user?.id);
+  const { data: userRoles, refetch: refetchRoles, isLoading: rolesLoading } = useUserRoles(user?.id);
   const navigate = useNavigate();
   
   const [fetchmen, setFetchmen] = useState<Fetchman[]>([]);
@@ -113,42 +112,95 @@ export default function AdminFetchmanPage() {
   const [openBlacklistDialog, setOpenBlacklistDialog] = useState(false);
   const [openSelfTestDialog, setOpenSelfTestDialog] = useState(false);
   
-  const isAdmin = userRoles?.includes("admin") || false;
+  const [isAdminConfirmed, setIsAdminConfirmed] = useState(false);
+  const [adminCheckAttempts, setAdminCheckAttempts] = useState(0);
+  const MAX_ADMIN_CHECK_ATTEMPTS = 3;
   
   useEffect(() => {
-    if (!isAdmin) {
+    const checkAdminAccess = async () => {
+      if (userRoles?.includes("admin")) {
+        console.log("AdminFetchmanPage: Admin role confirmed from hook data");
+        setIsAdminConfirmed(true);
+        return;
+      }
+      
+      if (!rolesLoading && adminCheckAttempts < MAX_ADMIN_CHECK_ATTEMPTS) {
+        try {
+          setAdminCheckAttempts(prev => prev + 1);
+          console.log(`AdminFetchmanPage: Checking admin status directly (attempt ${adminCheckAttempts + 1})`);
+          
+          const { data: isAdmin, error } = await supabase.rpc('is_admin');
+          
+          if (error) {
+            console.error("AdminFetchmanPage: Error checking admin status:", error);
+            
+            const { data } = await supabase.auth.refreshSession();
+            if (data.session) {
+              refetchRoles();
+            }
+            
+            if (adminCheckAttempts >= MAX_ADMIN_CHECK_ATTEMPTS - 1) {
+              handleAccessDenied();
+            }
+            return;
+          }
+          
+          if (isAdmin) {
+            console.log("AdminFetchmanPage: Admin access confirmed via direct check");
+            setIsAdminConfirmed(true);
+            refetchRoles();
+          } else {
+            console.log("AdminFetchmanPage: User is not admin according to direct check");
+            handleAccessDenied();
+          }
+        } catch (error) {
+          console.error("AdminFetchmanPage: Exception checking admin status:", error);
+          if (adminCheckAttempts >= MAX_ADMIN_CHECK_ATTEMPTS - 1) {
+            handleAccessDenied();
+          }
+        }
+      } else if (!isAdminConfirmed && !rolesLoading && adminCheckAttempts >= MAX_ADMIN_CHECK_ATTEMPTS) {
+        handleAccessDenied();
+      }
+    };
+    
+    const handleAccessDenied = () => {
       toast({
         title: "Access denied",
-        description: "You don't have permission to access this page.",
+        description: "You don't have permission to access this page. If you believe this is an error, try logging out and back in.",
         variant: "destructive",
       });
       navigate("/");
-      return;
-    }
+    };
     
-    fetchFetchmen();
-    fetchPromotions();
-  }, [isAdmin, navigate]);
+    if (user) {
+      checkAdminAccess();
+    }
+  }, [user, userRoles, navigate, adminCheckAttempts, rolesLoading, refetchRoles, isAdminConfirmed]);
+  
+  useEffect(() => {
+    if (isAdminConfirmed) {
+      fetchFetchmen();
+      fetchPromotions();
+    }
+  }, [isAdminConfirmed]);
 
   const fetchFetchmen = async () => {
     try {
       setLoading(prev => ({ ...prev, fetchmen: true }));
       
-      // Fetch fetchmen profiles
       const { data: fetchmenData, error: fetchmenError } = await supabase
         .from("fetchman_profiles")
         .select("*");
         
       if (fetchmenError) throw fetchmenError;
       
-      // Fetch users to get names and emails
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("id, name, email");
         
       if (profilesError) throw profilesError;
       
-      // Map users to fetchmen
       const enrichedFetchmen = fetchmenData.map((fetchman: Fetchman) => {
         const profile = profilesData.find((p: any) => p.id === fetchman.user_id);
         return {
@@ -181,21 +233,18 @@ export default function AdminFetchmanPage() {
         
       if (promotionsError) throw promotionsError;
       
-      // Fetch users to get names
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("id, name, email");
         
       if (profilesError) throw profilesError;
       
-      // Fetch fetchmen profiles to get user_ids
       const { data: fetchmenData, error: fetchmenError } = await supabase
         .from("fetchman_profiles")
         .select("id, user_id");
         
       if (fetchmenError) throw fetchmenError;
       
-      // Enrich promotions with names
       const enrichedPromotions = promotionsData.map((promotion: Promotion) => {
         const fetchman = fetchmenData.find((f: any) => f.id === promotion.fetchman_id);
         const fetchmanProfile = fetchman ? profilesData.find((p: any) => p.id === fetchman.user_id) : null;
@@ -235,7 +284,6 @@ export default function AdminFetchmanPage() {
         description: `${fetchman.profile?.name || 'Fetchman'} has been ${fetchman.is_suspended ? 'unsuspended' : 'suspended'} successfully.`,
       });
       
-      // Refresh fetchmen list
       fetchFetchmen();
     } catch (error) {
       console.error("Error suspending/unsuspending fetchman:", error);
@@ -251,7 +299,6 @@ export default function AdminFetchmanPage() {
     if (!selectedFetchman || !blacklistReason.trim()) return;
     
     try {
-      // Insert into blacklist table
       const { error: blacklistError } = await supabase
         .from("fetchman_blacklist")
         .insert({
@@ -262,7 +309,6 @@ export default function AdminFetchmanPage() {
         
       if (blacklistError) throw blacklistError;
       
-      // Update fetchman profile
       const { error: updateError } = await supabase
         .from("fetchman_profiles")
         .update({ 
@@ -278,12 +324,10 @@ export default function AdminFetchmanPage() {
         description: `${selectedFetchman.profile?.name || 'Fetchman'} has been permanently blacklisted.`,
       });
       
-      // Reset and close dialog
       setBlacklistReason("");
       setOpenBlacklistDialog(false);
       setSelectedFetchman(null);
       
-      // Refresh fetchmen list
       fetchFetchmen();
     } catch (error) {
       console.error("Error blacklisting fetchman:", error);
@@ -299,10 +343,8 @@ export default function AdminFetchmanPage() {
     if (!selectedFetchman || !promotionRole) return;
     
     try {
-      // Get current role
       const previousRole = selectedFetchman.role;
       
-      // Insert promotion record
       const { error: promotionError } = await supabase
         .from("fetchman_promotions")
         .insert({
@@ -315,7 +357,6 @@ export default function AdminFetchmanPage() {
         
       if (promotionError) throw promotionError;
       
-      // Update fetchman profile
       const { error: updateError } = await supabase
         .from("fetchman_profiles")
         .update({ role: promotionRole })
@@ -328,13 +369,11 @@ export default function AdminFetchmanPage() {
         description: `${selectedFetchman.profile?.name || 'Fetchman'} has been promoted to ${promotionRole}.`,
       });
       
-      // Reset and close dialog
       setPromotionRole("");
       setPromotionNotes("");
       setOpenPromotionDialog(false);
       setSelectedFetchman(null);
       
-      // Refresh fetchmen list and promotions
       fetchFetchmen();
       fetchPromotions();
     } catch (error) {
@@ -348,26 +387,20 @@ export default function AdminFetchmanPage() {
   };
 
   const initiateChat = (fetchman: Fetchman) => {
-    // For demonstration purposes, just show a toast
-    // In a real app, you would integrate with your messaging system
     toast({
       title: "Chat Initiated",
       description: `You can now message ${fetchman.profile?.name || 'Fetchman'}.`,
     });
     
-    // Navigate to messages page with recipient pre-selected
-    // This is a placeholder - adjust based on your actual messaging implementation
     navigate(`/admin/messages?recipient=${fetchman.user_id}`);
   };
 
   const runSelfTest = async () => {
     setSelfTestResults([]);
     
-    // Test backend communication
     try {
       const testResults = [];
       
-      // Test 1: Fetching fetchmen
       const start1 = performance.now();
       const { data: fetchmenTest, error: fetchmenError } = await supabase
         .from("fetchman_profiles")
@@ -384,7 +417,6 @@ export default function AdminFetchmanPage() {
           : `Successfully fetched data in ${duration1.toFixed(0)}ms`,
       });
       
-      // Test 2: Fetching promotions
       const start2 = performance.now();
       const { data: promotionsTest, error: promotionsError } = await supabase
         .from("fetchman_promotions")
@@ -401,7 +433,6 @@ export default function AdminFetchmanPage() {
           : `Successfully fetched data in ${duration2.toFixed(0)}ms`,
       });
       
-      // Test 3: Test RLS policies
       const { data: testData, error: testError } = await supabase.rpc('is_admin');
       
       testResults.push({
@@ -425,7 +456,6 @@ export default function AdminFetchmanPage() {
     }
   };
 
-  // Filter fetchmen based on search and role
   const filteredFetchmen = fetchmen.filter(fetchman => {
     const matchesSearch = searchQuery === "" || 
       (fetchman.profile?.name && fetchman.profile.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -726,7 +756,6 @@ export default function AdminFetchmanPage() {
         </Tabs>
       </div>
       
-      {/* Promotion Dialog */}
       <Dialog open={openPromotionDialog} onOpenChange={setOpenPromotionDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -775,7 +804,6 @@ export default function AdminFetchmanPage() {
         </DialogContent>
       </Dialog>
       
-      {/* Blacklist Dialog */}
       <AlertDialog open={openBlacklistDialog} onOpenChange={setOpenBlacklistDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -813,7 +841,6 @@ export default function AdminFetchmanPage() {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Self-Test Dialog */}
       <Dialog open={openSelfTestDialog} onOpenChange={setOpenSelfTestDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>

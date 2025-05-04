@@ -5,6 +5,7 @@ import AuthTransitionWrapper from "@/components/AuthTransitionWrapper";
 import AdminHeader from "@/components/AdminHeader";
 import { CollapsibleAdminSidebar } from "@/components/admin/CollapsibleAdminSidebar";
 import SystemBanners from "@/components/banners/SystemBanners";
+import { AdminAccessSelfTest } from "@/components/admin/AdminAccessSelfTest";
 
 interface AdminPanelLayoutProps {
   children?: React.ReactNode;
@@ -31,6 +32,10 @@ export default function AdminPanelLayout({ children }: AdminPanelLayoutProps) {
           {/* Add SystemBanners right under the header */}
           <SystemBanners />
           <div className="flex-1 overflow-auto">
+            {/* Add Admin Self-Test floating button */}
+            <div className="fixed bottom-4 right-4 z-50">
+              <AdminAccessSelfTest />
+            </div>
             <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
               {children || <Outlet />}
             </main>

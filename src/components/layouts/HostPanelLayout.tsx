@@ -29,8 +29,8 @@ export default function HostPanelLayout({ children }: HostPanelLayoutProps) {
       showFallback={true}
     >
       <div className="flex h-screen overflow-hidden bg-venu-soft-gray/30">
-        {/* Ensure the sidebar takes the full height */}
-        <DashboardSidebar />
+        {/* Ensure the sidebar takes the full height and is only rendered here */}
+        <DashboardSidebar className="hidden md:flex h-screen" />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <HostHeader />
           {/* Add SystemBanners right under the header */}

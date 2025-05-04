@@ -75,7 +75,12 @@ const NavItem = ({ to, label, icon, isActive, badge, collapsed, onClick }: NavIt
   </Link>
 );
 
-export function DashboardSidebar() {
+interface DashboardSidebarProps {
+  className?: string;
+  onNavItemClick?: () => void;
+}
+
+export function DashboardSidebar({ className, onNavItemClick }: DashboardSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -153,7 +158,8 @@ export function DashboardSidebar() {
     <aside
       className={cn(
         "flex flex-col border-r transition-all duration-300 h-screen",
-        collapsed ? "w-16" : "w-64"
+        collapsed ? "w-16" : "w-64",
+        className
       )}
     >
       <div className="flex h-16 items-center border-b px-4">
@@ -233,6 +239,7 @@ export function DashboardSidebar() {
                   isActive={pathname === item.to}
                   badge={item.badge}
                   collapsed={collapsed}
+                  onClick={onNavItemClick}
                 />
               ))}
             </div>

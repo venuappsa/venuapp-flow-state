@@ -25,7 +25,7 @@ export default function AdminPanelLayout({ children }: AdminPanelLayoutProps) {
       showFallback={true}
     >
       <div className="flex h-screen overflow-hidden bg-background">
-        {/* Sidebar with proper height */}
+        {/* Sidebar with proper height - Only rendered here, not in AdminHeader */}
         <CollapsibleAdminSidebar className="hidden md:flex h-screen" />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <AdminHeader />

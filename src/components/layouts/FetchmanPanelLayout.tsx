@@ -25,7 +25,8 @@ export default function FetchmanPanelLayout({ children }: FetchmanPanelLayoutPro
       showFallback={true}
     >
       <div className="flex h-screen overflow-hidden bg-background">
-        <FetchmanSidebar />
+        {/* Sidebar with proper height - rendered only in the layout */}
+        <FetchmanSidebar className="hidden md:flex h-screen" />
         
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <FetchmanHeader />

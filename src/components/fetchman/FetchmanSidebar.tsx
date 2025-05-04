@@ -104,7 +104,12 @@ const routes: RouteItem[] = [
   },
 ];
 
-export default function FetchmanSidebar() {
+interface FetchmanSidebarProps {
+  className?: string;
+  onNavItemClick?: () => void;
+}
+
+export default function FetchmanSidebar({ className, onNavItemClick }: FetchmanSidebarProps) {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { unreadCount } = useNotifications();
@@ -113,7 +118,8 @@ export default function FetchmanSidebar() {
     <div
       className={cn(
         "flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300",
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-16" : "w-64",
+        className
       )}
     >
       <div className="px-3 py-4 flex items-center justify-between">
@@ -146,6 +152,7 @@ export default function FetchmanSidebar() {
               isActive={location.pathname === item.path}
               isCollapsed={isCollapsed}
               badgeCount={item.badgeCount}
+              onClick={onNavItemClick}
             />
           ))}
         </nav>

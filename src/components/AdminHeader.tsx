@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
@@ -225,7 +226,7 @@ export default function AdminHeader() {
         </div>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer - Using the CollapsibleAdminSidebar but only for mobile */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
           <CollapsibleAdminSidebar onNavItemClick={() => setMobileMenuOpen(false)} />

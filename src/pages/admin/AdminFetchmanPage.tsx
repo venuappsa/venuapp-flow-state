@@ -180,7 +180,7 @@ export default function AdminFetchmanPage() {
                         <div>
                           <h3 className="font-medium">{fetchman.user?.email || "No email"}</h3>
                           <p className="text-sm text-gray-500">
-                            {fetchman.user?.user_metadata?.first_name} {fetchman.user?.user_metadata?.last_name}
+                            {fetchman.user?.name} {fetchman.user?.surname}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -213,7 +213,7 @@ export default function AdminFetchmanPage() {
               {selectedFetchman ? (
                 <div className="flex justify-between items-center">
                   <span>
-                    Fetchman Profile: {selectedFetchman.user?.user_metadata?.first_name} {selectedFetchman.user?.user_metadata?.last_name}
+                    Fetchman Profile: {selectedFetchman.user?.name} {selectedFetchman.user?.surname}
                   </span>
                   <div className="space-x-2">
                     <Button
@@ -257,11 +257,11 @@ export default function AdminFetchmanPage() {
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <Label>First Name</Label>
-                            <p className="text-sm">{selectedFetchman.user?.user_metadata?.first_name || "Not provided"}</p>
+                            <p className="text-sm">{selectedFetchman.user?.name || "Not provided"}</p>
                           </div>
                           <div>
                             <Label>Last Name</Label>
-                            <p className="text-sm">{selectedFetchman.user?.user_metadata?.last_name || "Not provided"}</p>
+                            <p className="text-sm">{selectedFetchman.user?.surname || "Not provided"}</p>
                           </div>
                         </div>
                         <div>

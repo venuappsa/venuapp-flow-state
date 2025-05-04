@@ -65,7 +65,9 @@ export function useFetchmanProfile(userId?: string) {
           id,
           user:user_id (
             id,
-            email
+            email,
+            name,
+            surname
           )
         `)
         .eq('user_id', targetUserId)

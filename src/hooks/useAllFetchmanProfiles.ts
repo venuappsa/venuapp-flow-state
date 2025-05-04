@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -59,7 +60,9 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           id,
           user:user_id (
             id,
-            email
+            email,
+            name,
+            surname
           )
         `)
         .limit(5); // Just check a few to verify

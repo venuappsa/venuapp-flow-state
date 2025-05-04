@@ -101,13 +101,15 @@ export function FetchmanFeaturesSelfTest() {
         return;
       }
       
-      const { profile, error, testProfileRelationship } = useFetchmanProfile(user.id);
+      // Create a local hook instance for testing
+      const fetchmanProfileHook = useFetchmanProfile(user.id);
       
       // Test profile relationship
-      const relationshipTest = await testProfileRelationship();
+      const relationshipTest = await fetchmanProfileHook.testProfileRelationship();
       addResult('Profile relationship test', relationshipTest.success, relationshipTest.message);
       
       // Check if profile exists
+      const profile = fetchmanProfileHook.profile;
       addResult('Profile existence', !!profile, 
         profile ? 'Fetchman profile found' : 'No fetchman profile found');
       
@@ -115,6 +117,12 @@ export function FetchmanFeaturesSelfTest() {
         // Check if user relation works
         addResult('Profile-User relation', !!profile.user, 
           profile.user ? 'User relation working properly' : 'User relation not working');
+      }
+      
+      // Check for any query errors
+      if (fetchmanProfileHook.error) {
+        addResult('Profile query error', false, 
+          `Error in profile query: ${fetchmanProfileHook.error.message}`);
       }
     } catch (error: any) {
       addResult('Profile test error', false, `Error: ${error.message || String(error)}`);
@@ -125,14 +133,21 @@ export function FetchmanFeaturesSelfTest() {
     addResult('Starting profiles list test', true, 'Testing fetchman profiles list...', 'info');
     
     try {
-      const { testProfilesRelationship } = useAllFetchmanProfiles();
+      // Create a local hook instance for testing
+      const fetchmanProfilesHook = useAllFetchmanProfiles();
       
       // Test profiles list relationship
-      const relationshipTest = await testProfilesRelationship();
+      const relationshipTest = await fetchmanProfilesHook.testProfilesRelationship();
       addResult('Profiles relationship test', relationshipTest.success, relationshipTest.message);
       
       if (relationshipTest.success) {
         addResult('Profiles data check', true, `Successfully fetched ${relationshipTest.data.length} profiles`);
+      }
+      
+      // Check for any query errors
+      if (fetchmanProfilesHook.error) {
+        addResult('Profiles query error', false, 
+          `Error in profiles query: ${fetchmanProfilesHook.error.message}`);
       }
     } catch (error: any) {
       addResult('Profiles test error', false, `Error: ${error.message || String(error)}`);
@@ -280,10 +295,13 @@ export function FetchmanFeaturesSelfTest() {
           <div className="mt-4 space-y-2 max-h-64 overflow-auto border rounded-md p-2">
             {testResults.map((result, index) => (
               <div key={index} className="flex items-start gap-2 text-sm">
-                {result.success ? 
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" /> : 
+                {result.status === 'info' ? (
+                  <span className="h-4 w-4 text-blue-500 mt-0.5">•</span>
+                ) : result.success ? (
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                ) : (
                   <XCircle className="h-4 w-4 text-red-500 mt-0.5" />
-                }
+                )}
                 <div>
                   <div className="font-medium">{result.name}</div>
                   <div className="text-muted-foreground text-xs">{result.message}</div>

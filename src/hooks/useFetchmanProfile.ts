@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -61,7 +62,7 @@ export function useFetchmanProfile(userId?: string) {
           description: "Failed to load profile data: " + (error.message || String(error)),
           variant: "destructive",
         });
-        return null;
+        throw error;
       }
     },
     enabled: !!targetUserId
@@ -148,6 +149,7 @@ export function useFetchmanProfile(userId?: string) {
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: query.refetch,
+    error: query.error,
     updateProfile: updateMutation.mutate,
     isUpdating: updateMutation.isPending,
     testProfileRelationship // Include the test function

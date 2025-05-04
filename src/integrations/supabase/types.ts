@@ -1050,6 +1050,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_fetchman_with_profile: {
+        Args: { fetchman_id: string }
+        Returns: {
+          id: string
+          user_id: string
+          phone_number: string
+          address: string
+          vehicle_type: string
+          service_area: string
+          work_hours: string
+          verification_status: string
+          is_suspended: boolean
+          is_blacklisted: boolean
+          role: string
+          has_own_transport: boolean
+          name: string
+          surname: string
+          email: string
+          profile_phone: string
+          bank_name: string
+          bank_account_number: string
+          branch_code: string
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

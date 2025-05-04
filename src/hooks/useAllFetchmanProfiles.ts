@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -34,6 +35,14 @@ export interface FetchmanProfile {
     surname?: string | null;
     phone?: string | null;
   } | null;
+  // Original profile relation field from Supabase
+  profile?: {
+    id: string;
+    email: string;
+    name?: string | null;
+    surname?: string | null;
+    phone?: string | null;
+  } | { error: true } | null;
 }
 
 // Type to handle Supabase query error responses
@@ -95,7 +104,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           description: "Failed to load fetchman profiles: " + (error.message || String(error)),
           variant: "destructive",
         });
-        return [];
+        throw error;
       }
     }
   });
@@ -244,21 +253,14 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
     fetchmen: query.data || [],
     isLoading: query.isLoading,
     isError: query.isError,
+    error: query.error,
     refetch: query.refetch,
-    updateStatus: (params: { fetchmanId: string; action: 'suspend' | 'reinstate' | 'blacklist'; reason?: string }) => {},
-    isUpdatingStatus: false,
+    updateStatus: updateStatusMutation.mutate,
+    isUpdatingStatus: updateStatusMutation.isPending,
     testProfilesRelationship,
-    promote: (params: { fetchmanId: string; newRole: string; notes?: string }) => {},
-    isPromoting: false,
-    createAssignment: (assignmentData: {
-      fetchmanId: string;
-      entityType: "event" | "vendor" | "host";
-      entityId: string;
-      startDate: string;
-      endDate: string;
-      notes?: string;
-      briefUrl?: string;
-    }) => {},
-    isCreatingAssignment: false
+    promote: promoteMutation.mutate,
+    isPromoting: promoteMutation.isPending,
+    createAssignment: createAssignmentMutation.mutate,
+    isCreatingAssignment: createAssignmentMutation.isPending
   };
 }

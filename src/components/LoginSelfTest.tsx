@@ -8,7 +8,6 @@ import { AuthService } from '@/services/AuthService';
 import { useUser } from '@/hooks/useUser';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 export default function LoginSelfTest() {

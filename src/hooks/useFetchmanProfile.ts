@@ -20,12 +20,12 @@ export function useFetchmanProfile(userId?: string) {
       if (!targetUserId) return null;
       
       try {
-        // Use explicit aliases in the query to avoid column name conflicts
+        // Use explicit foreign key reference in the alias
         const { data, error } = await supabase
           .from('fetchman_profiles')
           .select(`
             *,
-            profile:user_id (
+            profile:profiles!fetchman_profiles_user_id_fkey (
               id,
               email,
               name, 
@@ -114,12 +114,12 @@ export function useFetchmanProfile(userId?: string) {
     if (!targetUserId) return { success: false, message: "No user ID provided" };
     
     try {
-      // Use explicit alias to avoid column name conflicts
+      // Use explicit foreign key reference in the alias
       const { data, error } = await supabase
         .from('fetchman_profiles')
         .select(`
           id,
-          profile:user_id (
+          profile:profiles!fetchman_profiles_user_id_fkey (
             id,
             email,
             name,

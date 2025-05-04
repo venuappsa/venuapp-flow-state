@@ -66,7 +66,7 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           .from('fetchman_profiles')
           .select(`
             *,
-            profile:user_id (
+            profile:profiles!fetchman_profiles_user_id_fkey (
               id,
               email,
               name,
@@ -158,12 +158,13 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
   // Function to test the relationship across all fetchman profiles
   const testProfilesRelationship = async () => {
     try {
-      // Use explicit aliasing in the query to avoid column name conflicts
+      // Test using explicit reference to the foreign key
       const { data, error } = await supabase
         .from('fetchman_profiles')
         .select(`
           id,
-          profile:user_id (
+          user_id,
+          profile:profiles!fetchman_profiles_user_id_fkey (
             id,
             email,
             name,

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useFetchmanProfile } from "@/hooks/useFetchmanProfile"; 
@@ -19,18 +20,25 @@ export default function FetchmanDashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // We're using useFetchmanProfile hook now instead of direct Supabase query
+    // Use the profile ID from useFetchmanProfile hook instead of direct Supabase query
     const fetchActiveDeliveries = async () => {
       if (!user?.id || !profile) return;
       
       try {
-        // Fix the query to avoid column alias issues
+        // Fix the query to use proper explicit aliases to avoid column conflicts
         const { data, error } = await supabase
           .from('fetchman_deliveries')
           .select(`
             *,
-            events:event_id (*),
-            vendor_profiles:vendor_id (*)
+            event:events (
+              id,
+              name,
+              description
+            ),
+            vendor:vendor_profiles (
+              id, 
+              company_name
+            )
           `)
           .eq('fetchman_id', profile.id)
           .in('status', ['pending', 'accepted', 'in_progress'])
@@ -386,13 +394,13 @@ export default function FetchmanDashboardPage() {
                         </div>
                       </div>
                       
-                      {delivery.vendor_profiles && (
+                      {delivery.vendor && (
                         <div className="flex items-start">
                           <User className="h-5 w-5 mr-2 text-gray-500" />
                           <div>
                             <p className="text-sm font-medium">Vendor</p>
                             <p className="text-sm text-gray-500">
-                              {delivery.vendor_profiles.company_name || "Unknown vendor"}
+                              {delivery.vendor.company_name || "Unknown vendor"}
                             </p>
                           </div>
                         </div>

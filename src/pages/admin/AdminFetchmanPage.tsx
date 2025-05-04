@@ -40,7 +40,8 @@ import {
   Calendar,
   Upload,
   FileText,
-  Trash2
+  Trash2,
+  Send
 } from "lucide-react";
 import { 
   Table, 

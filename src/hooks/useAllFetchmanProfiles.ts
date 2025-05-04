@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -61,12 +60,12 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
     queryKey: ["all-fetchman-profiles", filter],
     queryFn: async () => {
       try {
-        // Build query with profile relationship using explicit aliases
+        // Build query using the foreign key relationship
         let query = supabase
           .from('fetchman_profiles')
           .select(`
             *,
-            profile:profiles!fetchman_profiles_user_id_fkey (
+            profile:profiles(
               id,
               email,
               name,
@@ -93,11 +92,9 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           let userData = null;
           
           // Add proper null checks before accessing profile properties
-          // Use type assertion to handle null checking
           if (profile.profile && 
               typeof profile.profile === 'object' && 
-              profile.profile !== null &&
-              !('error' in (profile.profile as object))) {
+              profile.profile !== null) {
             
             const safeProfile = profile.profile as {
               id: string;
@@ -158,13 +155,13 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
   // Function to test the relationship across all fetchman profiles
   const testProfilesRelationship = async () => {
     try {
-      // Test using explicit reference to the foreign key
+      // Test using the foreign key relationship
       const { data, error } = await supabase
         .from('fetchman_profiles')
         .select(`
           id,
           user_id,
-          profile:profiles!fetchman_profiles_user_id_fkey (
+          profile:profiles(
             id,
             email,
             name,
@@ -188,12 +185,12 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      // Safely check for missing profiles with improved type checking
+      // Check for missing profiles with improved type checking
       const missingProfiles = data.filter(item => {
         return !item.profile || (
           item.profile && 
           typeof item.profile === 'object' && 
-          'error' in (item.profile as object)
+          Object.keys(item.profile).length === 0
         );
       });
       

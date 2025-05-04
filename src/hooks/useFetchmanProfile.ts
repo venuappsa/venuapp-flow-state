@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -20,12 +19,12 @@ export function useFetchmanProfile(userId?: string) {
       if (!targetUserId) return null;
       
       try {
-        // Use explicit foreign key reference in the alias
+        // Use the foreign key relationship
         const { data, error } = await supabase
           .from('fetchman_profiles')
           .select(`
             *,
-            profile:profiles!fetchman_profiles_user_id_fkey (
+            profile:profiles(
               id,
               email,
               name, 
@@ -51,8 +50,7 @@ export function useFetchmanProfile(userId?: string) {
         // Improved null checking and type safety
         if (data.profile && 
             typeof data.profile === 'object' && 
-            data.profile !== null &&
-            !('error' in (data.profile as object))) {
+            data.profile !== null) {
           
           const safeProfile = data.profile as {
             id: string;
@@ -114,12 +112,12 @@ export function useFetchmanProfile(userId?: string) {
     if (!targetUserId) return { success: false, message: "No user ID provided" };
     
     try {
-      // Use explicit foreign key reference in the alias
+      // Use the foreign key relationship
       const { data, error } = await supabase
         .from('fetchman_profiles')
         .select(`
           id,
-          profile:profiles!fetchman_profiles_user_id_fkey (
+          profile:profiles(
             id,
             email,
             name,
@@ -144,11 +142,11 @@ export function useFetchmanProfile(userId?: string) {
         };
       }
       
-      // Improved null checking with type safety
+      // Improved null checking
       if (!data.profile || (
         data.profile && 
         typeof data.profile === 'object' && 
-        'error' in (data.profile as object)
+        Object.keys(data.profile).length === 0
       )) {
         return { 
           success: false, 

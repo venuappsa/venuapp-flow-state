@@ -32,6 +32,10 @@ export default function AdminDashboardPage() {
         } else {
           console.log("Profile relationship test passed:", result.message);
           setTestError(null);
+          toast({
+            title: "Profile Relationship Test Passed",
+            description: result.message,
+          });
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);

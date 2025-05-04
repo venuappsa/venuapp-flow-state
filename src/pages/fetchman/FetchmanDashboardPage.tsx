@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useFetchmanProfile } from "@/hooks/useFetchmanProfile"; 
@@ -30,12 +29,12 @@ export default function FetchmanDashboardPage() {
           .from('fetchman_deliveries')
           .select(`
             *,
-            event:events (
+            event:events(
               id,
               name,
               description
             ),
-            vendor:vendor_profiles (
+            vendor:vendor_profiles(
               id, 
               company_name
             )
@@ -165,7 +164,6 @@ export default function FetchmanDashboardPage() {
     }
   };
 
-  // Fixed the function declaration syntax error here
   const updateDeliveryStatus = async (deliveryId: string, newStatus: string) => {
     try {
       const { error } = await supabase

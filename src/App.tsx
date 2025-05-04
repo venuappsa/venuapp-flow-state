@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  createBrowserRouter,
-  RouterProvider,
+  Routes,
+  Route,
+  Navigate
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -27,6 +28,7 @@ import FetchmanNotificationsPage from "@/pages/fetchman/FetchmanNotificationsPag
 import FetchmanMessagesPage from "@/pages/fetchman/FetchmanMessagesPage";
 import FetchmanAssignmentsPage from "@/pages/fetchman/FetchmanAssignmentsPage";
 import AdminFetchmanPage from "@/pages/admin/AdminFetchmanPage";
+import Index from "@/pages/Index";
 
 function App() {
   const queryClient = new QueryClient({
@@ -40,76 +42,33 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={createBrowserRouter([
-        // Admin routes
-        {
-          path: "/admin",
-          element: <AdminPanelLayout />,
-          children: [
-            {
-              index: true,
-              element: <AdminDashboardPage />
-            },
-            {
-              path: "vendors",
-              element: <AdminVendorPerformancePage />
-            },
-            {
-              path: "payments",
-              element: <AdminPaymentsPage />
-            },
-            {
-              path: "fetchman", // New route for Fetchman management
-              element: <AdminFetchmanPage />
-            },
-          ]
-        },
+      <Routes>
+        {/* Home/Landing Page */}
+        <Route path="/" element={<Index />} />
         
-        // Fetchman routes
-        {
-          path: "/fetchman",
-          element: <FetchmanPanelLayout />,
-          children: [
-            {
-              index: true,
-              element: <FetchmanDashboardPage />
-            },
-            {
-              path: "assignments", // Add route for Assignments page
-              element: <FetchmanAssignmentsPage />
-            },
-            {
-              path: "schedule",
-              element: <FetchmanSchedulePage />
-            },
-            {
-              path: "earnings",
-              element: <FetchmanEarningsPage />
-            },
-            {
-              path: "settings",
-              element: <FetchmanSettingsPage />
-            },
-            {
-              path: "onboarding",
-              element: <FetchmanOnboardingPage />
-            },
-            {
-              path: "notifications",
-              element: <FetchmanNotificationsPage />
-            },
-            {
-              path: "messages",
-              element: <FetchmanMessagesPage />
-            }
-          ]
-        },
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminPanelLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="vendors" element={<AdminVendorPerformancePage />} />
+          <Route path="payments" element={<AdminPaymentsPage />} />
+          <Route path="fetchman" element={<AdminFetchmanPage />} />
+        </Route>
         
-        {
-          path: "*",
-          element: <NotFound />
-        }
-      ])} />
+        {/* Fetchman routes */}
+        <Route path="/fetchman" element={<FetchmanPanelLayout />}>
+          <Route index element={<FetchmanDashboardPage />} />
+          <Route path="assignments" element={<FetchmanAssignmentsPage />} />
+          <Route path="schedule" element={<FetchmanSchedulePage />} />
+          <Route path="earnings" element={<FetchmanEarningsPage />} />
+          <Route path="settings" element={<FetchmanSettingsPage />} />
+          <Route path="onboarding" element={<FetchmanOnboardingPage />} />
+          <Route path="notifications" element={<FetchmanNotificationsPage />} />
+          <Route path="messages" element={<FetchmanMessagesPage />} />
+        </Route>
+        
+        {/* Catch all not found */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       
       <Toaster />
     </QueryClientProvider>

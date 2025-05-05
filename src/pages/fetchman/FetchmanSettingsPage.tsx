@@ -360,82 +360,85 @@ export default function FetchmanSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="vehicle_type">Vehicle Type</Label>
-                    <Select
-                      value={profileData.vehicle_type}
-                      onValueChange={(value) => handleProfileChange('vehicle_type', value)}
-                    >
-                      <SelectTrigger id="vehicle_type">
-                        <SelectValue placeholder="Select a vehicle type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bicycle">Bicycle</SelectItem>
-                        <SelectItem value="motorcycle">Motorcycle</SelectItem>
-                        <SelectItem value="car">Car</SelectItem>
-                        <SelectItem value="van">Van</SelectItem>
-                        <SelectItem value="truck">Truck</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <form className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="vehicle_type">Vehicle Type</Label>
+                      <Select
+                        value={profileData.vehicle_type}
+                        onValueChange={(value) => handleProfileChange('vehicle_type', value)}
+                      >
+                        <SelectTrigger id="vehicle_type">
+                          <SelectValue placeholder="Select a vehicle type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bicycle">Bicycle</SelectItem>
+                          <SelectItem value="motorcycle">Motorcycle</SelectItem>
+                          <SelectItem value="car">Car</SelectItem>
+                          <SelectItem value="van">Van</SelectItem>
+                          <SelectItem value="truck">Truck</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="work_hours">Preferred Work Hours</Label>
+                      <Select
+                        value={profileData.work_hours}
+                        onValueChange={(value) => handleProfileChange('work_hours', value)}
+                      >
+                        <SelectTrigger id="work_hours">
+                          <SelectValue placeholder="Select preferred hours" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="morning">Morning (6AM - 12PM)</SelectItem>
+                          <SelectItem value="afternoon">Afternoon (12PM - 6PM)</SelectItem>
+                          <SelectItem value="evening">Evening (6PM - 12AM)</SelectItem>
+                          <SelectItem value="night">Night (12AM - 6AM)</SelectItem>
+                          <SelectItem value="full_day">Full Day</SelectItem>
+                          <SelectItem value="weekends">Weekends Only</SelectItem>
+                          <SelectItem value="weekdays">Weekdays Only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="service_area">Primary Service Area</Label>
+                      <Select
+                        value={profileData.service_area}
+                        onValueChange={(value) => handleProfileChange('service_area', value)}
+                      >
+                        <SelectTrigger id="service_area">
+                          <SelectValue placeholder="Select a service area" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {REGIONS.map(region => (
+                            <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="work_hours">Preferred Work Hours</Label>
-                    <Select
-                      value={profileData.work_hours}
-                      onValueChange={(value) => handleProfileChange('work_hours', value)}
-                    >
-                      <SelectTrigger id="work_hours">
-                        <SelectValue placeholder="Select preferred hours" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="morning">Morning (6AM - 12PM)</SelectItem>
-                        <SelectItem value="afternoon">Afternoon (12PM - 6PM)</SelectItem>
-                        <SelectItem value="evening">Evening (6PM - 12AM)</SelectItem>
-                        <SelectItem value="night">Night (12AM - 6AM)</SelectItem>
-                        <SelectItem value="full_day">Full Day</SelectItem>
-                        <SelectItem value="weekends">Weekends Only</SelectItem>
-                        <SelectItem value="weekdays">Weekdays Only</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="has_own_transport"
+                      checked={profileData.has_own_transport}
+                      onCheckedChange={(checked) => handleProfileChange('has_own_transport', checked)}
+                    />
+                    <Label htmlFor="has_own_transport">I have my own transport</Label>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="service_area">Primary Service Area</Label>
-                    <Select
-                      value={profileData.service_area}
-                      onValueChange={(value) => handleProfileChange('service_area', value)}
+                  <div className="pt-4">
+                    <Button 
+                      onClick={handleUpdateProfile}
+                      disabled={isUpdating}
+                      type="button"
                     >
-                      <SelectTrigger id="service_area">
-                        <SelectValue placeholder="Select a service area" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {REGIONS.map(region => (
-                          <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      {isUpdating ? "Saving..." : "Save Profile"}
+                    </Button>
                   </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="has_own_transport"
-                    checked={profileData.has_own_transport}
-                    onCheckedChange={(checked) => handleProfileChange('has_own_transport', checked)}
-                  />
-                  <Label htmlFor="has_own_transport">I have my own transport</Label>
-                </div>
-                
-                <div className="pt-4">
-                  <Button 
-                    onClick={handleUpdateProfile}
-                    disabled={isUpdating}
-                  >
-                    {isUpdating ? "Saving..." : "Save Profile"}
-                  </Button>
-                </div>
+                </form>
               </CardContent>
             </Card>
           ) : (
@@ -460,57 +463,60 @@ export default function FetchmanSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Mobility Preference</h3>
-                <p className="text-sm text-gray-500">Select all that apply to you</p>
-                
-                <ToggleGroup 
-                  type="multiple" 
-                  className="flex flex-wrap gap-2"
-                  value={mobilityPreference}
-                  onValueChange={(value) => setMobilityPreference(value)}
-                >
-                  <ToggleGroupItem value="own_car" className="px-4">
-                    Own Car
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="public_transport" className="px-4">
-                    Public Transport
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="family_friends" className="px-4">
-                    Family & Friends
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Reachable Work Areas</h3>
-                <p className="text-sm text-gray-500">Select all areas you can work in</p>
-                
-                <div className="flex flex-wrap gap-2">
-                  {REGIONS.map(region => (
-                    <Badge 
-                      key={region}
-                      variant={selectedWorkAreas.includes(region) ? "default" : "outline"}
-                      className="cursor-pointer p-2"
-                      onClick={() => handleToggleWorkArea(region)}
-                    >
-                      {region}
-                      {selectedWorkAreas.includes(region) && (
-                        <CheckCircle2 className="ml-1 h-3 w-3" />
-                      )}
-                    </Badge>
-                  ))}
+              <form className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Mobility Preference</h3>
+                  <p className="text-sm text-gray-500">Select all that apply to you</p>
+                  
+                  <ToggleGroup 
+                    type="multiple" 
+                    className="flex flex-wrap gap-2"
+                    value={mobilityPreference}
+                    onValueChange={(value) => setMobilityPreference(value)}
+                  >
+                    <ToggleGroupItem value="own_car" className="px-4">
+                      Own Car
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="public_transport" className="px-4">
+                      Public Transport
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="family_friends" className="px-4">
+                      Family & Friends
+                    </ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
-              </div>
-              
-              <div className="pt-4">
-                <Button 
-                  onClick={handleUpdateProfile}
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? "Saving..." : "Save Mobility Settings"}
-                </Button>
-              </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Reachable Work Areas</h3>
+                  <p className="text-sm text-gray-500">Select all areas you can work in</p>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {REGIONS.map(region => (
+                      <Badge 
+                        key={region}
+                        variant={selectedWorkAreas.includes(region) ? "default" : "outline"}
+                        className="cursor-pointer p-2"
+                        onClick={() => handleToggleWorkArea(region)}
+                      >
+                        {region}
+                        {selectedWorkAreas.includes(region) && (
+                          <CheckCircle2 className="ml-1 h-3 w-3" />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="pt-4">
+                  <Button 
+                    onClick={handleUpdateProfile}
+                    disabled={isUpdating}
+                    type="button"
+                  >
+                    {isUpdating ? "Saving..." : "Save Mobility Settings"}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -644,6 +650,7 @@ export default function FetchmanSettingsPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => setSelectedFile(null)}
+                          type="button"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -667,6 +674,7 @@ export default function FetchmanSettingsPage() {
                 <Button 
                   onClick={handleUploadDocument}
                   disabled={!selectedFile || isUploading}
+                  type="button"
                 >
                   {isUploading ? (
                     <>
@@ -716,6 +724,7 @@ export default function FetchmanSettingsPage() {
                             variant="ghost" 
                             size="sm" 
                             onClick={() => window.open(doc.file_url, '_blank')}
+                            type="button"
                           >
                             View
                           </Button>
@@ -870,6 +879,7 @@ export default function FetchmanSettingsPage() {
                         description: "Session management is coming soon."
                       });
                     }}
+                    type="button"
                   >
                     Sign Out All Devices
                   </Button>
@@ -884,6 +894,7 @@ export default function FetchmanSettingsPage() {
                         description: "Account deactivation is coming soon."
                       });
                     }}
+                    type="button"
                   >
                     Deactivate Account
                   </Button>

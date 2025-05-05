@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -90,12 +91,23 @@ export function useFetchmanProfile(userId?: string) {
         if (data.mobility_preference) {
           if (typeof data.mobility_preference === 'string') {
             try {
-              mobilityPreference = JSON.parse(data.mobility_preference);
+              // Fixed: Ensure we handle the type conversion properly
+              const parsed = JSON.parse(data.mobility_preference);
+              // Convert all values to boolean to ensure type safety
+              if (typeof parsed === 'object' && parsed !== null) {
+                Object.keys(parsed).forEach(key => {
+                  mobilityPreference[key] = Boolean(parsed[key]);
+                });
+              }
             } catch {
               mobilityPreference = {};
             }
-          } else if (typeof data.mobility_preference === 'object') {
-            mobilityPreference = data.mobility_preference;
+          } else if (typeof data.mobility_preference === 'object' && data.mobility_preference !== null) {
+            // Fixed: Ensure we handle the type conversion properly
+            const obj = data.mobility_preference;
+            Object.keys(obj).forEach(key => {
+              mobilityPreference[key] = Boolean(obj[key]);
+            });
           }
         }
         

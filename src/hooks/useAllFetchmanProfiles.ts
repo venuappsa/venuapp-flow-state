@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { FetchmanProfile } from '@/types/fetchman';
 import { useToast } from '@/components/ui/use-toast';
 
-export { FetchmanProfile };  // Export the type
+export type { FetchmanProfile };  // Fixed: Using 'export type' for isolatedModules
 
 export const useAllFetchmanProfiles = (filters?: { status?: string }) => {
   const { toast } = useToast();

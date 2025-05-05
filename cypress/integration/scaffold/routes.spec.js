@@ -34,9 +34,13 @@ describe('Basic Route Tests', () => {
     cy.visit('/host');
     cy.url().should('include', '/features/host');
     
+    // Test merchant redirect
+    cy.visit('/merchant');
+    cy.url().should('include', '/features/merchant');
+    
     // Test vendor redirect
     cy.visit('/vendor');
-    cy.url().should('include', '/features/vendor');
+    cy.url().should('include', '/features/merchant');
     
     // Test fetchman redirect
     cy.visit('/fetchman');

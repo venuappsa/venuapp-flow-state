@@ -66,8 +66,9 @@ export function useFetchmanProfile(userId?: string) {
             profileData = {
               id: profileObj.id || '',
               email: profileObj.email || '',
-              name: profileObj.name,
-              surname: profileObj.surname,
+              // Ensure we have defaults for name and surname
+              name: profileObj.name || 'Unnamed',
+              surname: profileObj.surname || '',
               phone: profileObj.phone
             };
           }
@@ -140,7 +141,7 @@ export function useFetchmanProfile(userId?: string) {
       // Check if profile exists
       const { data: profileCheck, error: profileCheckError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, name, surname')
         .eq('id', userId)
         .maybeSingle();
         
@@ -150,6 +151,25 @@ export function useFetchmanProfile(userId?: string) {
       } 
       
       if (profileCheck) {
+        // Check if name is null and update it if necessary
+        if (profileCheck.name === null || profileCheck.surname === null) {
+          console.log("Profile exists but name/surname is null, updating...");
+          
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              name: profileCheck.name || 'Unnamed',
+              surname: profileCheck.surname || ''
+            })
+            .eq('id', userId);
+            
+          if (updateError) {
+            console.error("Failed to update profile with default name:", updateError);
+          } else {
+            console.log("Successfully updated profile with default name");
+          }
+        }
+        
         // Profile exists, no need to create
         return true;
       }
@@ -170,8 +190,8 @@ export function useFetchmanProfile(userId?: string) {
           .insert({
             id: userId,
             email: userData.user.email || '',
-            name: userData.user.user_metadata?.name || null,
-            surname: userData.user.user_metadata?.surname || null
+            name: userData.user.user_metadata?.name || 'Unnamed',
+            surname: userData.user.user_metadata?.surname || ''
           });
           
         if (insertError) {

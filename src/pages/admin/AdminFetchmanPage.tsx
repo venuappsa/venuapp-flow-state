@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,6 +50,8 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminFetchmanPage() {
   const [selectedFetchman, setSelectedFetchman] = useState<any | null>(null);
@@ -72,6 +73,8 @@ export default function AdminFetchmanPage() {
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<{ status?: string }>({});
+  const [refreshingSchema, setRefreshingSchema] = useState(false);
+  const { toast } = useToast();
 
   const statusBadges: Record<string, JSX.Element> = {
     active: <Badge className="bg-green-500">Active</Badge>,
@@ -95,11 +98,16 @@ export default function AdminFetchmanPage() {
 
   const filteredFetchmen = fetchmen.filter((fetchman) => {
     const lowerCaseSearch = searchQuery.toLowerCase();
+    
+    // Safely handle potentially null values
+    const userName = fetchman.user?.name || "";
+    const userEmail = fetchman.user?.email || "";
+    const userSurname = fetchman.user?.surname || "";
+    
     return (
-      fetchman.user?.name?.toLowerCase().includes(lowerCaseSearch) ||
-      fetchman.user?.email?.toLowerCase().includes(lowerCaseSearch) ||
-      fetchman.user?.name?.includes(lowerCaseSearch) ||
-      fetchman.user?.email?.includes(lowerCaseSearch)
+      userName.toLowerCase().includes(lowerCaseSearch) ||
+      userEmail.toLowerCase().includes(lowerCaseSearch) ||
+      userSurname.toLowerCase().includes(lowerCaseSearch)
     );
   });
 
@@ -160,6 +168,66 @@ export default function AdminFetchmanPage() {
     setMessageText("");
   };
 
+  // Function to refresh schema cache
+  const handleRefreshSchema = async () => {
+    setRefreshingSchema(true);
+    try {
+      const { data, error } = await supabase.rpc('force_schema_refresh');
+      
+      if (error) {
+        throw error;
+      }
+      
+      await refetch();
+      toast({
+        title: "Schema cache refreshed",
+        description: "The schema cache has been refreshed. Profiles should now display correctly.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error refreshing schema",
+        description: error.message || "An error occurred while refreshing the schema cache.",
+        variant: "destructive"
+      });
+    } finally {
+      setRefreshingSchema(false);
+    }
+  };
+
+  // Function to repair fetchman profiles
+  const handleRepairProfiles = async () => {
+    setRefreshingSchema(true);
+    try {
+      const { data, error } = await supabase.rpc('repair_fetchman_profiles');
+      
+      if (error) {
+        throw error;
+      }
+      
+      await refetch();
+      
+      if (data && data.fixed_count > 0) {
+        toast({
+          title: "Profiles repaired",
+          description: `Fixed ${data.fixed_count} profile(s). There were ${data.error_count} error(s).`,
+        });
+      } else {
+        toast({
+          title: "No profiles to repair",
+          description: "No missing profiles were found that needed to be repaired.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error repairing profiles",
+        description: error.message || "An error occurred while repairing fetchman profiles.",
+        variant: "destructive"
+      });
+    } finally {
+      setRefreshingSchema(false);
+    }
+  };
+
   if (isLoadingFetchmen) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -175,6 +243,27 @@ export default function AdminFetchmanPage() {
     <div className="container mx-auto p-6 max-w-7xl">
       <h1 className="text-3xl font-bold mb-2">Fetchman Management</h1>
       <p className="text-gray-500 mb-6">Manage fetchman profiles, assignments, and promotions.</p>
+
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Button 
+          onClick={handleRefreshSchema}
+          disabled={refreshingSchema}
+          variant="outline"
+          className="flex items-center gap-1"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshingSchema ? 'animate-spin' : ''}`} />
+          Refresh Schema Cache
+        </Button>
+        <Button 
+          onClick={handleRepairProfiles}
+          disabled={refreshingSchema}
+          variant="outline"
+          className="flex items-center gap-1"
+        >
+          <ShieldAlert className="h-4 w-4" />
+          Repair Missing Profiles
+        </Button>
+      </div>
 
       <Tabs defaultValue="profiles">
         <TabsList className="mb-8">
@@ -235,12 +324,19 @@ export default function AdminFetchmanPage() {
                           <div 
                             className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
                           >
-                            {fetchman.user?.name?.charAt(0) || fetchman.user?.email?.charAt(0) || "F"}
+                            {fetchman.user?.name?.charAt(0) || 
+                             fetchman.user?.email?.charAt(0) || "F"}
                           </div>
                           <div>
-                            <h3 className="font-medium">{fetchman.user?.email || "No email available"}</h3>
+                            <h3 className="font-medium">
+                              {fetchman.user?.name && fetchman.user?.surname 
+                                ? `${fetchman.user.name} ${fetchman.user.surname}`
+                                : fetchman.user?.email 
+                                  ? fetchman.user.email
+                                  : "Unnamed Fetchman"}
+                            </h3>
                             <p className="text-sm text-gray-500">
-                              {fetchman.user?.name || ""} {fetchman.user?.surname || ""}
+                              {fetchman.user?.email || "No email available"}
                             </p>
                           </div>
                         </div>
@@ -277,10 +373,28 @@ export default function AdminFetchmanPage() {
         
         <TabsContent value="verification">
           {/* Verification queue content */}
+          <div className="text-center py-16 bg-gray-50 rounded-lg">
+            <div className="text-gray-400 mb-4">
+              <AlertTriangle size={48} className="mx-auto" />
+            </div>
+            <h3 className="text-xl font-medium mb-2">Verification Queue Coming Soon</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              This feature is currently being developed. Check back soon for updates.
+            </p>
+          </div>
         </TabsContent>
         
         <TabsContent value="assignments">
           {/* Assignments content */}
+          <div className="text-center py-16 bg-gray-50 rounded-lg">
+            <div className="text-gray-400 mb-4">
+              <Calendar size={48} className="mx-auto" />
+            </div>
+            <h3 className="text-xl font-medium mb-2">Assignments Coming Soon</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              This feature is currently being developed. Check back soon for updates.
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
       

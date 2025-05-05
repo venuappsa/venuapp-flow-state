@@ -1,6 +1,4 @@
-
 import React, { useState } from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -225,39 +223,37 @@ export default function AdminCMSPage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Content Management</h1>
-            <p className="text-gray-500">Manage website content and media</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Button onClick={handleCreateContent}>
-              <Plus className="mr-2 h-4 w-4" />
-              {activeTab === "media" ? "Upload Media" : activeTab === "pages" ? "Create Page" : "Create Post"}
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Content Management</h1>
+          <p className="text-gray-500">Manage website content and media</p>
         </div>
+        <div className="mt-4 md:mt-0">
+          <Button onClick={handleCreateContent}>
+            <Plus className="mr-2 h-4 w-4" />
+            {activeTab === "media" ? "Upload Media" : activeTab === "pages" ? "Create Page" : "Create Post"}
+          </Button>
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <Tabs defaultValue="pages" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="pages">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Pages
-                </TabsTrigger>
-                <TabsTrigger value="blog">
-                  <Globe className="h-4 w-4 mr-2" />
-                  Blog Posts
-                </TabsTrigger>
-                <TabsTrigger value="media">
-                  <Image className="h-4 w-4 mr-2" />
-                  Media
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+      <Card>
+        <CardHeader>
+          <Tabs defaultValue="pages" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="pages">
+                <FileText className="h-4 w-4 mr-2" />
+                Pages
+              </TabsTrigger>
+              <TabsTrigger value="blog">
+                <Globe className="h-4 w-4 mr-2" />
+                Blog Posts
+              </TabsTrigger>
+              <TabsTrigger value="media">
+                <Image className="h-4 w-4 mr-2" />
+                Media
+              </TabsTrigger>
+            </TabsList>
           </CardHeader>
           <CardContent>
             <div className="mb-6">
@@ -440,6 +436,6 @@ export default function AdminCMSPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminPanelLayout>
+    
   );
 }

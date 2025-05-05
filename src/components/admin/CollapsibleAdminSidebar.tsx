@@ -93,7 +93,7 @@ const NavItem = ({ to, label, icon, isActive, badge, collapsed, onClick }: NavIt
 );
 
 export function CollapsibleAdminSidebar({ className, onNavItemClick }: CollapsibleAdminSidebarProps) {
-  const { isCollapsed, setCollapsed } = useSidebar();
+  const { isCollapsed, toggleCollapsed } = useSidebar();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useUser();
@@ -236,7 +236,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
           variant="ghost"
           size="icon"
           className={cn("ml-auto", isCollapsed ? "rotate-180" : "")}
-          onClick={() => setCollapsed(!isCollapsed)}
+          onClick={toggleCollapsed}
         >
           {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </Button>

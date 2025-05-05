@@ -31,7 +31,7 @@ function AdminPanelLayoutContent() {
         <AdminHeader />
         {/* Add SystemBanners right under the header */}
         <SystemBanners />
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto pt-16">
           {/* Add Admin Self-Test floating button */}
           <div className="fixed bottom-4 right-4 z-50">
             <AdminAccessSelfTest />

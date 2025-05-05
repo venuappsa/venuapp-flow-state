@@ -20,7 +20,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function AdminHeader() {
-  const { isMobileMenuOpen, setMobileMenuOpen } = useSidebar();
+  const { isMobileMenuOpen, toggleMobileMenu } = useSidebar();
   const { user, forceClearUser } = useUser();
   const { toast } = useToast();
   const location = useLocation();
@@ -96,7 +96,7 @@ export default function AdminHeader() {
           variant="ghost" 
           size="icon" 
           className="md:hidden" 
-          onClick={() => setMobileMenuOpen(true)}
+          onClick={toggleMobileMenu}
         >
           <Menu className="h-5 w-5" />
           <span className="sr-only">Menu</span>

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   Routes,
@@ -34,6 +35,9 @@ import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
 import AdminNotificationSettingsPage from "@/pages/admin/AdminNotificationSettingsPage";
 import AdminUsersPage from "@/pages/AdminUsersPage";
 import AdminEventsPage from "@/pages/admin/AdminEventsPage";
+import AdminAnalyticsPage from "@/pages/admin/AdminAnalyticsPage";
+import AdminCMSPage from "@/pages/admin/AdminCMSPage";
+import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
 import Index from "@/pages/Index";
 import AuthPage from "@/pages/AuthPage";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -71,15 +75,15 @@ function App() {
           <Route path="messages" element={<AdminMessagesPage />} />
           <Route path="notifications" element={<AdminNotificationsPage />} />
           <Route path="notification-settings" element={<AdminNotificationSettingsPage />} />
-          <Route path="analytics" element={<ComingSoonPage title="Analytics" />} />
+          <Route path="analytics" element={<AdminAnalyticsPage />} />
           <Route path="reports" element={<ComingSoonPage title="Reports" />} />
           <Route path="subscriptions" element={<ComingSoonPage title="Subscriptions" />} />
-          <Route path="cms" element={<ComingSoonPage title="Content Management" />} />
+          <Route path="cms" element={<AdminCMSPage />} />
           <Route path="website" element={<ComingSoonPage title="Website" />} />
           <Route path="support" element={<ComingSoonPage title="Support Tickets" />} />
           <Route path="system" element={<ComingSoonPage title="System Status" />} />
           <Route path="platform" element={<ComingSoonPage title="Platform Settings" />} />
-          <Route path="settings" element={<ComingSoonPage title="Settings" />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
           
           {/* Legacy route support - redirect /admin/dashboard to /admin */}
           <Route path="dashboard" element={<Navigate to="/admin" replace />} />

@@ -204,7 +204,7 @@ export default function AdminDashboardPage() {
         toast({
           title: "Fix Attempt Completed",
           description: "Some issues may still require manual intervention. See details for more information.",
-          variant: "warning",
+          variant: "destructive", // Changed from "warning" to "destructive" to match allowed variants
         });
       }
     } catch (error) {

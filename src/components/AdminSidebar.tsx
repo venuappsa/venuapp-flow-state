@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -73,7 +72,7 @@ export default function AdminSidebar({ className, onNavItemClick }: AdminSidebar
         { href: "/admin/users", label: "Users", icon: <Users size={18} /> },
         { href: "/admin/hosts", label: "Hosts", icon: <Building size={18} /> },
         { href: "/admin/merchants", label: "Merchants", icon: <Store size={18} /> },
-        { href: "/admin/verification", label: "Verification Center", icon: <Shield size={18} />, badge: 7 },
+        { href: "/admin/fetchman", label: "Fetchmen", icon: <Shield size={18} />, badge: 7 },
       ]
     },
     {

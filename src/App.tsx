@@ -28,6 +28,11 @@ import FetchmanNotificationsPage from "@/pages/fetchman/FetchmanNotificationsPag
 import FetchmanMessagesPage from "@/pages/fetchman/FetchmanMessagesPage";
 import FetchmanAssignmentsPage from "@/pages/fetchman/FetchmanAssignmentsPage";
 import AdminFetchmanPage from "@/pages/admin/AdminFetchmanPage";
+import AdminMessagesPage from "@/pages/admin/AdminMessagesPage";
+import AdminHostsPage from "@/pages/admin/AdminHostsPage";
+import AdminMerchantsPage from "@/pages/admin/AdminMerchantsPage";
+import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
+import AdminNotificationSettingsPage from "@/pages/admin/AdminNotificationSettingsPage";
 import Index from "@/pages/Index";
 import AuthPage from "@/pages/AuthPage";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -55,9 +60,14 @@ function App() {
         {/* Admin routes */}
         <Route path="/admin" element={<AdminPanelLayout />}>
           <Route index element={<AdminDashboardPage />} />
-          <Route path="vendors" element={<AdminVendorPerformancePage />} />
+          <Route path="hosts" element={<AdminHostsPage />} />
+          <Route path="merchants" element={<AdminMerchantsPage />} />
+          <Route path="vendors/performance" element={<AdminVendorPerformancePage />} />
           <Route path="payments" element={<AdminPaymentsPage />} />
           <Route path="fetchman" element={<AdminFetchmanPage />} />
+          <Route path="messages" element={<AdminMessagesPage />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
+          <Route path="notification-settings" element={<AdminNotificationSettingsPage />} />
           
           {/* Legacy route support - redirect /admin/dashboard to /admin */}
           <Route path="dashboard" element={<Navigate to="/admin" replace />} />

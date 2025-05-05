@@ -5,92 +5,76 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Calendar, Eye, Check, X } from "lucide-react";
+import { Search, Filter, Calendar, Edit, Trash, Eye } from "lucide-react";
 import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
+import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 export default function AdminEventsPage() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Mock data for events
-  const events = [
-    {
-      id: "1",
-      name: "Wedding Expo 2025",
-      host: "EventCo Planners",
-      date: "2025-06-15",
-      venue: "Grand Convention Center",
-      status: "upcoming",
-      attendees: 500,
-      revenue: 15000,
-      featured: true,
-    },
-    {
-      id: "2",
-      name: "Corporate Retreat Summit",
-      host: "Celebration Events",
-      date: "2025-07-21",
-      venue: "Mountain View Resort",
-      status: "upcoming",
-      attendees: 120,
-      revenue: 22000,
-      featured: false,
-    },
-    {
-      id: "3",
-      name: "Music Festival Weekend",
-      host: "Party Professionals",
-      date: "2025-05-30",
-      venue: "Central Park Arena",
-      status: "pending",
-      attendees: 2000,
-      revenue: 75000,
-      featured: true,
-    },
-    {
-      id: "4",
-      name: "Tech Conference 2025",
-      host: "Premiere Events",
-      date: "2025-04-12",
-      venue: "Tech Hub Center",
-      status: "completed",
-      attendees: 850,
-      revenue: 42500,
-      featured: true,
-    },
-    {
-      id: "5",
-      name: "Summer Fashion Show",
-      host: "Event Elegance",
-      date: "2025-08-18",
-      venue: "Downtown Gallery",
-      status: "upcoming",
-      attendees: 300,
-      revenue: 18000,
-      featured: false,
-    },
-  ];
+  
+  const { data: events = [], isLoading, error } = useQuery({
+    queryKey: ['admin-events'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          *,
+          host:host_id(name, surname, email)
+        `)
+        .order('start_date', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
 
   const filteredEvents = events.filter(
-    event =>
-      event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.host.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.venue.toLowerCase().includes(searchTerm.toLowerCase())
+    event => event.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "upcoming":
-        return <Badge className="bg-blue-100 text-blue-800">Upcoming</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-      case "completed":
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+      case "published":
+        return <Badge className="bg-green-100 text-green-800">Published</Badge>;
+      case "draft":
+        return <Badge className="bg-yellow-100 text-yellow-800">Draft</Badge>;
       case "cancelled":
         return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
+      case "completed":
+        return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <AdminPanelLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-pulse text-lg">Loading events...</div>
+          </div>
+        </div>
+      </AdminPanelLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminPanelLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-red-100 p-4 rounded-md">
+            <h2 className="text-red-800 font-medium">Error loading events</h2>
+            <p className="text-red-600">{(error as Error).message}</p>
+          </div>
+        </div>
+      </AdminPanelLayout>
+    );
+  }
 
   return (
     <AdminPanelLayout>
@@ -98,14 +82,20 @@ export default function AdminEventsPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold">Event Management</h1>
-            <p className="text-gray-500">Monitor and manage events across the platform</p>
+            <p className="text-gray-500">View and manage all events on the platform</p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <Button>
+              <Calendar className="mr-2 h-4 w-4" />
+              Create Event
+            </Button>
           </div>
         </div>
 
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>All Events</CardTitle>
-            <CardDescription>View and manage events</CardDescription>
+            <CardDescription>Browse and manage upcoming and past events</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row justify-between mb-6">
@@ -129,48 +119,72 @@ export default function AdminEventsPage() {
               </div>
             </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableCaption>List of events on the platform</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Event Name</TableHead>
-                    <TableHead>Host</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Venue</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Attendees</TableHead>
-                    <TableHead>Revenue (R)</TableHead>
-                    <TableHead>Featured</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEvents.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell className="font-medium">{event.name}</TableCell>
-                      <TableCell>{event.host}</TableCell>
-                      <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
-                      <TableCell>{event.venue}</TableCell>
-                      <TableCell>{getStatusBadge(event.status)}</TableCell>
-                      <TableCell>{event.attendees}</TableCell>
-                      <TableCell>{event.revenue.toLocaleString()}</TableCell>
-                      <TableCell>{event.featured ? <Check className="h-4 w-4 text-green-500" /> : <X className="h-4 w-4 text-red-500" />}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Calendar className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+            {filteredEvents.length > 0 ? (
+              <div className="rounded-md border">
+                <Table>
+                  <TableCaption>List of all events</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Event Name</TableHead>
+                      <TableHead>Host</TableHead>
+                      <TableHead>Date & Time</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEvents.map((event) => (
+                      <TableRow key={event.id}>
+                        <TableCell className="font-medium">{event.name}</TableCell>
+                        <TableCell>
+                          {event.host ? (
+                            <div>
+                              <div>{`${event.host.name || ''} ${event.host.surname || ''}`}</div>
+                              <div className="text-xs text-gray-500">{event.host.email || ''}</div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-500">No host data</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {event.start_date && (
+                            <div>
+                              <div>{format(new Date(event.start_date), 'MMM dd, yyyy')}</div>
+                              <div className="text-xs text-gray-500">
+                                {format(new Date(event.start_date), 'h:mm a')} - 
+                                {event.end_date && format(new Date(event.end_date), ' h:mm a')}
+                              </div>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(event.status)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon">
+                              <Trash className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <Calendar className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium">No events found</h3>
+                <p className="text-gray-500 mt-1">
+                  {searchTerm ? 'Try adjusting your search term' : 'Create your first event to get started'}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

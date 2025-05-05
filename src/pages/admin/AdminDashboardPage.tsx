@@ -7,6 +7,9 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
+// Import the constants from the client file
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client";
+
 export default function AdminDashboardPage() {
   const [relationshipTested, setRelationshipTested] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
@@ -76,13 +79,13 @@ export default function AdminDashboardPage() {
         // Using direct fetch to the reload_schema_cache function instead of rpc
         // This avoids TypeScript errors since the function isn't in the type definitions
         const response = await fetch(
-          `${supabase.supabaseUrl}/rest/v1/rpc/reload_schema_cache`,
+          `${SUPABASE_URL}/rest/v1/rpc/reload_schema_cache`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'apikey': supabase.supabaseKey,
-              'Authorization': `Bearer ${supabase.supabaseKey}`
+              'apikey': SUPABASE_PUBLISHABLE_KEY,
+              'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
             }
           }
         );

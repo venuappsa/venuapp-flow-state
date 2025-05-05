@@ -79,11 +79,11 @@ export default function MobileNavMenu({ onNavLink, isOpen, setIsOpen }: MobileNa
                 {featuresOpen && (
                   <div className="bg-gray-50 rounded-md mt-1 p-2 flex flex-col gap-2">
                     <Link
-                      to="/features/customer"
+                      to="/features/attendee"
                       onClick={closeMenu}
                       className="text-gray-700 hover:text-black px-3 py-2 rounded transition-colors text-sm"
                     >
-                      Customer
+                      Attendee
                     </Link>
                     <Link
                       to="/features/merchant"

@@ -1,4 +1,3 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -125,8 +124,8 @@ export default function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="z-50 bg-white min-w-[10rem]">
                 <DropdownMenuItem asChild>
-                  <Link to="/features/customer" className="text-xs sm:text-sm w-full block">
-                    Customer
+                  <Link to="/features/attendee" className="text-xs sm:text-sm w-full block">
+                    Attendee
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -166,7 +165,6 @@ export default function Navbar() {
             >
               Subscribe
             </Link>
-            {/* Updated login link to point to /auth instead of /login */}
             <SecurePanelButton showWelcome className="flex flex-col items-center" />
           </div>
         )}

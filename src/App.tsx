@@ -45,6 +45,9 @@ import LoginPage from "@/pages/auth/LoginPage";
 // Import Feature Pages
 import HostPage from "@/pages/HostPage";
 import MerchantPage from "@/pages/MerchantPage";
+import FetchmanPage from "@/pages/FetchmanPage";
+import CustomerPage from "@/pages/CustomerPage";
+import AttendeePage from "@/pages/AttendeePage";
 import AuthProtected from "@/components/AuthProtected";
 
 function App() {
@@ -71,8 +74,10 @@ function App() {
         <Route path="/features">
           <Route path="host" element={<HostPage />} />
           <Route path="merchant" element={<MerchantPage />} />
-          <Route path="fetchman" element={<MerchantPage />} /> {/* Replace with FetchmanPage when available */}
+          <Route path="fetchman" element={<FetchmanPage />} />
           <Route path="vendor" element={<MerchantPage />} /> {/* Vendor is same as merchant */}
+          <Route path="attendee" element={<AttendeePage />} /> {/* New Attendee page */}
+          <Route path="customer" element={<Navigate to="/features/attendee" replace />} /> {/* Redirect from customer to attendee */}
         </Route>
         
         {/* Admin routes - Protected */}
@@ -132,6 +137,9 @@ function App() {
         <Route path="/host" element={<Navigate to="/features/host" replace />} />
         <Route path="/merchant" element={<Navigate to="/features/merchant" replace />} />
         <Route path="/vendor" element={<Navigate to="/features/vendor" replace />} />
+        <Route path="/fetchman" element={<Navigate to="/features/fetchman" replace />} />
+        <Route path="/attendee" element={<Navigate to="/features/attendee" replace />} />
+        <Route path="/customer" element={<Navigate to="/features/attendee" replace />} />
         
         {/* Catch all not found */}
         <Route path="*" element={<NotFound />} />

@@ -17,6 +17,16 @@ describe('Basic Route Tests', () => {
     cy.visit('/features/merchant');
     cy.url().should('include', '/features/merchant');
     cy.get('h1').should('exist');
+    
+    // Test fetchman feature page
+    cy.visit('/features/fetchman');
+    cy.url().should('include', '/features/fetchman');
+    cy.get('h1').should('exist');
+    
+    // Test attendee feature page (previously customer)
+    cy.visit('/features/attendee');
+    cy.url().should('include', '/features/attendee');
+    cy.get('h1').should('exist');
   });
 
   it('should redirect from role routes to feature pages', () => {
@@ -27,6 +37,19 @@ describe('Basic Route Tests', () => {
     // Test vendor redirect
     cy.visit('/vendor');
     cy.url().should('include', '/features/vendor');
+    
+    // Test fetchman redirect
+    cy.visit('/fetchman');
+    cy.url().should('include', '/features/fetchman');
+    
+    // Test customer to attendee redirect
+    cy.visit('/customer');
+    cy.url().should('include', '/features/attendee');
+  });
+  
+  it('should redirect from customer to attendee feature page', () => {
+    cy.visit('/features/customer');
+    cy.url().should('include', '/features/attendee');
   });
 
   it('should confirm protected admin route requires auth', () => {

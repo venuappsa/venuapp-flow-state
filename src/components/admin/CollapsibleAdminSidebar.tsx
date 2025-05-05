@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useSidebar } from "@/contexts/SidebarContext";
 import {
   LayoutDashboard,
   Users,
@@ -92,7 +93,7 @@ const NavItem = ({ to, label, icon, isActive, badge, collapsed, onClick }: NavIt
 );
 
 export function CollapsibleAdminSidebar({ className, onNavItemClick }: CollapsibleAdminSidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const { isCollapsed, setCollapsed } = useSidebar();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useUser();
@@ -204,10 +205,10 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
     <div className={cn(
       "flex h-full flex-col bg-background border-r",
       className,
-      collapsed ? "w-16" : "w-64"
+      isCollapsed ? "w-16" : "w-64"
     )}>
       <div className="p-4 border-b flex items-center">
-        {!collapsed && (
+        {!isCollapsed && (
           <Link to="/admin" className="flex items-center gap-2">
             <img
               src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
@@ -222,7 +223,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
             </div>
           </Link>
         )}
-        {collapsed && (
+        {isCollapsed && (
           <Link to="/admin" className="mx-auto">
             <img
               src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
@@ -234,16 +235,16 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
         <Button
           variant="ghost"
           size="icon"
-          className={cn("ml-auto", collapsed ? "rotate-180" : "")}
-          onClick={() => setCollapsed(!collapsed)}
+          className={cn("ml-auto", isCollapsed ? "rotate-180" : "")}
+          onClick={() => setCollapsed(!isCollapsed)}
         >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </Button>
       </div>
 
       <div className={cn(
         "p-4 border-b flex",
-        collapsed ? "flex-col items-center" : "flex-row items-center gap-4"
+        isCollapsed ? "flex-col items-center" : "flex-row items-center gap-4"
       )}>
         <Avatar className="h-10 w-10">
           <AvatarFallback className="bg-venu-orange text-white">
@@ -251,7 +252,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
           </AvatarFallback>
         </Avatar>
         
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="flex-1">
             <p className="text-sm font-medium">{displayName}</p>
             <p className="text-xs text-muted-foreground">Administrator</p>
@@ -264,7 +265,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
           <div className="px-2 py-4">
             {navigationCategories.map((category, index) => (
               <div key={category.category} className="mb-4">
-                {!collapsed && (
+                {!isCollapsed && (
                   <h4 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {category.category}
                   </h4>
@@ -278,7 +279,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
                       icon={item.icon}
                       isActive={pathname === item.href}
                       badge={item.badge}
-                      collapsed={collapsed}
+                      collapsed={isCollapsed}
                       onClick={onNavItemClick}
                     />
                   ))}
@@ -293,7 +294,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
       </div>
       
       <div className="mt-auto p-4 border-t">
-        {!collapsed && (
+        {!isCollapsed && (
           <Button 
             variant="destructive" 
             className="w-full"
@@ -303,7 +304,7 @@ export function CollapsibleAdminSidebar({ className, onNavItemClick }: Collapsib
             Log out
           </Button>
         )}
-        {collapsed && (
+        {isCollapsed && (
           <Button 
             variant="destructive" 
             size="icon"

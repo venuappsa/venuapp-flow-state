@@ -1,6 +1,5 @@
 
 import React from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search, UserPlus } from "lucide-react";

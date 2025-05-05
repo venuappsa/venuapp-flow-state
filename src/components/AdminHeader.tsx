@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,19 +16,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Menu, MessageSquare, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import NotificationBell from "@/components/NotificationBell";
-import { CollapsibleAdminSidebar } from "@/components/admin/CollapsibleAdminSidebar";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function AdminHeader() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isMobileMenuOpen, setMobileMenuOpen } = useSidebar();
   const { user, forceClearUser } = useUser();
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
   // Message data state with thread IDs for direct navigation
-  const [messageData, setMessageData] = useState({
+  const [messageData, setMessageData] = React.useState({
     unreadCount: 3,
     messages: [
       { 
@@ -104,7 +103,7 @@ export default function AdminHeader() {
         </Button>
 
         {/* Logo - visible on both mobile and desktop */}
-        <div className={cn("flex items-center", mobileMenuOpen ? "hidden" : "")}>
+        <div className={cn("flex items-center", isMobileMenuOpen ? "hidden" : "")}>
           <Link to="/admin" className="flex items-center">
             <img
               src="/lovable-uploads/c8628e28-1db7-453f-b8d6-13301457b8dc.png"
@@ -225,13 +224,6 @@ export default function AdminHeader() {
           </DropdownMenu>
         </div>
       </div>
-
-      {/* Mobile drawer - Using the CollapsibleAdminSidebar but only for mobile */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
-          <CollapsibleAdminSidebar onNavItemClick={() => setMobileMenuOpen(false)} />
-        </SheetContent>
-      </Sheet>
     </header>
   );
 }

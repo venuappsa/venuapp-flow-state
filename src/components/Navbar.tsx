@@ -1,3 +1,4 @@
+
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -124,22 +125,22 @@ export default function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="z-50 bg-white min-w-[10rem]">
                 <DropdownMenuItem asChild>
-                  <Link to="/customer" className="text-xs sm:text-sm w-full block">
+                  <Link to="/features/customer" className="text-xs sm:text-sm w-full block">
                     Customer
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/merchant" className="text-xs sm:text-sm w-full block">
+                  <Link to="/features/merchant" className="text-xs sm:text-sm w-full block">
                     Merchant
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/fetchman" className="text-xs sm:text-sm w-full block">
+                  <Link to="/features/fetchman" className="text-xs sm:text-sm w-full block">
                     Fetchman
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/host" className="text-xs sm:text-sm w-full block">
+                  <Link to="/features/host" className="text-xs sm:text-sm w-full block">
                     Host
                   </Link>
                 </DropdownMenuItem>

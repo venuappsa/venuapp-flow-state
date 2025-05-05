@@ -42,6 +42,11 @@ import Index from "@/pages/Index";
 import AuthPage from "@/pages/AuthPage";
 import LoginPage from "@/pages/auth/LoginPage";
 
+// Import Feature Pages
+import HostPage from "@/pages/HostPage";
+import MerchantPage from "@/pages/MerchantPage";
+import AuthProtected from "@/components/AuthProtected";
+
 function App() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -62,8 +67,20 @@ function App() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         
-        {/* Admin routes */}
-        <Route path="/admin" element={<AdminPanelLayout />}>
+        {/* Feature Pages - Public explainer pages */}
+        <Route path="/features">
+          <Route path="host" element={<HostPage />} />
+          <Route path="merchant" element={<MerchantPage />} />
+          <Route path="fetchman" element={<MerchantPage />} /> {/* Replace with FetchmanPage when available */}
+          <Route path="vendor" element={<MerchantPage />} /> {/* Vendor is same as merchant */}
+        </Route>
+        
+        {/* Admin routes - Protected */}
+        <Route path="/admin" element={
+          <AuthProtected requiredRoles={['admin']} redirectTo="/auth">
+            <AdminPanelLayout />
+          </AuthProtected>
+        }>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="hosts" element={<AdminHostsPage />} />
@@ -92,8 +109,12 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
         
-        {/* Fetchman routes */}
-        <Route path="/fetchman" element={<FetchmanPanelLayout />}>
+        {/* Fetchman routes - Protected */}
+        <Route path="/fetchman" element={
+          <AuthProtected requiredRoles={['fetchman']} redirectTo="/auth">
+            <FetchmanPanelLayout />
+          </AuthProtected>
+        }>
           <Route index element={<FetchmanDashboardPage />} />
           <Route path="assignments" element={<FetchmanAssignmentsPage />} />
           <Route path="schedule" element={<FetchmanSchedulePage />} />
@@ -107,13 +128,10 @@ function App() {
           <Route path="dashboard" element={<Navigate to="/fetchman" replace />} />
         </Route>
         
-        {/* Add host routes with redirection support */}
-        <Route path="/host" element={<Navigate to="/fetchman" replace />} />
-        <Route path="/host/*" element={<Navigate to="/fetchman" replace />} />
-        
-        {/* Add vendor routes with redirection support */}
-        <Route path="/vendor" element={<Navigate to="/fetchman" replace />} />
-        <Route path="/vendor/*" element={<Navigate to="/fetchman" replace />} />
+        {/* Direct routes to feature pages for each role */}
+        <Route path="/host" element={<Navigate to="/features/host" replace />} />
+        <Route path="/merchant" element={<Navigate to="/features/merchant" replace />} />
+        <Route path="/vendor" element={<Navigate to="/features/vendor" replace />} />
         
         {/* Catch all not found */}
         <Route path="*" element={<NotFound />} />

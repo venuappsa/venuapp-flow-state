@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useFetchmanProfile } from "@/hooks/useFetchmanProfile"; 
@@ -13,10 +14,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FetchmanDashboardPage() {
   const { user } = useUser();
-  const { profile, isLoading, error } = useFetchmanProfile(user?.id);
+  const { profile, isLoading, error, refetch } = useFetchmanProfile(user?.id);
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
   const [deliveryLoading, setDeliveryLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Try to refresh if we encounter a relationship error
+  useEffect(() => {
+    if (error) {
+      const errorString = String(error);
+      if (errorString.includes("relationship between") && errorString.includes("profiles")) {
+        console.log("Detected relationship error, will retry after delay", error);
+        
+        // Wait a bit and retry
+        const timer = setTimeout(() => {
+          console.log("Retrying fetchman profile fetch after relationship error");
+          refetch();
+        }, 2000);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [error, refetch]);
 
   useEffect(() => {
     // Use the profile ID from useFetchmanProfile hook instead of direct Supabase query
@@ -24,6 +43,8 @@ export default function FetchmanDashboardPage() {
       if (!user?.id || !profile) return;
       
       try {
+        console.log("Fetching active deliveries for fetchman:", profile.id);
+        
         // Fix the query to use proper explicit aliases to avoid column conflicts
         const { data, error } = await supabase
           .from('fetchman_deliveries')
@@ -53,6 +74,7 @@ export default function FetchmanDashboardPage() {
           return;
         }
         
+        console.log("Fetched deliveries:", data?.length || 0);
         setActiveDeliveries(data || []);
       } catch (err) {
         console.error("Error fetching active deliveries:", err);

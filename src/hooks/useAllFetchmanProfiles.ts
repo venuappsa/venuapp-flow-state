@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -45,6 +46,7 @@ export interface FetchmanProfile {
     surname?: string | null;
     phone?: string | null;
   } | null;
+  profiles?: any; // Raw field from the API
 }
 
 // Type to handle Supabase query error responses
@@ -60,31 +62,74 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
     queryKey: ["all-fetchman-profiles", filter],
     queryFn: async () => {
       try {
-        // Build query using the foreign key relationship
-        let query = supabase
-          .from('fetchman_profiles')
-          .select(`
-            *,
-            profile:profiles(
-              id,
-              email,
-              name,
-              surname,
-              phone
-            )
-          `);
+        console.log("Fetching all fetchman profiles with filter:", filter);
         
-        // Apply filters if provided
-        if (filter?.status) {
-          query = query.eq('verification_status', filter.status);
+        // Try both query approaches
+        let queryResult;
+        
+        try {
+          // First attempt: Use the foreign key relationship
+          let query = supabase
+            .from('fetchman_profiles')
+            .select(`
+              *,
+              profiles(
+                id,
+                email,
+                name,
+                surname,
+                phone
+              )
+            `);
+          
+          // Apply filters if provided
+          if (filter?.status) {
+            query = query.eq('verification_status', filter.status);
+          }
+          
+          const { data, error } = await query;
+          
+          if (error) {
+            console.error("Error using foreign key relationship:", error);
+            throw error;
+          }
+          
+          queryResult = { data, useBackup: false };
+          console.log("Foreign key query successful, found profiles:", data?.length || 0);
+        } catch (relationshipError) {
+          console.warn("Foreign key relationship query failed, using fallback:", relationshipError);
+          
+          // Fallback: Use a join directly
+          let query = supabase
+            .from('fetchman_profiles')
+            .select(`
+              *,
+              profiles:profiles(
+                id,
+                email,
+                name,
+                surname,
+                phone
+              )
+            `);
+          
+          // Apply filters if provided
+          if (filter?.status) {
+            query = query.eq('verification_status', filter.status);
+          }
+          
+          const { data, error } = await query;
+          
+          if (error) {
+            console.error("Error in fallback profile fetch:", error);
+            throw error;
+          }
+          
+          queryResult = { data, useBackup: true };
+          console.log("Fallback query successful, found profiles:", data?.length || 0);
         }
         
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error("Error fetching all fetchman profiles:", error);
-          throw new Error(error.message);
-        }
+        const { data } = queryResult;
         
         // Process each profile to ensure user exists or is null
         const processedData = (data || []).map(profile => {
@@ -92,25 +137,22 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           let userData = null;
           
           // Add proper null checks before accessing profile properties
-          if (profile.profile && 
-              typeof profile.profile === 'object' && 
-              profile.profile !== null) {
+          if (profile.profiles && 
+              typeof profile.profiles === 'object' && 
+              profile.profiles !== null) {
             
-            const safeProfile = profile.profile as {
-              id: string;
-              email: string;
-              name: string | null;
-              surname: string | null;
-              phone: string | null;
-            } | null;
+            // Handle both single object and array results
+            const profileObj = Array.isArray(profile.profiles) 
+              ? profile.profiles[0] 
+              : profile.profiles;
             
-            if (safeProfile) {
+            if (profileObj) {
               userData = {
-                id: safeProfile.id || '',
-                email: safeProfile.email || '',
-                name: safeProfile.name,
-                surname: safeProfile.surname,
-                phone: safeProfile.phone
+                id: profileObj.id || '',
+                email: profileObj.email || '',
+                name: profileObj.name,
+                surname: profileObj.surname,
+                phone: profileObj.phone
               };
             }
           }
@@ -155,57 +197,112 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
   // Function to test the relationship across all fetchman profiles
   const testProfilesRelationship = async () => {
     try {
-      // Test using the foreign key relationship
-      const { data, error } = await supabase
-        .from('fetchman_profiles')
-        .select(`
-          id,
-          user_id,
-          profile:profiles(
+      console.log("Testing fetchman_profiles to profiles relationship");
+      
+      // Try both query approaches to check relationship
+      try {
+        // First attempt: Test using the foreign key relationship
+        const { data, error } = await supabase
+          .from('fetchman_profiles')
+          .select(`
             id,
-            email,
-            name,
-            surname
-          )
-        `)
-        .limit(5); // Just check a few to verify
+            user_id,
+            profiles(
+              id,
+              email,
+              name,
+              surname
+            )
+          `)
+          .limit(5); // Just check a few to verify
+          
+        if (error) {
+          console.error("Foreign key test failed:", error);
+          throw error;
+        }
         
-      if (error) {
+        if (!data || data.length === 0) {
+          return { 
+            success: false, 
+            message: "No fetchman profiles found" 
+          };
+        }
+        
+        // Check for missing profiles with improved type checking
+        const missingProfiles = data.filter(item => {
+          return !item.profiles || (
+            item.profiles && 
+            typeof item.profiles === 'object' && 
+            Object.keys(item.profiles).length === 0
+          );
+        });
+        
+        if (missingProfiles.length > 0) {
+          return { 
+            success: false, 
+            message: `${missingProfiles.length} fetchman profiles have missing profile relations` 
+          };
+        }
+        
         return { 
-          success: false, 
-          message: `Relationship test failed: ${error.message}`,
-          error 
+          success: true, 
+          message: `Relationship test passed for ${data.length} profiles using foreign key`, 
+          data 
         };
       }
-      
-      if (!data || data.length === 0) {
+      catch (relationshipError) {
+        console.warn("Foreign key relationship test failed, trying join:", relationshipError);
+        
+        // Fallback: Test using explicit join
+        const { data, error } = await supabase
+          .from('fetchman_profiles')
+          .select(`
+            id,
+            user_id,
+            profiles:profiles(
+              id,
+              email,
+              name,
+              surname
+            )
+          `)
+          .limit(5);
+          
+        if (error) {
+          return { 
+            success: false, 
+            message: `Join relationship test failed: ${error.message}`,
+            error 
+          };
+        }
+        
+        if (!data || data.length === 0) {
+          return { 
+            success: false, 
+            message: "No fetchman profiles found" 
+          };
+        }
+        
+        // Check for missing profiles
+        const missingProfiles = data.filter(item => {
+          return !item.profiles || (
+            Array.isArray(item.profiles) && item.profiles.length === 0
+          );
+        });
+        
+        if (missingProfiles.length > 0) {
+          return { 
+            success: false, 
+            message: `${missingProfiles.length} fetchman profiles have missing profile relations` 
+          };
+        }
+        
         return { 
-          success: false, 
-          message: "No fetchman profiles found" 
+          success: true, 
+          message: `Relationship test passed for ${data.length} profiles using explicit join`, 
+          data 
         };
       }
-      
-      // Check for missing profiles with improved type checking
-      const missingProfiles = data.filter(item => {
-        return !item.profile || (
-          item.profile && 
-          typeof item.profile === 'object' && 
-          Object.keys(item.profile).length === 0
-        );
-      });
-      
-      if (missingProfiles.length > 0) {
-        return { 
-          success: false, 
-          message: `${missingProfiles.length} fetchman profiles have missing profile relations` 
-        };
-      }
-      
-      return { 
-        success: true, 
-        message: `Relationship test passed for ${data.length} profiles`, 
-        data 
-      };
     } catch (error: any) {
       return { 
         success: false, 

@@ -19,24 +19,35 @@ export default function AdminDashboardPage() {
       if (relationshipTested) return;
       
       try {
-        const result = await testProfilesRelationship();
+        console.log("Testing fetchman_profiles to profiles relationship on admin dashboard load");
         
-        if (!result.success) {
-          console.error("Profile relationship test failed:", result.message, result.error || '');
-          setTestError(result.message);
-          toast({
-            title: "Profile Relationship Test Failed",
-            description: result.message,
-            variant: "destructive",
-          });
-        } else {
-          console.log("Profile relationship test passed:", result.message);
-          setTestError(null);
-          toast({
-            title: "Profile Relationship Test Passed",
-            description: result.message,
-          });
-        }
+        // Delay the test slightly to allow schema cache to refresh
+        setTimeout(async () => {
+          try {
+            const result = await testProfilesRelationship();
+            
+            console.log("Profile relationship test result:", result);
+            
+            if (!result.success) {
+              console.error("Profile relationship test failed:", result.message, result.error || '');
+              setTestError(result.message);
+              toast({
+                title: "Profile Relationship Test Failed",
+                description: result.message,
+                variant: "destructive",
+              });
+            } else {
+              console.log("Profile relationship test passed:", result.message);
+              setTestError(null);
+              toast({
+                title: "Profile Relationship Test Passed",
+                description: result.message,
+              });
+            }
+          } catch (delayedError) {
+            console.error("Error in delayed relationship test:", delayedError);
+          }
+        }, 1000);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Error testing profile relationship:", error);
@@ -58,6 +69,25 @@ export default function AdminDashboardPage() {
   const attemptToFixRelationship = async () => {
     setIsFixing(true);
     try {
+      console.log("Attempting to fix profile relationship");
+      
+      // First, try to refresh the schema cache
+      try {
+        const { error: rpcError } = await supabase.rpc('reload_schema_cache');
+        if (rpcError) {
+          console.warn("Failed to reload schema cache via RPC:", rpcError);
+          // Continue with other fixes, this is just a best effort
+        } else {
+          console.log("Schema cache refresh requested");
+          toast({
+            title: "Schema Cache Refreshed",
+            description: "Supabase schema cache refresh has been requested. This may take a few moments."
+          });
+        }
+      } catch (rpcError) {
+        console.warn("Error calling reload_schema_cache RPC:", rpcError);
+      }
+      
       // Attempt to verify that all fetchman_profiles have corresponding profiles
       const { data: missingProfiles, error: queryError } = await supabase
         .from('fetchman_profiles')
@@ -84,6 +114,9 @@ export default function AdminDashboardPage() {
         return;
       }
 
+      // Wait a moment to let potential cache refresh take effect
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       // Re-test the relationship
       const result = await testProfilesRelationship();
       
@@ -112,6 +145,11 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Refresh the page to reload from cache
+  const refreshPage = () => {
+    window.location.reload();
+  };
+
   return (
     <>
       {testError && (
@@ -121,7 +159,7 @@ export default function AdminDashboardPage() {
             Schema Relationship Issue Detected
           </h3>
           <p className="text-sm text-red-600 mt-1">{testError}</p>
-          <div className="mt-3">
+          <div className="mt-3 flex gap-2">
             <Button 
               variant="outline" 
               size="sm" 
@@ -129,6 +167,13 @@ export default function AdminDashboardPage() {
               disabled={isFixing}
             >
               {isFixing ? "Attempting Fix..." : "Attempt Auto-Fix"}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={refreshPage}
+            >
+              Refresh Page
             </Button>
             <p className="text-xs text-red-500 mt-1">
               Note: Auto-fix attempts to verify profile relationships but may not resolve all issues.

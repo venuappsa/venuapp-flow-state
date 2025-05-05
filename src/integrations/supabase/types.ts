@@ -481,7 +481,15 @@ export type Database = {
           work_areas?: Json | null
           work_hours?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_fetchman_profiles_user_id"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fetchman_promotions: {
         Row: {

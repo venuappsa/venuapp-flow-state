@@ -38,99 +38,91 @@ export default function FetchmanDashboardPage() {
   }, [error, refetch]);
 
   useEffect(() => {
-    // Use the profile ID from useFetchmanProfile hook instead of direct Supabase query
+    // Only fetch deliveries when we have a valid profile
     const fetchActiveDeliveries = async () => {
       if (!user?.id || !profile) return;
       
       try {
         console.log("Fetching active deliveries for fetchman:", profile.id);
         
-        // Try first with foreign key relationship
-        try {
-          const { data, error } = await supabase
-            .from('fetchman_deliveries')
-            .select(`
-              *,
-              event:events(
-                id,
-                name,
-                description
-              ),
-              vendor:vendor_profiles(
-                id, 
-                company_name
-              )
-            `)
-            .eq('fetchman_id', profile.id)
-            .in('status', ['pending', 'accepted', 'in_progress'])
-            .order('scheduled_time', { ascending: true });
-          
-          if (error) {
-            console.warn("Foreign key relationship query failed, using fallback:", error);
-            throw error; // Throw to trigger the fallback
-          }
-          
-          console.log("Fetched deliveries with foreign key relationship:", data?.length || 0);
-          setActiveDeliveries(data || []);
+        // Simple approach first - without complex joins that might fail
+        const { data, error } = await supabase
+          .from('fetchman_deliveries')
+          .select('*')
+          .eq('fetchman_id', profile.id)
+          .in('status', ['pending', 'accepted', 'in_progress'])
+          .order('scheduled_time', { ascending: true });
+        
+        if (error) {
+          console.error("Error fetching basic delivery data:", error);
+          throw error;
         }
-        catch (relationshipError) {
-          console.warn("Using fallback explicit join query instead");
-          
-          // Fallback to explicit join
-          const { data, error } = await supabase
-            .from('fetchman_deliveries')
-            .select(`
-              *,
-              event:events!inner(
-                id,
-                name,
-                description
-              ),
-              vendors:vendor_profiles!inner(
-                id, 
-                company_name
-              )
-            `)
-            .eq('fetchman_id', profile.id)
-            .in('status', ['pending', 'accepted', 'in_progress'])
-            .order('scheduled_time', { ascending: true });
-          
-          if (error) {
-            console.error("Explicit join query also failed:", error);
-            // Try to refresh the schema cache if we're still having issues
-            if (retryCount < 2 && error.message.includes("relationship between")) {
-              setRetryCount(prev => prev + 1);
-              
-              // Add a delay before retrying
-              setTimeout(() => {
-                console.log(`Retrying fetch (attempt ${retryCount + 1})...`);
-                fetchActiveDeliveries();
-              }, 2000);
-              return;
+
+        // If we have deliveries, fetch the related data separately to avoid join issues
+        if (data && data.length > 0) {
+          const processedDeliveries = await Promise.all(data.map(async (delivery) => {
+            // Enhanced delivery object with defaults
+            const enhancedDelivery = { 
+              ...delivery, 
+              event: null,
+              vendor: null 
+            };
+            
+            // Fetch event data if event_id exists
+            if (delivery.event_id) {
+              const { data: eventData } = await supabase
+                .from('events')
+                .select('id, name, description')
+                .eq('id', delivery.event_id)
+                .single();
+                
+              if (eventData) {
+                enhancedDelivery.event = eventData;
+              }
             }
             
-            throw error;
-          }
+            // Fetch vendor data if vendor_id exists
+            if (delivery.vendor_id) {
+              const { data: vendorData } = await supabase
+                .from('vendor_profiles')
+                .select('id, company_name')
+                .eq('id', delivery.vendor_id)
+                .single();
+                
+              if (vendorData) {
+                enhancedDelivery.vendor = vendorData;
+              }
+            }
+            
+            return enhancedDelivery;
+          }));
           
-          // Transform the data to match the expected format
-          const transformedData = data?.map(item => {
-            return {
-              ...item,
-              // Rename vendors to vendor for consistency
-              vendor: item.vendors
-            };
-          }) || [];
-          
-          console.log("Fetched deliveries with explicit join:", transformedData.length);
-          setActiveDeliveries(transformedData);
+          console.log(`Successfully processed ${processedDeliveries.length} deliveries with related data`);
+          setActiveDeliveries(processedDeliveries);
+        } else {
+          // No deliveries found
+          setActiveDeliveries([]);
         }
       } catch (err) {
         console.error("Error fetching active deliveries:", err);
         toast({
           title: "Error",
-          description: "Failed to load delivery data: " + String(err),
+          description: "Failed to load delivery data. Please try again later.",
           variant: "destructive",
         });
+        
+        // Reset retry count after max attempts
+        if (retryCount >= 2) {
+          setRetryCount(0);
+        } else {
+          // Increment retry count and try again after delay
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => {
+            console.log(`Retrying fetch (attempt ${retryCount + 1})...`);
+            fetchActiveDeliveries();
+          }, 2000);
+          return;
+        }
       } finally {
         setDeliveryLoading(false);
       }

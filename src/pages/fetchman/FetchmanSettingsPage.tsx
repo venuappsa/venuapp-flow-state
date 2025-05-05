@@ -270,67 +270,75 @@ export default function FetchmanSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Enter your first name"
-                    value={personalInfo.firstName}
-                    onChange={(e) => handlePersonalInfoChange('firstName', e.target.value)}
-                  />
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      placeholder="Enter your first name"
+                      value={personalInfo.firstName}
+                      onChange={(e) => handlePersonalInfoChange('firstName', e.target.value)}
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      placeholder="Enter your last name"
+                      value={personalInfo.lastName}
+                      onChange={(e) => handlePersonalInfoChange('lastName', e.target.value)}
+                      autoComplete="family-name"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={personalInfo.email}
+                      readOnly
+                      autoComplete="email"
+                    />
+                    <p className="text-xs text-gray-500">Contact support to change your email</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      placeholder="Enter your phone number"
+                      value={profileData.phone_number}
+                      onChange={(e) => handleProfileChange('phone_number', e.target.value)}
+                      autoComplete="tel"
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Enter your last name"
-                    value={personalInfo.lastName}
-                    onChange={(e) => handlePersonalInfoChange('lastName', e.target.value)}
+                  <Label htmlFor="address">Physical Address</Label>
+                  <Textarea
+                    id="address"
+                    placeholder="Enter your full address"
+                    value={personalInfo.address}
+                    onChange={(e) => handlePersonalInfoChange('address', e.target.value)}
+                    rows={3}
+                    autoComplete="street-address"
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={personalInfo.email}
-                    readOnly
-                  />
-                  <p className="text-xs text-gray-500">Contact support to change your email</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    placeholder="Enter your phone number"
-                    value={profileData.phone_number}
-                    onChange={(e) => handleProfileChange('phone_number', e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="address">Physical Address</Label>
-                <Textarea
-                  id="address"
-                  placeholder="Enter your full address"
-                  value={personalInfo.address}
-                  onChange={(e) => handlePersonalInfoChange('address', e.target.value)}
-                  rows={3}
-                />
-              </div>
-              
-              <Button 
-                onClick={updatePersonalInfo}
-                disabled={isUpdating}
-              >
-                {isUpdating ? "Saving..." : "Save Personal Information"}
-              </Button>
+                <Button 
+                  onClick={updatePersonalInfo}
+                  disabled={isUpdating}
+                  type="button"
+                >
+                  {isUpdating ? "Saving..." : "Save Personal Information"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -517,67 +525,73 @@ export default function FetchmanSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_name">Contact Name</Label>
-                  <Input
-                    id="emergency_name"
-                    placeholder="Enter emergency contact name"
-                    value={emergencyContact.name}
-                    onChange={(e) => handleEmergencyContactChange('name', e.target.value)}
-                  />
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="emergency_name">Contact Name</Label>
+                    <Input
+                      id="emergency_name"
+                      placeholder="Enter emergency contact name"
+                      value={emergencyContact.name}
+                      onChange={(e) => handleEmergencyContactChange('name', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="emergency_relationship">Relationship</Label>
+                    <Select
+                      value={emergencyContact.relationship}
+                      onValueChange={(value) => handleEmergencyContactChange('relationship', value)}
+                    >
+                      <SelectTrigger id="emergency_relationship">
+                        <SelectValue placeholder="Select relationship" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="spouse">Spouse</SelectItem>
+                        <SelectItem value="parent">Parent</SelectItem>
+                        <SelectItem value="child">Child</SelectItem>
+                        <SelectItem value="sibling">Sibling</SelectItem>
+                        <SelectItem value="friend">Friend</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="emergency_phone">Phone Number</Label>
+                    <Input
+                      id="emergency_phone"
+                      placeholder="Enter emergency contact phone"
+                      value={emergencyContact.phone}
+                      onChange={(e) => handleEmergencyContactChange('phone', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="emergency_email">Email Address</Label>
+                    <Input
+                      id="emergency_email"
+                      type="email"
+                      placeholder="Enter emergency contact email"
+                      value={emergencyContact.email}
+                      onChange={(e) => handleEmergencyContactChange('email', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_relationship">Relationship</Label>
-                  <Select
-                    value={emergencyContact.relationship}
-                    onValueChange={(value) => handleEmergencyContactChange('relationship', value)}
+                <div className="pt-4">
+                  <Button 
+                    onClick={handleUpdateProfile}
+                    disabled={isUpdating}
+                    type="button"
                   >
-                    <SelectTrigger id="emergency_relationship">
-                      <SelectValue placeholder="Select relationship" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="spouse">Spouse</SelectItem>
-                      <SelectItem value="parent">Parent</SelectItem>
-                      <SelectItem value="child">Child</SelectItem>
-                      <SelectItem value="sibling">Sibling</SelectItem>
-                      <SelectItem value="friend">Friend</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    {isUpdating ? "Saving..." : "Save Emergency Contact"}
+                  </Button>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_phone">Phone Number</Label>
-                  <Input
-                    id="emergency_phone"
-                    placeholder="Enter emergency contact phone"
-                    value={emergencyContact.phone}
-                    onChange={(e) => handleEmergencyContactChange('phone', e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_email">Email Address</Label>
-                  <Input
-                    id="emergency_email"
-                    type="email"
-                    placeholder="Enter emergency contact email"
-                    value={emergencyContact.email}
-                    onChange={(e) => handleEmergencyContactChange('email', e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="pt-4">
-                <Button 
-                  onClick={handleUpdateProfile}
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? "Saving..." : "Save Emergency Contact"}
-                </Button>
-              </div>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -729,56 +743,61 @@ export default function FetchmanSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="bank_name">Bank Name</Label>
-                  <Select
-                    value={profileData.bank_name}
-                    onValueChange={(value) => handleProfileChange('bank_name', value)}
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="bank_name">Bank Name</Label>
+                    <Select
+                      value={profileData.bank_name}
+                      onValueChange={(value) => handleProfileChange('bank_name', value)}
+                    >
+                      <SelectTrigger id="bank_name">
+                        <SelectValue placeholder="Select your bank" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="fnb">First National Bank</SelectItem>
+                        <SelectItem value="absa">ABSA</SelectItem>
+                        <SelectItem value="standard_bank">Standard Bank</SelectItem>
+                        <SelectItem value="nedbank">Nedbank</SelectItem>
+                        <SelectItem value="capitec">Capitec</SelectItem>
+                        <SelectItem value="discovery">Discovery Bank</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="bank_account_number">Account Number</Label>
+                    <Input
+                      id="bank_account_number"
+                      placeholder="Enter your account number"
+                      value={profileData.bank_account_number}
+                      onChange={(e) => handleProfileChange('bank_account_number', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="branch_code">Branch Code</Label>
+                    <Input
+                      id="branch_code"
+                      placeholder="Enter your branch code"
+                      value={profileData.branch_code}
+                      onChange={(e) => handleProfileChange('branch_code', e.target.value)}
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+                
+                <div className="pt-4">
+                  <Button 
+                    onClick={handleUpdateProfile}
+                    disabled={isUpdating}
+                    type="button"
                   >
-                    <SelectTrigger id="bank_name">
-                      <SelectValue placeholder="Select your bank" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fnb">First National Bank</SelectItem>
-                      <SelectItem value="absa">ABSA</SelectItem>
-                      <SelectItem value="standard_bank">Standard Bank</SelectItem>
-                      <SelectItem value="nedbank">Nedbank</SelectItem>
-                      <SelectItem value="capitec">Capitec</SelectItem>
-                      <SelectItem value="discovery">Discovery Bank</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    {isUpdating ? "Saving..." : "Save Banking Details"}
+                  </Button>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="bank_account_number">Account Number</Label>
-                  <Input
-                    id="bank_account_number"
-                    placeholder="Enter your account number"
-                    value={profileData.bank_account_number}
-                    onChange={(e) => handleProfileChange('bank_account_number', e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="branch_code">Branch Code</Label>
-                  <Input
-                    id="branch_code"
-                    placeholder="Enter your branch code"
-                    value={profileData.branch_code}
-                    onChange={(e) => handleProfileChange('branch_code', e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="pt-4">
-                <Button 
-                  onClick={handleUpdateProfile}
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? "Saving..." : "Save Banking Details"}
-                </Button>
-              </div>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -793,44 +812,52 @@ export default function FetchmanSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Change Password</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="current_password">Current Password</Label>
-                  <Input
-                    id="current_password"
-                    type="password"
-                    placeholder="Enter your current password"
-                  />
+              <form className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Change Password</h3>
+                  <div className="space-y-2">
+                    <Label htmlFor="current_password">Current Password</Label>
+                    <Input
+                      id="current_password"
+                      type="password"
+                      placeholder="Enter your current password"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="new_password">New Password</Label>
+                    <Input
+                      id="new_password"
+                      type="password"
+                      placeholder="Enter your new password"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm_password">Confirm New Password</Label>
+                    <Input
+                      id="confirm_password"
+                      type="password"
+                      placeholder="Confirm your new password"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={() => {
+                      toast({
+                        title: "Feature Not Available",
+                        description: "Password change functionality is coming soon."
+                      });
+                    }}
+                    type="button"
+                  >
+                    Update Password
+                  </Button>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="new_password">New Password</Label>
-                  <Input
-                    id="new_password"
-                    type="password"
-                    placeholder="Enter your new password"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="confirm_password">Confirm New Password</Label>
-                  <Input
-                    id="confirm_password"
-                    type="password"
-                    placeholder="Confirm your new password"
-                  />
-                </div>
-                
-                <Button onClick={() => {
-                  toast({
-                    title: "Feature Not Available",
-                    description: "Password change functionality is coming soon."
-                  });
-                }}>
-                  Update Password
-                </Button>
-              </div>
+              </form>
               
               <div className="border-t pt-6 space-y-4">
                 <h3 className="text-lg font-medium">Account Actions</h3>

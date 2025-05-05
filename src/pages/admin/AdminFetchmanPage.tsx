@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -172,7 +173,8 @@ export default function AdminFetchmanPage() {
   const handleRefreshSchema = async () => {
     setRefreshingSchema(true);
     try {
-      const { data, error } = await supabase.rpc('force_schema_refresh');
+      // Use postgrest_schema_cache_refresh instead of force_schema_refresh
+      const { data, error } = await supabase.rpc('postgrest_schema_cache_refresh');
       
       if (error) {
         throw error;
@@ -206,10 +208,15 @@ export default function AdminFetchmanPage() {
       
       await refetch();
       
-      if (data && data.fixed_count > 0) {
+      // Fix: Check if data exists and correctly access the properties
+      // The repair_fetchman_profiles function returns an object, not an array
+      if (data && typeof data === 'object') {
+        const fixedCount = data.fixed_count || 0;
+        const errorCount = data.error_count || 0;
+        
         toast({
           title: "Profiles repaired",
-          description: `Fixed ${data.fixed_count} profile(s). There were ${data.error_count} error(s).`,
+          description: `Fixed ${fixedCount} profile(s). There were ${errorCount} error(s).`,
         });
       } else {
         toast({

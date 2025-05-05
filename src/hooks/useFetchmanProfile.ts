@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
@@ -66,7 +65,7 @@ export function useFetchmanProfile(userId?: string) {
             profileData = {
               id: profileObj.id || '',
               email: profileObj.email || '',
-              // Ensure we have defaults for name and surname
+              // Ensure we have defaults for name and surname with improved null checking
               name: profileObj.name || 'Unnamed',
               surname: profileObj.surname || '',
               phone: profileObj.phone
@@ -178,7 +177,7 @@ export function useFetchmanProfile(userId?: string) {
       
       // Attempt to create missing profile
       try {
-        const { data: userData, error: userError } = await supabase.auth.getUser(userId);
+        const { data: userData, error: userError } = await supabase.auth.getUser();
         
         if (userError || !userData.user) {
           console.error("Failed to get user data for profile creation:", userError);

@@ -188,13 +188,25 @@ export default function AdminDashboardPage() {
   const performManualRepair = async () => {
     setFixingDetails(prev => prev + "\nPerforming manual repair...");
     try {
-      // Find all fetchman_profiles without corresponding profiles
+      // Get all profile IDs first
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id');
+      
+      if (profilesError) {
+        console.error("Error fetching profiles:", profilesError);
+        setFixingDetails(prev => prev + `\nError fetching profiles: ${profilesError.message}`);
+        throw profilesError;
+      }
+      
+      // Create an array of profile IDs or use empty array if no profiles found
+      const profileIds = profilesData ? profilesData.map(p => p.id) : [];
+      
+      // Find all fetchman_profiles without corresponding profiles using the array of IDs
       const { data: missingProfiles, error: queryError } = await supabase
         .from('fetchman_profiles')
         .select('id, user_id')
-        .not('user_id', 'in', (
-          supabase.from('profiles').select('id')
-        ));
+        .not('user_id', 'in', profileIds);
       
       if (queryError) {
         setFixingDetails(prev => prev + `\nError checking missing profiles: ${queryError.message}`);

@@ -227,13 +227,28 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      // Next, find missing profile relationships - FIXED VERSION
+      // Get all profile IDs first
+      const { data: profilesData, error: profileIdsError } = await supabase
+        .from('profiles')
+        .select('id');
+      
+      if (profileIdsError) {
+        console.error("Error fetching profile IDs:", profileIdsError);
+        return {
+          success: false,
+          message: `Error fetching profile IDs: ${profileIdsError.message}`,
+          error: profileIdsError
+        };
+      }
+      
+      // Create an array of profile IDs or use empty array if no profiles found
+      const profileIds = profilesData ? profilesData.map(p => p.id) : [];
+      
+      // Find fetchman profiles without corresponding profiles using the array of IDs
       const { data: missingProfiles, error: missingError } = await supabase
         .from('fetchman_profiles')
         .select('id, user_id')
-        .filter('user_id', 'not.in', (
-          await supabase.from('profiles').select('id')
-        ).data?.map(p => p.id) || []);
+        .not('user_id', 'in', profileIds);
         
       if (missingError) {
         console.error("Error checking for missing profiles:", missingError);

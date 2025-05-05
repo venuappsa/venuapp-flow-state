@@ -26,17 +26,30 @@ export function useSchemaFix() {
       setRepairDetails(prev => prev + "\nExecuting no-op ALTER statements to force schema refresh...");
       
       try {
-        const { error: alterError } = await supabase.rpc('force_schema_refresh');
+        // Using direct fetch with longer timeout to call the force_schema_refresh function
+        // This bypasses the TypeScript limitations with the supabase client
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/rpc/force_schema_refresh`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_PUBLISHABLE_KEY,
+              'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+            }
+          }
+        );
         
-        if (alterError) {
-          console.warn("Error with no-op ALTER:", alterError);
-          setRepairDetails(prev => prev + `\nError with no-op ALTER: ${alterError.message}. Falling back to direct schema cache refresh...`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.warn("Error with schema refresh:", errorText);
+          setRepairDetails(prev => prev + `\nError with schema refresh: ${errorText}. Falling back to direct schema cache refresh...`);
         } else {
           setRepairDetails(prev => prev + "\nSuccessfully executed no-op ALTER statements");
         }
-      } catch (alterError) {
-        console.error("Exception during no-op ALTER:", alterError);
-        setRepairDetails(prev => prev + `\nException during no-op ALTER: ${alterError.message}`);
+      } catch (alterError: any) {
+        console.error("Exception during schema refresh:", alterError);
+        setRepairDetails(prev => prev + `\nException during schema refresh: ${alterError.message}`);
       }
       
       // Step 3: Direct request to refresh schema cache with extended timeout
@@ -63,7 +76,7 @@ export function useSchemaFix() {
         } else {
           setRepairDetails(prev => prev + "\nSchema cache refresh requested successfully");
         }
-      } catch (refreshError) {
+      } catch (refreshError: any) {
         console.error("Error refreshing schema cache:", refreshError);
         setRepairDetails(prev => prev + `\nError refreshing schema cache: ${refreshError.message}`);
       }
@@ -72,6 +85,7 @@ export function useSchemaFix() {
       setRepairDetails(prev => prev + "\nRunning database repair function for missing profiles...");
       
       try {
+        // For this function we can use the typed supabase client as it's in the types
         const { data: repairResult, error: repairError } = await supabase.rpc('repair_fetchman_profiles');
         
         if (repairError) {
@@ -84,7 +98,7 @@ export function useSchemaFix() {
         } else {
           setRepairDetails(prev => prev + "\nRepair function returned no results");
         }
-      } catch (repairFuncError) {
+      } catch (repairFuncError: any) {
         console.error("Error with repair function:", repairFuncError);
         setRepairDetails(prev => prev + `\nRepair function error: ${repairFuncError.message}`);
       }
@@ -101,7 +115,7 @@ export function useSchemaFix() {
         description: "The database schema cache has been reset. Please refresh the page to see if the issue is resolved.",
         duration: 10000,
       });
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error("Schema reset error:", error);
       setRepairDetails(prev => prev + `\nError during schema reset: ${errorMessage}`);

@@ -227,13 +227,13 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      // Next, find missing profile relationships
+      // Next, find missing profile relationships - FIXED VERSION
       const { data: missingProfiles, error: missingError } = await supabase
         .from('fetchman_profiles')
         .select('id, user_id')
-        .not('user_id', 'in', (
-          supabase.from('profiles').select('id')
-        ));
+        .filter('user_id', 'not.in', (
+          await supabase.from('profiles').select('id')
+        ).data?.map(p => p.id) || []);
         
       if (missingError) {
         console.error("Error checking for missing profiles:", missingError);

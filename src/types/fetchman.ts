@@ -16,8 +16,8 @@ export interface FetchmanProfile {
   bank_account_number?: string;
   branch_code?: string;
   identity_number?: string;
-  work_areas?: string[];
-  mobility_preference?: Record<string, boolean>;
+  work_areas?: string[] | any; // Updated to accept any JSON value from database
+  mobility_preference?: Record<string, boolean> | any; // Updated to accept any JSON value from database
   emergency_contact_name?: string;
   emergency_contact_relationship?: string;
   emergency_contact_phone?: string;
@@ -30,6 +30,8 @@ export interface FetchmanProfile {
   profile?: UserProfile;
   created_at?: string;
   updated_at?: string;
+  // Adding this property that might come from database joins
+  profiles?: any;
 }
 
 export interface UserProfile {

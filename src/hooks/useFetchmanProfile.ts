@@ -1,10 +1,9 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "@/services/UserService";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/integrations/supabase/client";
-import { FetchmanProfile } from "./useAllFetchmanProfiles";
+import { FetchmanProfile } from "@/types/fetchman";
 
 export function useFetchmanProfile(userId?: string) {
   const { user } = useUser();
@@ -73,7 +72,7 @@ export function useFetchmanProfile(userId?: string) {
           }
         }
         
-        // Convert work_areas from Json to string[] if needed
+        // Parse JSON fields as needed
         let workAreas: string[] = [];
         if (data.work_areas) {
           if (Array.isArray(data.work_areas)) {
@@ -87,10 +86,24 @@ export function useFetchmanProfile(userId?: string) {
           }
         }
         
+        let mobilityPreference: Record<string, boolean> = {};
+        if (data.mobility_preference) {
+          if (typeof data.mobility_preference === 'string') {
+            try {
+              mobilityPreference = JSON.parse(data.mobility_preference);
+            } catch {
+              mobilityPreference = {};
+            }
+          } else if (typeof data.mobility_preference === 'object') {
+            mobilityPreference = data.mobility_preference;
+          }
+        }
+        
         // Transform for consistent interface
         const result: FetchmanProfile = {
           ...data,
           work_areas: workAreas,
+          mobility_preference: mobilityPreference,
           user: profileData,
           profile: profileData
         };

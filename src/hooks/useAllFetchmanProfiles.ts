@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { FetchmanProfile } from '@/types/fetchman';
 import { useToast } from '@/components/ui/use-toast';
 
-export type { FetchmanProfile };  // Export the type
+export { FetchmanProfile };  // Export the type
 
 export const useAllFetchmanProfiles = (filters?: { status?: string }) => {
   const { toast } = useToast();
@@ -28,7 +28,21 @@ export const useAllFetchmanProfiles = (filters?: { status?: string }) => {
     const { data, error } = await query;
     
     if (error) throw error;
-    return data || [];
+
+    // Transform the data to match our type definition
+    const transformedData: FetchmanProfile[] = data?.map(item => ({
+      ...item,
+      // Convert work_areas to string[] if it's a string
+      work_areas: Array.isArray(item.work_areas) ? item.work_areas : 
+                  typeof item.work_areas === 'string' ? JSON.parse(item.work_areas) : 
+                  item.work_areas || [],
+      // Convert mobility_preference to Record<string, boolean> if it's a string
+      mobility_preference: typeof item.mobility_preference === 'string' ? 
+                          JSON.parse(item.mobility_preference) : 
+                          item.mobility_preference || {}
+    })) || [];
+    
+    return transformedData;
   };
 
   // Mutation for updating fetchman status

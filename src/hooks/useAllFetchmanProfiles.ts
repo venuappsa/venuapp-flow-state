@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -201,8 +202,15 @@ export const useAllFetchmanProfiles = (filters?: { status?: string }) => {
         query = supabase
           .from('fetchman_profiles')
           .select('id, user_id');
+      } else if (profileIds.length === 1) {
+        // If only one profile found, use .neq instead of .not(..).in 
+        // This fixes the "failed to parse filter (not.in.[single-uuid])" error
+        query = supabase
+          .from('fetchman_profiles')
+          .select('id, user_id')
+          .neq('user_id', profileIds[0]);
       } else {
-        // Otherwise, check for those not in the profile list
+        // For multiple profiles, use the not-in filter as before
         query = supabase
           .from('fetchman_profiles')
           .select('id, user_id')

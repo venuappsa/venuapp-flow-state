@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import AdminDashboard from "@/components/AdminDashboard";
 import { useAllFetchmanProfiles } from "@/hooks/useAllFetchmanProfiles";
@@ -199,19 +200,23 @@ export default function AdminDashboardPage() {
       }
       
       // Create an array of profile IDs or use empty array if no profiles found
-      let profileIds = [];
-      if (profilesData && profilesData.length > 0) {
+      // Enhanced validation to ensure profileIds is ALWAYS an array
+      let profileIds: string[] = [];
+      
+      if (profilesData && Array.isArray(profilesData) && profilesData.length > 0) {
         profileIds = profilesData.map(p => p.id);
         console.log(`Got ${profileIds.length} profile IDs for repair. Sample:`, profileIds.slice(0, 3));
       } else {
         console.log("No profile IDs found, using empty array for repair check");
       }
       
-      // Safety check - if profileIds is not an array, make it one
+      // Double check that profileIds is an array to avoid the filter parsing error
       if (!Array.isArray(profileIds)) {
         console.warn("profileIds was not an array, converting for repair:", profileIds);
         profileIds = profileIds ? [profileIds] : [];
       }
+      
+      setFixingDetails(prev => prev + `\nWorking with ${profileIds.length} existing profiles for repair check`);
       
       // Find all fetchman_profiles without corresponding profiles using the array of IDs
       let missingProfilesResponse;
@@ -219,19 +224,30 @@ export default function AdminDashboardPage() {
       try {
         if (profileIds.length === 0) {
           // If no profiles, just get all fetchman profiles
+          setFixingDetails(prev => prev + `\nNo existing profiles found, checking all fetchman profiles`);
           missingProfilesResponse = await supabase
             .from('fetchman_profiles')
             .select('id, user_id');
             
-          setFixingDetails(prev => prev + `\nNo existing profiles found, checking all fetchman profiles.`);
+          console.log("Getting all fetchman profiles as no existing profiles were found");
+        } else if (profileIds.length === 1) {
+          // Special case for a single profile ID to avoid parsing errors
+          setFixingDetails(prev => prev + `\nOnly one profile found (${profileIds[0]}), using neq instead of not-in`);
+          missingProfilesResponse = await supabase
+            .from('fetchman_profiles')
+            .select('id, user_id')
+            .neq('user_id', profileIds[0]);
+            
+          console.log(`Using neq filter with single ID: ${profileIds[0]}`);
         } else {
-          // Normal case with profile IDs
+          // Normal case with multiple profile IDs
+          setFixingDetails(prev => prev + `\nChecking fetchman profiles against ${profileIds.length} existing profiles`);
           missingProfilesResponse = await supabase
             .from('fetchman_profiles')
             .select('id, user_id')
             .not('user_id', 'in', profileIds);
             
-          setFixingDetails(prev => prev + `\nChecking fetchman profiles against ${profileIds.length} existing profiles.`);
+          console.log(`Using 'not in' filter with ${profileIds.length} IDs`);
         }
         
         const { data: missingProfiles, error: queryError } = missingProfilesResponse;

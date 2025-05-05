@@ -242,18 +242,19 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
       }
       
       // Create an array of profile IDs or use empty array if no profiles found
-      // Ensure profileIds is always an array
-      let profileIds = [];
-      if (profilesData && profilesData.length > 0) {
+      // Enhanced validation to ensure profileIds is ALWAYS an array
+      let profileIds: string[] = [];
+      
+      if (profilesData && Array.isArray(profilesData) && profilesData.length > 0) {
         profileIds = profilesData.map(p => p.id);
-        console.log(`Got ${profileIds.length} profile IDs. Sample: `, profileIds.slice(0, 3));
+        console.log(`Got ${profileIds.length} profile IDs. First few:`, profileIds.slice(0, 3));
       } else {
-        console.log("No profile IDs found, using empty array");
+        console.log("No profile IDs found or not in array format, using empty array");
       }
       
-      // Safety check - if profileIds is not an array, make it one
+      // Double check that profileIds is an array to avoid the filter parsing error
       if (!Array.isArray(profileIds)) {
-        console.warn("profileIds was not an array, converting:", profileIds);
+        console.warn("profileIds was not an array after processing, converting:", profileIds);
         profileIds = profileIds ? [profileIds] : [];
       }
       
@@ -263,15 +264,30 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
       try {
         if (profileIds.length === 0) {
           // If no profiles, just get all fetchman profiles
+          console.log("No profiles found, fetching all fetchman profiles");
           missingProfilesResponse = await supabase
             .from('fetchman_profiles')
             .select('id, user_id');
+            
+          console.log("Query executed with no profile filter");
+        } else if (profileIds.length === 1) {
+          // Special case for a single profile ID to avoid parsing errors
+          console.log("Only one profile found, using eq/neq instead of in/not in");
+          missingProfilesResponse = await supabase
+            .from('fetchman_profiles')
+            .select('id, user_id')
+            .neq('user_id', profileIds[0]);
+            
+          console.log(`Query executed with neq filter for single ID: ${profileIds[0]}`);
         } else {
-          // Find fetchman profiles without corresponding profiles using the array of IDs
+          // Normal case with multiple profile IDs
+          console.log(`Using 'not in' filter with ${profileIds.length} IDs`);
           missingProfilesResponse = await supabase
             .from('fetchman_profiles')
             .select('id, user_id')
             .not('user_id', 'in', profileIds);
+            
+          console.log("Query executed with 'not in' filter for multiple IDs");
         }
         
         const { data: missingProfiles, error: missingError } = missingProfilesResponse;

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -179,11 +178,38 @@ export const useAllFetchmanProfiles = (filters?: { status?: string }) => {
   // Function to test profile relationships
   const testProfilesRelationship = async () => {
     try {
+      // First, get all profile IDs
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id');
+      
+      if (profilesError) {
+        return {
+          success: false,
+          message: `Error fetching profiles: ${profilesError.message}`,
+          error: profilesError,
+        };
+      }
+      
+      // Create an array of profile IDs
+      const profileIds = profilesData ? profilesData.map(p => p.id) : [];
+      
       // Check if there are any fetchman profiles without corresponding user profiles
-      const { data: orphanedProfiles, error } = await supabase
-        .from('fetchman_profiles')
-        .select('id, user_id')
-        .not('user_id', 'in', '(select id from profiles)');
+      let query;
+      if (profileIds.length === 0) {
+        // If no profiles found, check all fetchman profiles
+        query = supabase
+          .from('fetchman_profiles')
+          .select('id, user_id');
+      } else {
+        // Otherwise, check for those not in the profile list
+        query = supabase
+          .from('fetchman_profiles')
+          .select('id, user_id')
+          .not('user_id', 'in', profileIds);
+      }
+      
+      const { data: orphanedProfiles, error } = await query;
       
       if (error) {
         return {

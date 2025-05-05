@@ -75,43 +75,9 @@ export default function AdminDashboardPage() {
     setFixingDetails("Starting repair process...");
     try {
       console.log("Attempting to fix profile relationship");
-      setFixingDetails("Refreshing schema cache...");
+      setFixingDetails("Searching for missing profiles...");
       
-      // First, try to refresh the schema cache using a direct fetch instead of rpc
-      try {
-        // Using direct fetch to the reload_schema_cache function instead of rpc
-        // This avoids TypeScript errors since the function isn't in the type definitions
-        const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/rpc/reload_schema_cache`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': SUPABASE_PUBLISHABLE_KEY,
-              'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
-            }
-          }
-        );
-        
-        if (!response.ok) {
-          console.warn("Failed to reload schema cache via direct API call:", await response.text());
-          setFixingDetails("Schema cache refresh failed, trying alternative methods...");
-          // Continue with other fixes, this is just a best effort
-        } else {
-          console.log("Schema cache refresh requested");
-          setFixingDetails("Schema cache refresh requested. Checking for missing profiles...");
-          toast({
-            title: "Schema Cache Refreshed",
-            description: "Supabase schema cache refresh has been requested. This may take a few moments."
-          });
-        }
-      } catch (rpcError) {
-        console.warn("Error calling reload_schema_cache API:", rpcError);
-        setFixingDetails("Schema cache refresh API error, continuing with repairs...");
-      }
-      
-      // Attempt to verify that all fetchman_profiles have corresponding profiles
-      setFixingDetails("Checking for missing profile relationships...");
+      // First, find all fetchman_profiles without corresponding profiles
       const { data: missingProfiles, error: queryError } = await supabase
         .from('fetchman_profiles')
         .select('id, user_id')
@@ -129,59 +95,72 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      if (missingProfiles && missingProfiles.length > 0) {
+      if (!missingProfiles || missingProfiles.length === 0) {
+        setFixingDetails("No missing profiles found. Checking other potential issues...");
+      } else {
         setFixingDetails(`Found ${missingProfiles.length} fetchman profiles without corresponding user profiles. Attempting to create them...`);
         
         // Create missing profiles
         for (const missing of missingProfiles) {
-          // First, check if the user exists in auth.users
-          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(missing.user_id);
-          
-          if (userError || !userData) {
-            console.error(`Failed to get auth user data for ID ${missing.user_id}:`, userError);
-            continue;
-          }
-          
-          // Try to create the missing profile
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              id: missing.user_id,
-              email: userData.user?.email || 'unknown@example.com',
-              name: userData.user?.user_metadata?.name || null,
-              surname: userData.user?.user_metadata?.surname || null
-            });
+          try {
+            // Get user data from auth
+            const { data: userData, error: userError } = await supabase.auth.getUser(missing.user_id);
             
-          if (insertError) {
-            console.error(`Failed to create profile for user ${missing.user_id}:`, insertError);
-          } else {
-            console.log(`Created missing profile for user ${missing.user_id}`);
+            if (userError || !userData) {
+              console.error(`Failed to get auth user data for ID ${missing.user_id}:`, userError);
+              continue;
+            }
+            
+            // Try to create the missing profile
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: missing.user_id,
+                email: userData.user?.email || 'unknown@example.com',
+                name: userData.user?.user_metadata?.name || null,
+                surname: userData.user?.user_metadata?.surname || null
+              });
+              
+            if (insertError) {
+              console.error(`Failed to create profile for user ${missing.user_id}:`, insertError);
+            } else {
+              console.log(`Created missing profile for user ${missing.user_id}`);
+            }
+          } catch (userFetchError) {
+            console.error(`Error processing user ${missing.user_id}:`, userFetchError);
           }
         }
-        
-        setFixingDetails("Attempted to create missing profiles. Verifying results...");
-      } else {
-        setFixingDetails("No missing profile relationships found. Verifying foreign key constraints...");
       }
-
-      // Check if the foreign key constraint exists between fetchman_deliveries and vendor_profiles
+      
+      // Try to use the RPC function for schema cache refresh, if it exists
+      setFixingDetails("Attempting to refresh schema cache...");
       try {
-        setFixingDetails("Verifying database foreign key constraints...");
-        // This is a read-only operation to check if constraints are properly set up
-        const { data: constraintCheck, error: constraintError } = await supabase
-          .from('fetchman_deliveries')
-          .select('vendor_id')
-          .limit(1);
-          
-        if (constraintError) {
-          console.warn("Foreign key constraint check failed:", constraintError);
-          setFixingDetails("Foreign key constraint check failed. May need manual database intervention.");
+        // Using direct fetch to call the function to refresh schema cache
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/rpc/postgrest_schema_cache_refresh`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_PUBLISHABLE_KEY,
+              'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+            }
+          }
+        );
+        
+        if (!response.ok) {
+          console.warn("Schema cache refresh RPC call failed:", await response.text());
+          setFixingDetails("Schema cache refresh failed. May need manual intervention.");
         } else {
-          console.log("Foreign key constraint check passed");
-          setFixingDetails("Foreign key constraints appear to be in order. Finalizing...");
+          setFixingDetails("Schema cache refresh requested. This may take a few moments to propagate.");
+          toast({
+            title: "Schema Cache Refreshed",
+            description: "Database schema cache refresh has been requested."
+          });
         }
-      } catch (constraintCheckError) {
-        console.error("Error checking constraints:", constraintCheckError);
+      } catch (rpcError) {
+        console.warn("Error calling schema cache refresh RPC:", rpcError);
+        setFixingDetails("Schema cache refresh API error, continuing with repairs...");
       }
 
       // Wait a moment to let potential cache refresh take effect
@@ -204,7 +183,7 @@ export default function AdminDashboardPage() {
         toast({
           title: "Fix Attempt Completed",
           description: "Some issues may still require manual intervention. See details for more information.",
-          variant: "destructive", // Changed from "warning" to "destructive" to match allowed variants
+          variant: "destructive", 
         });
       }
     } catch (error) {

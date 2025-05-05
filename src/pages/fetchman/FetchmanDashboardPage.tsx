@@ -22,7 +22,7 @@ export default function FetchmanDashboardPage() {
 
   // Function to create missing profile if needed
   const createMissingProfile = async () => {
-    if (!user?.id || !profile) return false;
+    if (!user?.id) return false;
     
     try {
       setRepairingProfile(true);
@@ -78,6 +78,7 @@ export default function FetchmanDashboardPage() {
         description: "Missing profile has been created successfully.",
       });
       
+      // Wait a moment then refresh the data
       setTimeout(() => {
         refetch();
       }, 1000);
@@ -91,12 +92,12 @@ export default function FetchmanDashboardPage() {
     }
   };
 
-  // Try to refresh if we encounter a relationship error
+  // Try to repair if we encounter a relationship error
   useEffect(() => {
     if (error) {
       const errorString = String(error);
-      if (errorString.includes("relationship between") && errorString.includes("profiles")) {
-        console.log("Detected relationship error, attempting to create missing profile", error);
+      if (errorString.includes("relationship") || errorString.includes("profiles")) {
+        console.log("Detected possible relationship error, attempting to create missing profile", error);
         
         // Try to create the missing profile
         createMissingProfile().then(success => {
@@ -236,7 +237,7 @@ export default function FetchmanDashboardPage() {
     // When there's an error
     if (error) {
       const errorString = String(error);
-      const isRelationshipError = errorString.includes("relationship between") && errorString.includes("profiles");
+      const isRelationshipError = errorString.includes("relationship") || errorString.includes("profiles");
       
       return (
         <Alert variant="destructive" className="mb-6">
@@ -244,7 +245,7 @@ export default function FetchmanDashboardPage() {
           <AlertTitle>Error Loading Profile</AlertTitle>
           <AlertDescription>
             {isRelationshipError ? 
-              "We're experiencing an issue with your profile relationship. Please try refreshing the page." :
+              "We're experiencing an issue with your profile relationship. This can be fixed automatically." :
               `Error loading your profile: ${errorString}`
             }
             <div className="mt-2 flex gap-2">

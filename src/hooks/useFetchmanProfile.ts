@@ -22,6 +22,43 @@ export function useFetchmanProfile(userId?: string) {
       try {
         console.log("Fetching fetchman profile for user ID:", targetUserId);
         
+        // First check if profile exists, if not, try to create it
+        const { data: profileCheck, error: profileCheckError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', targetUserId)
+          .maybeSingle();
+          
+        if (profileCheckError) {
+          console.warn("Error checking profile existence:", profileCheckError);
+        } else if (!profileCheck) {
+          console.warn("Profile does not exist for user ID:", targetUserId);
+          
+          // Attempt to create missing profile
+          try {
+            const { data: userData, error: userError } = await supabase.auth.getUser(targetUserId);
+            
+            if (!userError && userData.user) {
+              const { error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                  id: targetUserId,
+                  email: userData.user.email || '',
+                  name: userData.user.user_metadata?.name || null,
+                  surname: userData.user.user_metadata?.surname || null
+                });
+                
+              if (!insertError) {
+                console.log("Successfully created missing profile for:", targetUserId);
+              } else {
+                console.error("Failed to create missing profile:", insertError);
+              }
+            }
+          } catch (createError) {
+            console.error("Error creating missing profile:", createError);
+          }
+        }
+        
         // Check if we can use the foreign key relationship
         let queryResult;
         
@@ -57,7 +94,7 @@ export function useFetchmanProfile(userId?: string) {
             .from('fetchman_profiles')
             .select(`
               *,
-              profiles:profiles!inner(
+              profiles!inner(
                 id,
                 email,
                 name, 

@@ -71,11 +71,24 @@ export default function AdminDashboardPage() {
     try {
       console.log("Attempting to fix profile relationship");
       
-      // First, try to refresh the schema cache
+      // First, try to refresh the schema cache using a direct fetch instead of rpc
       try {
-        const { error: rpcError } = await supabase.rpc('reload_schema_cache');
-        if (rpcError) {
-          console.warn("Failed to reload schema cache via RPC:", rpcError);
+        // Using direct fetch to the reload_schema_cache function instead of rpc
+        // This avoids TypeScript errors since the function isn't in the type definitions
+        const response = await fetch(
+          `${supabase.supabaseUrl}/rest/v1/rpc/reload_schema_cache`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': supabase.supabaseKey,
+              'Authorization': `Bearer ${supabase.supabaseKey}`
+            }
+          }
+        );
+        
+        if (!response.ok) {
+          console.warn("Failed to reload schema cache via direct API call:", await response.text());
           // Continue with other fixes, this is just a best effort
         } else {
           console.log("Schema cache refresh requested");
@@ -85,7 +98,7 @@ export default function AdminDashboardPage() {
           });
         }
       } catch (rpcError) {
-        console.warn("Error calling reload_schema_cache RPC:", rpcError);
+        console.warn("Error calling reload_schema_cache API:", rpcError);
       }
       
       // Attempt to verify that all fetchman_profiles have corresponding profiles

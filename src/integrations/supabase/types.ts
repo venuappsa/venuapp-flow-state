@@ -1086,6 +1086,18 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      postgrest_schema_cache_refresh: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      repair_fetchman_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          fixed_count: number
+          error_count: number
+          details: string[]
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "host" | "merchant" | "customer" | "fetchman"

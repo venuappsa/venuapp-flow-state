@@ -199,7 +199,61 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
     try {
       console.log("Testing fetchman_profiles to profiles relationship");
       
-      // Try both query approaches to check relationship
+      // First, check if we can access the profiles table
+      const { data: profilesCheck, error: profilesError } = await supabase
+        .from('profiles')
+        .select('count', { count: 'exact', head: true });
+        
+      if (profilesError) {
+        console.error("Error accessing profiles table:", profilesError);
+        return { 
+          success: false, 
+          message: `Cannot access profiles table: ${profilesError.message}`,
+          error: profilesError 
+        };
+      }
+      
+      // Then check if we can access fetchman_profiles
+      const { data: fetchmanCheck, error: fetchmanError } = await supabase
+        .from('fetchman_profiles')
+        .select('count', { count: 'exact', head: true });
+        
+      if (fetchmanError) {
+        console.error("Error accessing fetchman_profiles table:", fetchmanError);
+        return { 
+          success: false, 
+          message: `Cannot access fetchman_profiles table: ${fetchmanError.message}`,
+          error: fetchmanError 
+        };
+      }
+      
+      // Next, find missing profile relationships
+      const { data: missingProfiles, error: missingError } = await supabase
+        .from('fetchman_profiles')
+        .select('id, user_id')
+        .not('user_id', 'in', (
+          supabase.from('profiles').select('id')
+        ));
+        
+      if (missingError) {
+        console.error("Error checking for missing profiles:", missingError);
+        return { 
+          success: false, 
+          message: `Error checking for missing profiles: ${missingError.message}`,
+          error: missingError 
+        };
+      }
+      
+      if (missingProfiles && missingProfiles.length > 0) {
+        console.error(`Found ${missingProfiles.length} fetchman profiles without corresponding user profiles`);
+        return { 
+          success: false, 
+          message: `${missingProfiles.length} fetchman profiles have missing profile relations`,
+          missing: missingProfiles 
+        };
+      }
+      
+      // If no issues found, test the foreign key or join queries
       try {
         // First attempt: Test using the foreign key relationship
         const { data, error } = await supabase
@@ -225,22 +279,6 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           return { 
             success: false, 
             message: "No fetchman profiles found" 
-          };
-        }
-        
-        // Check for missing profiles with improved type checking
-        const missingProfiles = data.filter(item => {
-          return !item.profiles || (
-            item.profiles && 
-            typeof item.profiles === 'object' && 
-            Object.keys(item.profiles).length === 0
-          );
-        });
-        
-        if (missingProfiles.length > 0) {
-          return { 
-            success: false, 
-            message: `${missingProfiles.length} fetchman profiles have missing profile relations` 
           };
         }
         
@@ -280,20 +318,6 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
           return { 
             success: false, 
             message: "No fetchman profiles found" 
-          };
-        }
-        
-        // Check for missing profiles
-        const missingProfiles = data.filter(item => {
-          return !item.profiles || (
-            Array.isArray(item.profiles) && item.profiles.length === 0
-          );
-        });
-        
-        if (missingProfiles.length > 0) {
-          return { 
-            success: false, 
-            message: `${missingProfiles.length} fetchman profiles have missing profile relations` 
           };
         }
         

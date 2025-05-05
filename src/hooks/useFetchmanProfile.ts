@@ -23,41 +23,7 @@ export function useFetchmanProfile(userId?: string) {
         console.log("Fetching fetchman profile for user ID:", targetUserId);
         
         // First check if profile exists, if not, try to create it
-        const { data: profileCheck, error: profileCheckError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', targetUserId)
-          .maybeSingle();
-          
-        if (profileCheckError) {
-          console.warn("Error checking profile existence:", profileCheckError);
-        } else if (!profileCheck) {
-          console.warn("Profile does not exist for user ID:", targetUserId);
-          
-          // Attempt to create missing profile
-          try {
-            const { data: userData, error: userError } = await supabase.auth.getUser(targetUserId);
-            
-            if (!userError && userData.user) {
-              const { error: insertError } = await supabase
-                .from('profiles')
-                .insert({
-                  id: targetUserId,
-                  email: userData.user.email || '',
-                  name: userData.user.user_metadata?.name || null,
-                  surname: userData.user.user_metadata?.surname || null
-                });
-                
-              if (!insertError) {
-                console.log("Successfully created missing profile for:", targetUserId);
-              } else {
-                console.error("Failed to create missing profile:", insertError);
-              }
-            }
-          } catch (createError) {
-            console.error("Error creating missing profile:", createError);
-          }
-        }
+        await ensureProfileExists(targetUserId);
         
         // Check if we can use the foreign key relationship
         let queryResult;
@@ -94,7 +60,7 @@ export function useFetchmanProfile(userId?: string) {
             .from('fetchman_profiles')
             .select(`
               *,
-              profiles!inner(
+              profiles:profiles(
                 id,
                 email,
                 name, 
@@ -179,12 +145,79 @@ export function useFetchmanProfile(userId?: string) {
     enabled: !!targetUserId
   });
   
+  // Helper function to ensure a profile exists for the user
+  const ensureProfileExists = async (userId: string) => {
+    try {
+      // Check if profile exists
+      const { data: profileCheck, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+        
+      if (profileCheckError) {
+        console.warn("Error checking profile existence:", profileCheckError);
+        return false;
+      } 
+      
+      if (profileCheck) {
+        // Profile exists, no need to create
+        return true;
+      }
+      
+      console.warn("Profile does not exist for user ID:", userId);
+      
+      // Attempt to create missing profile
+      try {
+        const { data: userData, error: userError } = await supabase.auth.getUser(userId);
+        
+        if (userError || !userData.user) {
+          console.error("Failed to get user data for profile creation:", userError);
+          return false;
+        }
+        
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            email: userData.user.email || '',
+            name: userData.user.user_metadata?.name || null,
+            surname: userData.user.user_metadata?.surname || null
+          });
+          
+        if (insertError) {
+          console.error("Failed to create missing profile:", insertError);
+          return false;
+        } else {
+          console.log("Successfully created missing profile for:", userId);
+          return true;
+        }
+      } catch (createError) {
+        console.error("Error creating missing profile:", createError);
+        return false;
+      }
+    } catch (e) {
+      console.error("Error in ensureProfileExists:", e);
+      return false;
+    }
+  };
+  
   // Function to test the relationship between profiles and fetchman_profiles
   const testProfileRelationship = async () => {
     if (!targetUserId) return { success: false, message: "No user ID provided" };
     
     try {
       console.log("Testing profile relationship for user ID:", targetUserId);
+      
+      // First ensure a profile exists
+      const profileExists = await ensureProfileExists(targetUserId);
+      
+      if (!profileExists) {
+        return { 
+          success: false, 
+          message: "Could not ensure profile exists for this user" 
+        };
+      }
       
       // Try both relationship styles to see which one works
       try {

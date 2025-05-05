@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import AdminDashboard from "@/components/AdminDashboard";
 import { useAllFetchmanProfiles } from "@/hooks/useAllFetchmanProfiles";
@@ -200,71 +199,107 @@ export default function AdminDashboardPage() {
       }
       
       // Create an array of profile IDs or use empty array if no profiles found
-      const profileIds = profilesData ? profilesData.map(p => p.id) : [];
+      let profileIds = [];
+      if (profilesData && profilesData.length > 0) {
+        profileIds = profilesData.map(p => p.id);
+        console.log(`Got ${profileIds.length} profile IDs for repair. Sample:`, profileIds.slice(0, 3));
+      } else {
+        console.log("No profile IDs found, using empty array for repair check");
+      }
+      
+      // Safety check - if profileIds is not an array, make it one
+      if (!Array.isArray(profileIds)) {
+        console.warn("profileIds was not an array, converting for repair:", profileIds);
+        profileIds = profileIds ? [profileIds] : [];
+      }
       
       // Find all fetchman_profiles without corresponding profiles using the array of IDs
-      const { data: missingProfiles, error: queryError } = await supabase
-        .from('fetchman_profiles')
-        .select('id, user_id')
-        .not('user_id', 'in', profileIds);
+      let missingProfilesResponse;
       
-      if (queryError) {
-        setFixingDetails(prev => prev + `\nError checking missing profiles: ${queryError.message}`);
-        throw queryError;
-      }
-
-      if (!missingProfiles || missingProfiles.length === 0) {
-        setFixingDetails(prev => prev + "\nNo missing profiles found in manual check.");
-        return;
-      }
-      
-      setFixingDetails(prev => prev + `\nFound ${missingProfiles.length} fetchman profiles without corresponding user profiles. Attempting to create them...`);
-      
-      let fixedCount = 0;
-      let errorCount = 0;
-      
-      // Create missing profiles
-      for (const missing of missingProfiles) {
-        try {
-          // Get user data from auth
-          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(missing.user_id);
-          
-          if (userError || !userData?.user) {
-            console.error(`Failed to get auth user data for ID ${missing.user_id}:`, userError);
-            errorCount++;
-            continue;
-          }
-          
-          // Try to create the missing profile
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              id: missing.user_id,
-              email: userData.user?.email || 'unknown@example.com',
-              name: userData.user?.user_metadata?.name || null,
-              surname: userData.user?.user_metadata?.surname || null
-            });
+      try {
+        if (profileIds.length === 0) {
+          // If no profiles, just get all fetchman profiles
+          missingProfilesResponse = await supabase
+            .from('fetchman_profiles')
+            .select('id, user_id');
             
-          if (insertError) {
-            console.error(`Failed to create profile for user ${missing.user_id}:`, insertError);
-            errorCount++;
-          } else {
-            console.log(`Created missing profile for user ${missing.user_id}`);
-            fixedCount++;
-          }
-        } catch (userFetchError) {
-          console.error(`Error processing user ${missing.user_id}:`, userFetchError);
-          errorCount++;
+          setFixingDetails(prev => prev + `\nNo existing profiles found, checking all fetchman profiles.`);
+        } else {
+          // Normal case with profile IDs
+          missingProfilesResponse = await supabase
+            .from('fetchman_profiles')
+            .select('id, user_id')
+            .not('user_id', 'in', profileIds);
+            
+          setFixingDetails(prev => prev + `\nChecking fetchman profiles against ${profileIds.length} existing profiles.`);
         }
+        
+        const { data: missingProfiles, error: queryError } = missingProfilesResponse;
+        
+        if (queryError) {
+          setFixingDetails(prev => prev + `\nError checking missing profiles: ${queryError.message}`);
+          throw queryError;
+        }
+
+        if (!missingProfiles || missingProfiles.length === 0) {
+          setFixingDetails(prev => prev + "\nNo missing profiles found in manual check.");
+          return;
+        }
+        
+        setFixingDetails(prev => prev + `\nFound ${missingProfiles.length} fetchman profiles without corresponding user profiles. Attempting to create them...`);
+        
+        let fixedCount = 0;
+        let errorCount = 0;
+        
+        // Create missing profiles
+        for (const missing of missingProfiles) {
+          try {
+            // Get user data from auth
+            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(missing.user_id);
+            
+            if (userError || !userData?.user) {
+              console.error(`Failed to get auth user data for ID ${missing.user_id}:`, userError);
+              errorCount++;
+              continue;
+            }
+            
+            // Try to create the missing profile
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: missing.user_id,
+                email: userData.user?.email || 'unknown@example.com',
+                name: userData.user?.user_metadata?.name || null,
+                surname: userData.user?.user_metadata?.surname || null
+              });
+            
+            if (insertError) {
+              console.error(`Failed to create profile for user ${missing.user_id}:`, insertError);
+              errorCount++;
+            } else {
+              console.log(`Created missing profile for user ${missing.user_id}`);
+              fixedCount++;
+            }
+          } catch (userFetchError) {
+            console.error(`Error processing user ${missing.user_id}:`, userFetchError);
+            errorCount++;
+          }
+        }
+        
+        setFixingDetails(prev => prev + `\nManual repair completed. Fixed: ${fixedCount}, Errors: ${errorCount}`);
+        
+        if (fixedCount > 0) {
+          setRepairSuccess(true);
+        }
+        
+        return { fixedCount, errorCount };
+      } catch (queryExecutionError) {
+        const errorMessage = queryExecutionError instanceof Error ? 
+          queryExecutionError.message : String(queryExecutionError);
+        console.error("Error executing query in manual repair:", queryExecutionError);
+        setFixingDetails(prev => prev + `\nError in query execution: ${errorMessage}`);
+        throw queryExecutionError;
       }
-      
-      setFixingDetails(prev => prev + `\nManual repair completed. Fixed: ${fixedCount}, Errors: ${errorCount}`);
-      
-      if (fixedCount > 0) {
-        setRepairSuccess(true);
-      }
-      
-      return { fixedCount, errorCount };
     } catch (error) {
       console.error("Error in manual repair:", error);
       setFixingDetails(prev => prev + `\nManual repair failed: ${error.message}`);

@@ -242,29 +242,63 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
       }
       
       // Create an array of profile IDs or use empty array if no profiles found
-      const profileIds = profilesData ? profilesData.map(p => p.id) : [];
-      
-      // Find fetchman profiles without corresponding profiles using the array of IDs
-      const { data: missingProfiles, error: missingError } = await supabase
-        .from('fetchman_profiles')
-        .select('id, user_id')
-        .not('user_id', 'in', profileIds);
-        
-      if (missingError) {
-        console.error("Error checking for missing profiles:", missingError);
-        return { 
-          success: false, 
-          message: `Error checking for missing profiles: ${missingError.message}`,
-          error: missingError 
-        };
+      // Ensure profileIds is always an array
+      let profileIds = [];
+      if (profilesData && profilesData.length > 0) {
+        profileIds = profilesData.map(p => p.id);
+        console.log(`Got ${profileIds.length} profile IDs. Sample: `, profileIds.slice(0, 3));
+      } else {
+        console.log("No profile IDs found, using empty array");
       }
       
-      if (missingProfiles && missingProfiles.length > 0) {
-        console.error(`Found ${missingProfiles.length} fetchman profiles without corresponding user profiles`);
-        return { 
-          success: false, 
-          message: `${missingProfiles.length} fetchman profiles have missing profile relations`,
-          missing: missingProfiles 
+      // Safety check - if profileIds is not an array, make it one
+      if (!Array.isArray(profileIds)) {
+        console.warn("profileIds was not an array, converting:", profileIds);
+        profileIds = profileIds ? [profileIds] : [];
+      }
+      
+      // Edge case: if there's only one ID, we need special handling for the query
+      let missingProfilesResponse;
+      
+      try {
+        if (profileIds.length === 0) {
+          // If no profiles, just get all fetchman profiles
+          missingProfilesResponse = await supabase
+            .from('fetchman_profiles')
+            .select('id, user_id');
+        } else {
+          // Find fetchman profiles without corresponding profiles using the array of IDs
+          missingProfilesResponse = await supabase
+            .from('fetchman_profiles')
+            .select('id, user_id')
+            .not('user_id', 'in', profileIds);
+        }
+        
+        const { data: missingProfiles, error: missingError } = missingProfilesResponse;
+          
+        if (missingError) {
+          console.error("Error checking for missing profiles:", missingError);
+          return { 
+            success: false, 
+            message: `Error checking for missing profiles: ${missingError.message}`,
+            error: missingError 
+          };
+        }
+        
+        if (missingProfiles && missingProfiles.length > 0) {
+          console.error(`Found ${missingProfiles.length} fetchman profiles without corresponding user profiles`);
+          return { 
+            success: false, 
+            message: `${missingProfiles.length} fetchman profiles have missing profile relations`,
+            missing: missingProfiles 
+          };
+        }
+      } catch (queryError) {
+        console.error("Error executing query for missing profiles:", queryError);
+        return {
+          success: false,
+          message: `Error in query execution: ${queryError.message || String(queryError)}`,
+          error: queryError
         };
       }
       

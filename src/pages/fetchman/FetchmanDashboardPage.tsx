@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useFetchmanProfile } from "@/hooks/useFetchmanProfile"; 
@@ -17,6 +16,7 @@ export default function FetchmanDashboardPage() {
   const { profile, isLoading, error, refetch } = useFetchmanProfile(user?.id);
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
   const [deliveryLoading, setDeliveryLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
 
   // Try to refresh if we encounter a relationship error
@@ -45,42 +45,90 @@ export default function FetchmanDashboardPage() {
       try {
         console.log("Fetching active deliveries for fetchman:", profile.id);
         
-        // Fix the query to use proper explicit aliases to avoid column conflicts
-        const { data, error } = await supabase
-          .from('fetchman_deliveries')
-          .select(`
-            *,
-            event:events(
-              id,
-              name,
-              description
-            ),
-            vendor:vendor_profiles(
-              id, 
-              company_name
-            )
-          `)
-          .eq('fetchman_id', profile.id)
-          .in('status', ['pending', 'accepted', 'in_progress'])
-          .order('scheduled_time', { ascending: true });
-        
-        if (error) {
-          console.error("Error fetching active deliveries:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load delivery data: " + error.message,
-            variant: "destructive",
-          });
-          return;
+        // Try first with foreign key relationship
+        try {
+          const { data, error } = await supabase
+            .from('fetchman_deliveries')
+            .select(`
+              *,
+              event:events(
+                id,
+                name,
+                description
+              ),
+              vendor:vendor_profiles(
+                id, 
+                company_name
+              )
+            `)
+            .eq('fetchman_id', profile.id)
+            .in('status', ['pending', 'accepted', 'in_progress'])
+            .order('scheduled_time', { ascending: true });
+          
+          if (error) {
+            console.warn("Foreign key relationship query failed, using fallback:", error);
+            throw error; // Throw to trigger the fallback
+          }
+          
+          console.log("Fetched deliveries with foreign key relationship:", data?.length || 0);
+          setActiveDeliveries(data || []);
         }
-        
-        console.log("Fetched deliveries:", data?.length || 0);
-        setActiveDeliveries(data || []);
+        catch (relationshipError) {
+          console.warn("Using fallback explicit join query instead");
+          
+          // Fallback to explicit join
+          const { data, error } = await supabase
+            .from('fetchman_deliveries')
+            .select(`
+              *,
+              event:events!inner(
+                id,
+                name,
+                description
+              ),
+              vendors:vendor_profiles!inner(
+                id, 
+                company_name
+              )
+            `)
+            .eq('fetchman_id', profile.id)
+            .in('status', ['pending', 'accepted', 'in_progress'])
+            .order('scheduled_time', { ascending: true });
+          
+          if (error) {
+            console.error("Explicit join query also failed:", error);
+            // Try to refresh the schema cache if we're still having issues
+            if (retryCount < 2 && error.message.includes("relationship between")) {
+              setRetryCount(prev => prev + 1);
+              
+              // Add a delay before retrying
+              setTimeout(() => {
+                console.log(`Retrying fetch (attempt ${retryCount + 1})...`);
+                fetchActiveDeliveries();
+              }, 2000);
+              return;
+            }
+            
+            throw error;
+          }
+          
+          // Transform the data to match the expected format
+          const transformedData = data?.map(item => {
+            return {
+              ...item,
+              // Rename vendors to vendor for consistency
+              vendor: item.vendors
+            };
+          }) || [];
+          
+          console.log("Fetched deliveries with explicit join:", transformedData.length);
+          setActiveDeliveries(transformedData);
+        }
       } catch (err) {
         console.error("Error fetching active deliveries:", err);
         toast({
           title: "Error",
-          description: "Failed to load deliveries: " + String(err),
+          description: "Failed to load delivery data: " + String(err),
           variant: "destructive",
         });
       } finally {
@@ -91,7 +139,7 @@ export default function FetchmanDashboardPage() {
     if (profile) {
       fetchActiveDeliveries();
     }
-  }, [user, profile]);
+  }, [user, profile, retryCount]);
 
   const getVerificationStatus = () => {
     // When loading

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAllFetchmanProfiles, FetchmanProfile } from "@/hooks/useAllFetchmanProfiles";
+import { useAllFetchmanProfiles } from "@/hooks/useAllFetchmanProfiles";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { 
@@ -52,7 +53,7 @@ import {
 } from "@/components/ui/table";
 
 export default function AdminFetchmanPage() {
-  const [selectedFetchman, setSelectedFetchman] = useState<FetchmanProfile | null>(null);
+  const [selectedFetchman, setSelectedFetchman] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [showBlacklistDialog, setShowBlacklistDialog] = useState(false);
   const [showPromoteDialog, setShowPromoteDialog] = useState(false);
@@ -102,7 +103,7 @@ export default function AdminFetchmanPage() {
     );
   });
 
-  const handleSelectFetchman = (fetchman: FetchmanProfile) => {
+  const handleSelectFetchman = (fetchman: any) => {
     setSelectedFetchman(fetchman);
   };
 
@@ -275,11 +276,11 @@ export default function AdminFetchmanPage() {
         </TabsContent>
         
         <TabsContent value="verification">
-          
+          {/* Verification queue content */}
         </TabsContent>
         
         <TabsContent value="assignments">
-          
+          {/* Assignments content */}
         </TabsContent>
       </Tabs>
       
@@ -927,4 +928,27 @@ export default function AdminFetchmanPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                placeholder="Type your message here"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMessageDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleSendMessage}
+              disabled={messageText.trim().length === 0}
+            >
+              Send Message
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

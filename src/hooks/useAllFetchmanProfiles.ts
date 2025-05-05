@@ -64,72 +64,33 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
       try {
         console.log("Fetching all fetchman profiles with filter:", filter);
         
-        // Try both query approaches
-        let queryResult;
+        // Always use explicit join for reliability
+        let queryBuilder = supabase
+          .from('fetchman_profiles')
+          .select(`
+            *,
+            profiles:profiles!inner(
+              id,
+              email,
+              name,
+              surname,
+              phone
+            )
+          `);
         
-        try {
-          // First attempt: Use the foreign key relationship
-          let query = supabase
-            .from('fetchman_profiles')
-            .select(`
-              *,
-              profiles(
-                id,
-                email,
-                name,
-                surname,
-                phone
-              )
-            `);
-          
-          // Apply filters if provided
-          if (filter?.status) {
-            query = query.eq('verification_status', filter.status);
-          }
-          
-          const { data, error } = await query;
-          
-          if (error) {
-            console.error("Error using foreign key relationship:", error);
-            throw error;
-          }
-          
-          queryResult = { data, useBackup: false };
-          console.log("Foreign key query successful, found profiles:", data?.length || 0);
-        } catch (relationshipError) {
-          console.warn("Foreign key relationship query failed, using fallback:", relationshipError);
-          
-          // Fallback: Use a join directly
-          let query = supabase
-            .from('fetchman_profiles')
-            .select(`
-              *,
-              profiles:profiles(
-                id,
-                email,
-                name,
-                surname,
-                phone
-              )
-            `);
-          
-          // Apply filters if provided
-          if (filter?.status) {
-            query = query.eq('verification_status', filter.status);
-          }
-          
-          const { data, error } = await query;
-          
-          if (error) {
-            console.error("Error in fallback profile fetch:", error);
-            throw error;
-          }
-          
-          queryResult = { data, useBackup: true };
-          console.log("Fallback query successful, found profiles:", data?.length || 0);
+        // Apply filters if provided
+        if (filter?.status) {
+          queryBuilder = queryBuilder.eq('verification_status', filter.status);
         }
         
-        const { data } = queryResult;
+        const { data, error } = await queryBuilder;
+        
+        if (error) {
+          console.error("Error in fetchman profile query:", error);
+          throw error;
+        }
+        
+        console.log("Explicit join query successful, found profiles:", data?.length || 0);
         
         // Process each profile to ensure user exists or is null
         const processedData = (data || []).map(profile => {
@@ -227,279 +188,64 @@ export function useAllFetchmanProfiles(filter?: { status?: string }) {
         };
       }
       
-      // Get all profile IDs first
-      const { data: profilesData, error: profileIdsError } = await supabase
-        .from('profiles')
-        .select('id');
+      // Test the join directly with an explicit inner join
+      const { data: joinTestData, error: joinTestError } = await supabase
+        .from('fetchman_profiles')
+        .select(`
+          id,
+          user_id,
+          profiles:profiles!inner(id)
+        `)
+        .limit(1);
       
-      if (profileIdsError) {
-        console.error("Error fetching profile IDs:", profileIdsError);
+      if (joinTestError) {
+        console.error("Error testing join relationship:", joinTestError);
+        return { 
+          success: false, 
+          message: `Error testing join relationship: ${joinTestError.message}`, 
+          error: joinTestError 
+        };
+      }
+      
+      // Check for orphaned records
+      const { data: orphanedData, error: orphanedError } = await supabase
+        .from('fetchman_profiles')
+        .select('id, user_id')
+        .not('user_id', 'in', '(SELECT id FROM profiles)')
+        .limit(5);
+      
+      if (orphanedError) {
+        console.warn("Error checking for orphaned records:", orphanedError);
+      }
+      
+      if (orphanedData && orphanedData.length > 0) {
         return {
           success: false,
-          message: `Error fetching profile IDs: ${profileIdsError.message}`,
-          error: profileIdsError
+          message: `Found ${orphanedData.length} fetchman profiles without corresponding user profiles. Run the repair tool to fix.`,
+          orphanedData
         };
       }
       
-      // Create an array of profile IDs or use empty array if no profiles found
-      // Enhanced validation to ensure profileIds is ALWAYS an array
-      let profileIds: string[] = [];
-      
-      if (profilesData && Array.isArray(profilesData) && profilesData.length > 0) {
-        profileIds = profilesData.map(p => p.id);
-        console.log(`Got ${profileIds.length} profile IDs. First few:`, profileIds.slice(0, 3));
-      } else {
-        console.log("No profile IDs found or not in array format, using empty array");
-      }
-      
-      // Double check that profileIds is an array to avoid the filter parsing error
-      if (!Array.isArray(profileIds)) {
-        console.warn("profileIds was not an array after processing, converting:", profileIds);
-        profileIds = profileIds ? [profileIds] : [];
-      }
-      
-      // Edge case: if there's only one ID, we need special handling for the query
-      let missingProfilesResponse;
-      
-      try {
-        if (profileIds.length === 0) {
-          // If no profiles, just get all fetchman profiles
-          console.log("No profiles found, fetching all fetchman profiles");
-          missingProfilesResponse = await supabase
-            .from('fetchman_profiles')
-            .select('id, user_id');
-            
-          console.log("Query executed with no profile filter");
-        } else if (profileIds.length === 1) {
-          // Special case for a single profile ID to avoid parsing errors
-          console.log("Only one profile found, using eq/neq instead of in/not in");
-          missingProfilesResponse = await supabase
-            .from('fetchman_profiles')
-            .select('id, user_id')
-            .neq('user_id', profileIds[0]);
-            
-          console.log(`Query executed with neq filter for single ID: ${profileIds[0]}`);
-        } else {
-          // Normal case with multiple profile IDs
-          console.log(`Using 'not in' filter with ${profileIds.length} IDs`);
-          missingProfilesResponse = await supabase
-            .from('fetchman_profiles')
-            .select('id, user_id')
-            .not('user_id', 'in', profileIds);
-            
-          console.log("Query executed with 'not in' filter for multiple IDs");
-        }
-        
-        const { data: missingProfiles, error: missingError } = missingProfilesResponse;
-          
-        if (missingError) {
-          console.error("Error checking for missing profiles:", missingError);
-          return { 
-            success: false, 
-            message: `Error checking for missing profiles: ${missingError.message}`,
-            error: missingError 
-          };
-        }
-        
-        if (missingProfiles && missingProfiles.length > 0) {
-          console.error(`Found ${missingProfiles.length} fetchman profiles without corresponding user profiles`);
-          return { 
-            success: false, 
-            message: `${missingProfiles.length} fetchman profiles have missing profile relations`,
-            missing: missingProfiles 
-          };
-        }
-      } catch (queryError) {
-        console.error("Error executing query for missing profiles:", queryError);
-        return {
-          success: false,
-          message: `Error in query execution: ${queryError.message || String(queryError)}`,
-          error: queryError
-        };
-      }
-      
-      // If no issues found, test the foreign key or join queries
-      try {
-        // First attempt: Test using the foreign key relationship
-        const { data, error } = await supabase
-          .from('fetchman_profiles')
-          .select(`
-            id,
-            user_id,
-            profiles(
-              id,
-              email,
-              name,
-              surname
-            )
-          `)
-          .limit(5); // Just check a few to verify
-          
-        if (error) {
-          console.error("Foreign key test failed:", error);
-          throw error;
-        }
-        
-        if (!data || data.length === 0) {
-          return { 
-            success: false, 
-            message: "No fetchman profiles found" 
-          };
-        }
-        
-        return { 
-          success: true, 
-          message: `Relationship test passed for ${data.length} profiles using foreign key`, 
-          data 
-        };
-      }
-      catch (relationshipError) {
-        console.warn("Foreign key relationship test failed, trying join:", relationshipError);
-        
-        // Fallback: Test using explicit join
-        const { data, error } = await supabase
-          .from('fetchman_profiles')
-          .select(`
-            id,
-            user_id,
-            profiles:profiles(
-              id,
-              email,
-              name,
-              surname
-            )
-          `)
-          .limit(5);
-          
-        if (error) {
-          return { 
-            success: false, 
-            message: `Join relationship test failed: ${error.message}`,
-            error 
-          };
-        }
-        
-        if (!data || data.length === 0) {
-          return { 
-            success: false, 
-            message: "No fetchman profiles found" 
-          };
-        }
-        
-        return { 
-          success: true, 
-          message: `Relationship test passed for ${data.length} profiles using explicit join`, 
-          data 
-        };
-      }
+      return {
+        success: true,
+        message: "The relationship between fetchman_profiles and profiles is working correctly."
+      };
     } catch (error: any) {
+      console.error("Error testing relationship:", error);
       return { 
         success: false, 
-        message: `Test error: ${error.message || String(error)}`,
+        message: `Unexpected error testing relationship: ${error.message || String(error)}`, 
         error 
       };
     }
   };
-  
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ fetchmanId, action, reason }: { fetchmanId: string; action: 'suspend' | 'reinstate' | 'blacklist'; reason?: string }) => {
-      return UserService.updateFetchmanStatus(fetchmanId, action, reason);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-fetchman-profiles"] });
-      toast({
-        title: "Status Updated",
-        description: "Fetchman status was successfully updated."
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update status",
-        variant: "destructive",
-      });
-    }
-  });
-  
-  const promoteMutation = useMutation({
-    mutationFn: ({ fetchmanId, newRole, notes }: { fetchmanId: string; newRole: string; notes?: string }) => {
-      return UserService.promoteFetchman(fetchmanId, newRole, notes);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-fetchman-profiles"] });
-      toast({
-        title: "Fetchman Promoted",
-        description: "Fetchman was successfully promoted to the new role."
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Promotion Failed",
-        description: error.message || "Failed to promote fetchman",
-        variant: "destructive",
-      });
-    }
-  });
-  
-  const createAssignmentMutation = useMutation({
-    mutationFn: (assignmentData: {
-      fetchmanId: string;
-      entityType: "event" | "vendor" | "host";
-      entityId: string;
-      startDate: string;
-      endDate: string;
-      notes?: string;
-      briefUrl?: string;
-    }) => {
-      // Get admin user ID
-      return supabase.auth.getSession()
-        .then(({ data }) => {
-          const adminId = data.session?.user.id;
-          
-          if (!adminId) {
-            throw new Error("No admin ID available for assignment creation");
-          }
-          
-          return UserService.createFetchmanAssignment({
-            fetchmanId: assignmentData.fetchmanId,
-            assignedBy: adminId,
-            entityType: assignmentData.entityType,
-            entityId: assignmentData.entityId,
-            startDate: assignmentData.startDate,
-            endDate: assignmentData.endDate,
-            notes: assignmentData.notes,
-            briefUrl: assignmentData.briefUrl
-          });
-        });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-fetchman-assignments"] });
-      toast({
-        title: "Assignment Created",
-        description: "Assignment was successfully created and notification sent."
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Assignment Failed",
-        description: error.message || "Failed to create assignment",
-        variant: "destructive",
-      });
-    }
-  });
-  
+
   return {
-    fetchmen: query.data || [],
+    data: query.data,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
-    updateStatus: updateStatusMutation.mutate,
-    isUpdatingStatus: updateStatusMutation.isPending,
-    testProfilesRelationship,
-    promote: promoteMutation.mutate,
-    isPromoting: promoteMutation.isPending,
-    createAssignment: createAssignmentMutation.mutate,
-    isCreatingAssignment: createAssignmentMutation.isPending
+    testProfilesRelationship
   };
 }

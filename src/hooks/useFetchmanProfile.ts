@@ -25,62 +25,26 @@ export function useFetchmanProfile(userId?: string) {
         // First check if profile exists, if not, try to create it
         await ensureProfileExists(targetUserId);
         
-        // Check if we can use the foreign key relationship
-        let queryResult;
+        // Always use explicit join with LEFT JOIN for reliability
+        const { data, error } = await supabase
+          .from('fetchman_profiles')
+          .select(`
+            *,
+            profiles:profiles!inner(
+              id,
+              email,
+              name, 
+              surname,
+              phone
+            )
+          `)
+          .eq('user_id', targetUserId)
+          .maybeSingle();
         
-        try {
-          // First attempt: Use the foreign key relationship
-          const { data, error } = await supabase
-            .from('fetchman_profiles')
-            .select(`
-              *,
-              profiles(
-                id,
-                email,
-                name, 
-                surname,
-                phone
-              )
-            `)
-            .eq('user_id', targetUserId)
-            .maybeSingle();
-          
-          if (error) {
-            console.error("Error using foreign key relationship:", error);
-            throw error;
-          }
-          
-          queryResult = { data, useBackup: false };
-          console.log("Foreign key query result:", data);
-        } catch (relationshipError) {
-          console.warn("Foreign key relationship query failed, using fallback:", relationshipError);
-          
-          // Fallback: Use a join directly
-          const { data, error } = await supabase
-            .from('fetchman_profiles')
-            .select(`
-              *,
-              profiles:profiles(
-                id,
-                email,
-                name, 
-                surname,
-                phone
-              )
-            `)
-            .eq('user_id', targetUserId)
-            .maybeSingle();
-          
-          if (error) {
-            console.error("Error in fallback profile fetch:", error);
-            throw error;
-          }
-          
-          queryResult = { data, useBackup: true };
-          console.log("Fallback query result:", data);
+        if (error) {
+          console.error("Error fetching fetchman profile:", error);
+          throw error;
         }
-        
-        const { data } = queryResult;
         
         if (!data) {
           console.log("No fetchman profile found for user:", targetUserId);
@@ -219,106 +183,55 @@ export function useFetchmanProfile(userId?: string) {
         };
       }
       
-      // Try both relationship styles to see which one works
-      try {
-        // Use the foreign key relationship
-        const { data, error } = await supabase
-          .from('fetchman_profiles')
-          .select(`
+      // Always use explicit join for reliability
+      const { data, error } = await supabase
+        .from('fetchman_profiles')
+        .select(`
+          id,
+          profiles:profiles!inner(
             id,
-            profiles(
-              id,
-              email,
-              name,
-              surname
-            )
-          `)
-          .eq('user_id', targetUserId)
-          .maybeSingle();
-          
-        if (error) {
-          console.error("Foreign key test failed:", error);
-          throw error;
-        }
+            email,
+            name,
+            surname
+          )
+        `)
+        .eq('user_id', targetUserId)
+        .maybeSingle();
         
-        if (!data) {
-          return { 
-            success: false, 
-            message: "No fetchman profile found for this user" 
-          };
-        }
-        
-        // Check if profile relation exists
-        if (!data.profiles || (
-          data.profiles && 
-          typeof data.profiles === 'object' && 
-          Object.keys(data.profiles).length === 0
-        )) {
-          return { 
-            success: false, 
-            message: "Fetchman profile found, but profile relation is missing" 
-          };
-        }
-        
+      if (error) {
+        console.error("Relationship test failed:", error);
         return { 
-          success: true, 
-          message: "Relationship test passed using foreign key", 
-          data 
+          success: false, 
+          message: `Relationship test failed: ${error.message}`,
+          error 
         };
       }
-      catch (relationshipError) {
-        console.warn("Foreign key relationship test failed, trying join:", relationshipError);
-        
-        // Try with explicit join
-        const { data, error } = await supabase
-          .from('fetchman_profiles')
-          .select(`
-            id,
-            profiles:profiles!inner(
-              id,
-              email,
-              name,
-              surname
-            )
-          `)
-          .eq('user_id', targetUserId)
-          .maybeSingle();
-          
-        if (error) {
-          console.error("Join relationship test failed:", error);
-          return { 
-            success: false, 
-            message: `Join relationship test failed: ${error.message}`,
-            error 
-          };
-        }
-        
-        if (!data) {
-          return { 
-            success: false, 
-            message: "No fetchman profile found for this user" 
-          };
-        }
-        
-        // Check if profile relation exists
-        if (!data.profiles || (
-          data.profiles && 
-          typeof data.profiles === 'object' && 
-          Array.isArray(data.profiles) && 
-          data.profiles.length === 0
-        )) {
-          return { 
-            success: false, 
-            message: "Fetchman profile found, but profile relation is missing" 
-          };
-        }
-        
+      
+      if (!data) {
         return { 
-          success: true, 
-          message: "Relationship test passed using explicit join", 
-          data 
+          success: false, 
+          message: "No fetchman profile found for this user" 
         };
       }
+      
+      // Check if profile relation exists
+      if (!data.profiles || (
+        data.profiles && 
+        typeof data.profiles === 'object' && 
+        Array.isArray(data.profiles) && 
+        data.profiles.length === 0
+      )) {
+        return { 
+          success: false, 
+          message: "Fetchman profile found, but profile relation is missing" 
+        };
+      }
+      
+      return { 
+        success: true, 
+        message: "Relationship test passed using explicit join", 
+        data 
+      };
     } catch (error: any) {
       return { 
         success: false, 

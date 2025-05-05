@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -254,188 +255,188 @@ export default function AdminCMSPage() {
                 Media
               </TabsTrigger>
             </TabsList>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={`Search ${activeTab}...`}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+          </Tabs>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={`Search ${activeTab}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
             </div>
+          </div>
 
-            <TabsContent value="pages" className="mt-0">
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Slug</TableHead>
-                      <TableHead>Last Updated</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Author</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredContent().map((page: any) => (
-                      <TableRow key={page.id}>
-                        <TableCell className="font-medium">{page.title}</TableCell>
-                        <TableCell>{page.slug}</TableCell>
-                        <TableCell>{new Date(page.lastUpdated).toLocaleString()}</TableCell>
-                        <TableCell>{getStatusBadge(page.status)}</TableCell>
-                        <TableCell>{page.author}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditContent(page.id)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handlePreviewContent(page.slug)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(page.id)}>
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="blog" className="mt-0">
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Last Updated</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Author</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredContent().map((post: any) => (
-                      <TableRow key={post.id}>
-                        <TableCell className="font-medium">{post.title}</TableCell>
-                        <TableCell>{post.category}</TableCell>
-                        <TableCell>{new Date(post.lastUpdated).toLocaleString()}</TableCell>
-                        <TableCell>{getStatusBadge(post.status)}</TableCell>
-                        <TableCell>{post.author}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditContent(post.id)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handlePreviewContent(post.slug)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(post.id)}>
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="media" className="mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredContent().map((item: any) => (
-                  <Card key={item.id} className="overflow-hidden">
-                    <div className="aspect-video bg-muted flex items-center justify-center">
-                      {item.type.startsWith('image/') ? (
-                        <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
-                      ) : item.type === 'application/pdf' ? (
-                        <FileText className="h-12 w-12 text-gray-400" />
-                      ) : item.type.startsWith('video/') ? (
-                        <div className="w-full h-full bg-black flex items-center justify-center">
-                          <AlertCircle className="h-12 w-12 text-gray-400" />
+          <TabsContent value="pages" className="mt-0">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Author</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredContent().map((page: any) => (
+                    <TableRow key={page.id}>
+                      <TableCell className="font-medium">{page.title}</TableCell>
+                      <TableCell>{page.slug}</TableCell>
+                      <TableCell>{new Date(page.lastUpdated).toLocaleString()}</TableCell>
+                      <TableCell>{getStatusBadge(page.status)}</TableCell>
+                      <TableCell>{page.author}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditContent(page.id)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handlePreviewContent(page.slug)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(page.id)}>
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
                         </div>
-                      ) : (
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="blog" className="mt-0">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Author</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredContent().map((post: any) => (
+                    <TableRow key={post.id}>
+                      <TableCell className="font-medium">{post.title}</TableCell>
+                      <TableCell>{post.category}</TableCell>
+                      <TableCell>{new Date(post.lastUpdated).toLocaleString()}</TableCell>
+                      <TableCell>{getStatusBadge(post.status)}</TableCell>
+                      <TableCell>{post.author}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditContent(post.id)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handlePreviewContent(post.slug)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(post.id)}>
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="media" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredContent().map((item: any) => (
+                <Card key={item.id} className="overflow-hidden">
+                  <div className="aspect-video bg-muted flex items-center justify-center">
+                    {item.type.startsWith('image/') ? (
+                      <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                    ) : item.type === 'application/pdf' ? (
+                      <FileText className="h-12 w-12 text-gray-400" />
+                    ) : item.type.startsWith('video/') ? (
+                      <div className="w-full h-full bg-black flex items-center justify-center">
                         <AlertCircle className="h-12 w-12 text-gray-400" />
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-medium truncate" title={item.name}>{item.name}</h3>
-                          <p className="text-sm text-muted-foreground">{item.size} • {item.type}</p>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(item.id)}>
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(item.uploaded).toLocaleDateString()}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            {filteredContent().length === 0 && (
-              <div className="flex flex-col items-center justify-center py-8">
-                <AlertCircle className="h-12 w-12 text-muted-foreground mb-2" />
-                <p className="text-lg font-medium">No content found</p>
-                <p className="text-sm text-muted-foreground">
-                  {searchTerm ? "Try adjusting your search term" : `No ${activeTab} available`}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Content Statistics</CardTitle>
-            <CardDescription>Overview of your website content</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <FileText className="h-8 w-8 text-blue-500 mr-4" />
-                  <div>
-                    <p className="text-2xl font-bold">{pages.length}</p>
-                    <p className="text-sm text-muted-foreground">Total Pages</p>
+                    ) : (
+                      <AlertCircle className="h-12 w-12 text-gray-400" />
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Globe className="h-8 w-8 text-green-500 mr-4" />
-                  <div>
-                    <p className="text-2xl font-bold">{blogPosts.length}</p>
-                    <p className="text-sm text-muted-foreground">Blog Posts</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Image className="h-8 w-8 text-purple-500 mr-4" />
-                  <div>
-                    <p className="text-2xl font-bold">{mediaItems.length}</p>
-                    <p className="text-sm text-muted-foreground">Media Files</p>
-                  </div>
-                </CardContent>
-              </Card>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium truncate" title={item.name}>{item.name}</h3>
+                        <p className="text-sm text-muted-foreground">{item.size} • {item.type}</p>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(item.id)}>
+                        <TrashIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {new Date(item.uploaded).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    
+          </TabsContent>
+
+          {filteredContent().length === 0 && (
+            <div className="flex flex-col items-center justify-center py-8">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mb-2" />
+              <p className="text-lg font-medium">No content found</p>
+              <p className="text-sm text-muted-foreground">
+                {searchTerm ? "Try adjusting your search term" : `No ${activeTab} available`}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Content Statistics</CardTitle>
+          <CardDescription>Overview of your website content</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4 flex items-center">
+                <FileText className="h-8 w-8 text-blue-500 mr-4" />
+                <div>
+                  <p className="text-2xl font-bold">{pages.length}</p>
+                  <p className="text-sm text-muted-foreground">Total Pages</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center">
+                <Globe className="h-8 w-8 text-green-500 mr-4" />
+                <div>
+                  <p className="text-2xl font-bold">{blogPosts.length}</p>
+                  <p className="text-sm text-muted-foreground">Blog Posts</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center">
+                <Image className="h-8 w-8 text-purple-500 mr-4" />
+                <div>
+                  <p className="text-2xl font-bold">{mediaItems.length}</p>
+                  <p className="text-sm text-muted-foreground">Media Files</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

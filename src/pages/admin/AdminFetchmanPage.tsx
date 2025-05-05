@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -80,6 +79,7 @@ export default function AdminFetchmanPage() {
     blacklisted: <Badge className="bg-red-500">Blacklisted</Badge>,
   };
 
+  // Call useAllFetchmanProfiles with statusFilter
   const { 
     fetchmen, 
     isLoading: isLoadingFetchmen, 
@@ -109,8 +109,8 @@ export default function AdminFetchmanPage() {
   const handleBlacklist = async () => {
     if (selectedFetchman) {
       await updateStatus({
-        fetchmanId: selectedFetchman.id,
-        action: "blacklist",
+        id: selectedFetchman.id,
+        status: "blacklisted",
         reason: blacklistReason
       });
       setShowBlacklistDialog(false);
@@ -121,8 +121,8 @@ export default function AdminFetchmanPage() {
   const handlePromote = async () => {
     if (selectedFetchman) {
       await promote({
-        fetchmanId: selectedFetchman.id,
-        newRole: promotionData.newRole,
+        id: selectedFetchman.id,
+        role: promotionData.newRole,
         notes: promotionData.notes
       });
       setShowPromoteDialog(false);
@@ -134,8 +134,8 @@ export default function AdminFetchmanPage() {
     if (selectedFetchman) {
       await createAssignment({
         fetchmanId: selectedFetchman.id,
-        entityType: assignmentData.entityType,
         entityId: assignmentData.entityId,
+        entityType: assignmentData.entityType,
         startDate: assignmentData.startDate,
         endDate: assignmentData.endDate,
         notes: assignmentData.notes
@@ -275,11 +275,11 @@ export default function AdminFetchmanPage() {
         </TabsContent>
         
         <TabsContent value="verification">
-          {/* ... keep existing code (verification queue content) */}
+          
         </TabsContent>
         
         <TabsContent value="assignments">
-          {/* ... keep existing code (assignments content) */}
+          
         </TabsContent>
       </Tabs>
       
@@ -477,8 +477,8 @@ export default function AdminFetchmanPage() {
                               variant="destructive" 
                               size="sm"
                               onClick={() => updateStatus({
-                                fetchmanId: selectedFetchman.id,
-                                action: "suspend"
+                                id: selectedFetchman.id,
+                                status: "suspend"
                               })}
                               disabled={isUpdatingStatus}
                             >
@@ -492,8 +492,8 @@ export default function AdminFetchmanPage() {
                               variant="outline" 
                               size="sm"
                               onClick={() => updateStatus({
-                                fetchmanId: selectedFetchman.id,
-                                action: "reinstate"
+                                id: selectedFetchman.id,
+                                status: "reinstate"
                               })}
                               disabled={isUpdatingStatus}
                             >
@@ -927,29 +927,4 @@ export default function AdminFetchmanPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="message-text">Message</Label>
-              <Textarea
-                id="message-text"
-                placeholder="Type your message here"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                rows={4}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMessageDialog(false)}>Cancel</Button>
-            <Button 
-              variant="default" 
-              onClick={handleSendMessage}
-              disabled={messageText.trim().length === 0}
-            >
-              Send Message
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+            <div className="space-y

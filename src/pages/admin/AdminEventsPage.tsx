@@ -12,6 +12,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
+interface Host {
+  name?: string;
+  surname?: string;
+  email?: string;
+}
+
+interface Event {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date?: string;
+  status: string;
+  host?: Host | null;
+}
+
 export default function AdminEventsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +43,7 @@ export default function AdminEventsPage() {
         .order('start_date', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as Event[];
     }
   });
 

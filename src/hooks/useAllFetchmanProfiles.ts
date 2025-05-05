@@ -5,12 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { FetchmanProfile } from '@/types/fetchman';
 import { useToast } from '@/components/ui/use-toast';
 
-export const useAllFetchmanProfiles = () => {
+export type { FetchmanProfile };  // Export the type
+
+export const useAllFetchmanProfiles = (filters?: { status?: string }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const fetchProfiles = async (): Promise<FetchmanProfile[]> => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('fetchman_profiles')
       .select(`
         *,
@@ -18,13 +20,20 @@ export const useAllFetchmanProfiles = () => {
       `)
       .order('created_at', { ascending: false });
     
+    // Apply filters if provided
+    if (filters?.status) {
+      query = query.eq('verification_status', filters.status);
+    }
+    
+    const { data, error } = await query;
+    
     if (error) throw error;
     return data || [];
   };
 
   // Mutation for updating fetchman status
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, reason }: { id: string; status: string; reason?: string }) => {
       const { data, error } = await supabase
         .from('fetchman_profiles')
         .update({ verification_status: status })
@@ -110,12 +119,15 @@ export const useAllFetchmanProfiles = () => {
       fetchmanId: string;
       entityId: string;
       entityType: string;
-      startDate: Date;
-      endDate: Date;
+      startDate: string | Date;
+      endDate: string | Date;
       notes?: string;
     }) => {
       const { data: userId } = await supabase.auth.getUser();
       if (!userId.user) throw new Error('User not authenticated');
+      
+      const start = typeof startDate === 'string' ? startDate : startDate.toISOString();
+      const end = typeof endDate === 'string' ? endDate : endDate.toISOString();
       
       const { data, error } = await supabase
         .from('fetchman_assignments')
@@ -123,8 +135,8 @@ export const useAllFetchmanProfiles = () => {
           fetchman_id: fetchmanId,
           entity_id: entityId,
           entity_type: entityType,
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
+          start_date: start,
+          end_date: end,
           assigned_by: userId.user.id,
           notes,
           status: 'upcoming',

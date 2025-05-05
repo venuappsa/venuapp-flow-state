@@ -33,6 +33,8 @@ import AdminHostsPage from "@/pages/admin/AdminHostsPage";
 import AdminMerchantsPage from "@/pages/admin/AdminMerchantsPage";
 import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
 import AdminNotificationSettingsPage from "@/pages/admin/AdminNotificationSettingsPage";
+import AdminUsersPage from "@/pages/AdminUsersPage";
+import AdminEventsPage from "@/pages/admin/AdminEventsPage";
 import Index from "@/pages/Index";
 import AuthPage from "@/pages/AuthPage";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -60,17 +62,31 @@ function App() {
         {/* Admin routes */}
         <Route path="/admin" element={<AdminPanelLayout />}>
           <Route index element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
           <Route path="hosts" element={<AdminHostsPage />} />
           <Route path="merchants" element={<AdminMerchantsPage />} />
+          <Route path="events" element={<AdminEventsPage />} />
           <Route path="vendors/performance" element={<AdminVendorPerformancePage />} />
           <Route path="payments" element={<AdminPaymentsPage />} />
           <Route path="fetchman" element={<AdminFetchmanPage />} />
           <Route path="messages" element={<AdminMessagesPage />} />
           <Route path="notifications" element={<AdminNotificationsPage />} />
           <Route path="notification-settings" element={<AdminNotificationSettingsPage />} />
+          <Route path="analytics" element={<ComingSoonPage title="Analytics" />} />
+          <Route path="reports" element={<ComingSoonPage title="Reports" />} />
+          <Route path="subscriptions" element={<ComingSoonPage title="Subscriptions" />} />
+          <Route path="cms" element={<ComingSoonPage title="Content Management" />} />
+          <Route path="website" element={<ComingSoonPage title="Website" />} />
+          <Route path="support" element={<ComingSoonPage title="Support Tickets" />} />
+          <Route path="system" element={<ComingSoonPage title="System Status" />} />
+          <Route path="platform" element={<ComingSoonPage title="Platform Settings" />} />
+          <Route path="settings" element={<ComingSoonPage title="Settings" />} />
           
           {/* Legacy route support - redirect /admin/dashboard to /admin */}
           <Route path="dashboard" element={<Navigate to="/admin" replace />} />
+          
+          {/* Catch-all route for admin panel to prevent 404s */}
+          <Route path="*" element={<NotFound />} />
         </Route>
         
         {/* Fetchman routes */}
@@ -104,5 +120,16 @@ function App() {
     </QueryClientProvider>
   );
 }
+
+// Create a simple ComingSoonPage component for routes that are not yet implemented
+const ComingSoonPage = ({ title }: { title: string }) => {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8">
+      <h1 className="text-2xl font-bold mb-4">{title}</h1>
+      <p className="text-gray-500 mb-4">This page is coming soon!</p>
+      <p className="text-sm text-gray-400">We're working hard to make this feature available.</p>
+    </div>
+  );
+};
 
 export default App;

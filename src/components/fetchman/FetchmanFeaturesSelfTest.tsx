@@ -140,8 +140,10 @@ export function FetchmanFeaturesSelfTest() {
       const relationshipTest = await fetchmanProfilesHook.testProfilesRelationship();
       addResult('Profiles relationship test', relationshipTest.success, relationshipTest.message);
       
-      if (relationshipTest.success) {
-        addResult('Profiles data check', true, `Successfully fetched ${relationshipTest.data.length} profiles`);
+      if (relationshipTest.success && relationshipTest.orphanedData) {
+        addResult('Profiles data check', true, `Found ${relationshipTest.orphanedData.length} orphaned profiles`);
+      } else if (relationshipTest.success) {
+        addResult('Profiles data check', true, 'No orphaned profiles found');
       }
       
       // Check for any query errors

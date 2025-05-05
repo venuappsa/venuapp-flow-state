@@ -17,22 +17,99 @@ export default function FetchmanDashboardPage() {
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([]);
   const [deliveryLoading, setDeliveryLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const [repairingProfile, setRepairingProfile] = useState(false);
   const navigate = useNavigate();
+
+  // Function to create missing profile if needed
+  const createMissingProfile = async () => {
+    if (!user?.id || !profile) return false;
+    
+    try {
+      setRepairingProfile(true);
+      console.log("Attempting to create missing profile for user:", user.id);
+      
+      // Check if a profile exists first
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+      
+      // If profile already exists, no need to create it
+      if (existingProfile) {
+        console.log("Profile already exists, no need to create a new one");
+        setRepairingProfile(false);
+        return true;
+      }
+      
+      // Get user data from auth to create profile
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !userData.user) {
+        console.error("Failed to get user data:", userError);
+        setRepairingProfile(false);
+        return false;
+      }
+      
+      // Create the missing profile
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: userData.user.email || '',
+          name: userData.user.user_metadata?.name || null,
+          surname: userData.user.user_metadata?.surname || null
+        });
+        
+      if (insertError) {
+        console.error("Failed to create missing profile:", insertError);
+        toast({
+          title: "Profile Creation Failed",
+          description: "Could not create missing profile. Please contact support.",
+          variant: "destructive",
+        });
+        setRepairingProfile(false);
+        return false;
+      }
+      
+      console.log("Successfully created missing profile");
+      toast({
+        title: "Profile Created",
+        description: "Missing profile has been created successfully.",
+      });
+      
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+      
+      return true;
+    } catch (err) {
+      console.error("Error in createMissingProfile:", err);
+      return false;
+    } finally {
+      setRepairingProfile(false);
+    }
+  };
 
   // Try to refresh if we encounter a relationship error
   useEffect(() => {
     if (error) {
       const errorString = String(error);
       if (errorString.includes("relationship between") && errorString.includes("profiles")) {
-        console.log("Detected relationship error, will retry after delay", error);
+        console.log("Detected relationship error, attempting to create missing profile", error);
         
-        // Wait a bit and retry
-        const timer = setTimeout(() => {
-          console.log("Retrying fetchman profile fetch after relationship error");
-          refetch();
-        }, 2000);
-        
-        return () => clearTimeout(timer);
+        // Try to create the missing profile
+        createMissingProfile().then(success => {
+          if (!success) {
+            // If profile creation failed, retry after delay as fallback
+            const timer = setTimeout(() => {
+              console.log("Retrying fetchman profile fetch after relationship error");
+              refetch();
+            }, 2000);
+            
+            return () => clearTimeout(timer);
+          }
+        });
       }
     }
   }, [error, refetch]);
@@ -143,15 +220,42 @@ export default function FetchmanDashboardPage() {
       );
     }
     
+    // When there's a relationship error and we're repairing the profile
+    if (repairingProfile) {
+      return (
+        <Alert className="mb-6 border-blue-500 bg-blue-50">
+          <Clock className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-700">Repairing Profile</AlertTitle>
+          <AlertDescription className="text-blue-600">
+            We're fixing your profile relationship. This will only take a moment...
+          </AlertDescription>
+        </Alert>
+      );
+    }
+    
     // When there's an error
     if (error) {
+      const errorString = String(error);
+      const isRelationshipError = errorString.includes("relationship between") && errorString.includes("profiles");
+      
       return (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error Loading Profile</AlertTitle>
           <AlertDescription>
-            We encountered an error loading your profile: {String(error)}
-            <div className="mt-2">
+            {isRelationshipError ? 
+              "We're experiencing an issue with your profile relationship. Please try refreshing the page." :
+              `Error loading your profile: ${errorString}`
+            }
+            <div className="mt-2 flex gap-2">
+              {isRelationshipError && (
+                <Button 
+                  onClick={createMissingProfile}
+                  disabled={repairingProfile}
+                >
+                  {repairingProfile ? "Fixing..." : "Fix Profile"}
+                </Button>
+              )}
               <Button onClick={() => navigate('/fetchman/onboarding')}>
                 Complete Onboarding
               </Button>

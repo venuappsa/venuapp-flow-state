@@ -23,7 +23,6 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminFetchmanPage from "./pages/admin/AdminFetchmanPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
-import { ScrollToTop } from "./components/utils/ScrollToTop";
 import Index from "./pages/Index";
 
 function App() {
@@ -96,7 +95,6 @@ function App() {
       storageKey="venu-theme"
       attribute="class"
     >
-      <ScrollToTop />
       <RouterProvider router={router} />
     </ThemeProvider>
   );

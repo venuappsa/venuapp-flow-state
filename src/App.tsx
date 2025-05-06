@@ -101,7 +101,7 @@ function App() {
 
   return (
     <ThemeProvider
-      defaultTheme="system"
+      defaultTheme="light"
       storageKey="venu-theme"
       attribute="class"
     >

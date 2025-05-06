@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserDeletionManager } from "@/components/admin/UserDeletionManager";
+import { cn } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -43,6 +44,12 @@ interface User {
   created_at: string;
   role: string;
   status: string | null;
+}
+
+// Define the response type for our query
+interface UsersResponse {
+  users: User[];
+  totalCount: number;
 }
 
 export default function AdminUsersPage() {
@@ -69,7 +76,7 @@ export default function AdminUsersPage() {
     setSearchParams(params);
   }, [searchTerm, currentPage, sortField, sortOrder, activeTab, setSearchParams]);
 
-  const { data: users = [], isLoading, error, refetch } = useQuery({
+  const { data: usersResponse, isLoading, error, refetch } = useQuery<UsersResponse>({
     queryKey: ['admin-users', currentPage, sortField, sortOrder],
     queryFn: async () => {
       console.log(`Fetching users for admin panel (page ${currentPage}, sort by ${sortField} ${sortOrder})...`);
@@ -176,14 +183,17 @@ export default function AdminUsersPage() {
     }
   });
 
-  const totalPages = Math.ceil((users?.totalCount || 0) / itemsPerPage);
+  // Safely access the response data
+  const users = usersResponse?.users || [];
+  const totalCount = usersResponse?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
   
-  const filteredUsers = users?.users?.filter(user =>
+  const filteredUsers = users.filter(user =>
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.surname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  );
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -455,9 +465,8 @@ export default function AdminUsersPage() {
                         <PaginationContent>
                           <PaginationItem>
                             <PaginationPrevious 
-                              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                              disabled={currentPage === 1}
-                              className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                              onClick={currentPage === 1 ? undefined : () => setCurrentPage(p => Math.max(1, p - 1))}
+                              className={cn(currentPage === 1 && "pointer-events-none opacity-50")}
                             />
                           </PaginationItem>
                           
@@ -516,9 +525,8 @@ export default function AdminUsersPage() {
                           
                           <PaginationItem>
                             <PaginationNext 
-                              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                              disabled={currentPage === totalPages}
-                              className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                              onClick={currentPage === totalPages ? undefined : () => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                              className={cn(currentPage === totalPages && "pointer-events-none opacity-50")}
                             />
                           </PaginationItem>
                         </PaginationContent>

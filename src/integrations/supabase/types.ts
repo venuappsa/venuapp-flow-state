@@ -1058,6 +1058,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_foreign_key_constraints: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      check_trigger_exists: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_fetchman_with_profile: {
         Args: { fetchman_id: string }
         Returns: {

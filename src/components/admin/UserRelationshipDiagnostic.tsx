@@ -32,6 +32,16 @@ interface OrphanedProfile {
   profiles: null;
 }
 
+// Define a type for auth user data
+interface AuthUser {
+  id: string;
+  email: string | null;
+  user_metadata?: {
+    name?: string;
+    surname?: string;
+  };
+}
+
 export const UserRelationshipDiagnostic = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<DiagnosticResult[]>([]);
@@ -205,10 +215,13 @@ export const UserRelationshipDiagnostic = () => {
       }
       
       // Map of user IDs to auth user data
-      const userMap = new Map();
-      authUsers?.users.forEach(user => {
-        userMap.set(user.id, user);
-      });
+      const userMap = new Map<string, AuthUser>();
+      
+      if (authUsers?.users) {
+        authUsers.users.forEach(user => {
+          userMap.set(user.id, user as AuthUser);
+        });
+      }
       
       // Create missing profiles
       let successCount = 0;
@@ -226,7 +239,7 @@ export const UserRelationshipDiagnostic = () => {
           .from('profiles')
           .insert({
             id: orphan.user_id,
-            email: authUser.email,
+            email: authUser.email || '',
             name: authUser.user_metadata?.name || 'Unknown',
             surname: authUser.user_metadata?.surname || ''
           });

@@ -61,7 +61,7 @@ export const UserRelationshipDiagnostic = () => {
         });
       } else if (constraintsData) {
         // Type assertion to help TypeScript understand the returned data structure
-        const typedData = constraintsData as ForeignKeyConstraintsResult;
+        const typedData = constraintsData as unknown as ForeignKeyConstraintsResult;
         const hasRoleConstraint = typedData.has_role_constraint;
         const hasFetchmanConstraint = typedData.has_fetchman_constraint;
         
@@ -159,7 +159,7 @@ export const UserRelationshipDiagnostic = () => {
         });
       } else if (triggerData) {
         // Type assertion to help TypeScript understand the returned data structure
-        const typedData = triggerData as TriggerExistsResult;
+        const typedData = triggerData as unknown as TriggerExistsResult;
         diagnosticResults.push({
           success: typedData.exists,
           message: typedData.exists

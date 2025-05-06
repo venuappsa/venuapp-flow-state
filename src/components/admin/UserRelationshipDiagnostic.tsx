@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader, CheckCircle, AlertCircle } from "@/components/ui/icons";
 import { useSchemaFix } from "@/hooks/useSchemaFix";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -13,6 +13,16 @@ interface DiagnosticResult {
   success: boolean;
   message: string;
   details?: any;
+}
+
+// Define types for our RPC responses
+interface ForeignKeyConstraintsResult {
+  has_role_constraint: boolean;
+  has_fetchman_constraint: boolean;
+}
+
+interface TriggerExistsResult {
+  exists: boolean;
 }
 
 export const UserRelationshipDiagnostic = () => {
@@ -33,9 +43,8 @@ export const UserRelationshipDiagnostic = () => {
     const diagnosticResults: DiagnosticResult[] = [];
     
     try {
-      // Check 1: Verify foreign key constraints exist
-      // Using a direct RPC call instead of querying information_schema to avoid type issues
-      const { data, error } = await supabase.rpc('check_foreign_key_constraints');
+      // Check 1: Verify foreign key constraints exist using our RPC function
+      const { data, error } = await supabase.rpc<ForeignKeyConstraintsResult>('check_foreign_key_constraints');
       
       if (error) {
         diagnosticResults.push({
@@ -130,18 +139,17 @@ export const UserRelationshipDiagnostic = () => {
       }
       
       // Check 4: Verify the ensure_profile_exists trigger exists
-      // Using a direct RPC call instead of querying information_schema to avoid type issues
-      const { data: trigger, error: triggerError } = await supabase.rpc('check_trigger_exists');
+      const { data: trigger, error: triggerError } = await supabase.rpc<TriggerExistsResult>('check_trigger_exists');
       
       if (triggerError) {
         diagnosticResults.push({
           success: false,
           message: `Failed to check triggers: ${triggerError.message}`
         });
-      } else {
+      } else if (trigger) {
         diagnosticResults.push({
-          success: trigger && trigger.exists,
-          message: trigger && trigger.exists
+          success: trigger.exists,
+          message: trigger.exists
             ? "Automatic profile creation trigger is active."
             : "Automatic profile creation trigger is missing.",
           details: trigger

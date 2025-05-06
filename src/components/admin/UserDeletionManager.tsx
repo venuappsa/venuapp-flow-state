@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DeleteUserResult } from "@/types/user-management";
 
 interface UserDeletionManagerProps {
   onSuccessfulDeletion?: () => void;
@@ -29,7 +29,7 @@ export const UserDeletionManager: React.FC<UserDeletionManagerProps> = ({
 }) => {
   const [userId, setUserId] = useState<string>(defaultUserId);
   const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
-  const [deletionResult, setDeletionResult] = useState<any>(null);
+  const [deletionResult, setDeletionResult] = useState<DeleteUserResult | null>(null);
   const { isChecking, isDeleting, userDetails, checkUserExists, deleteFetchmanUser } = useUserDeletion();
   const { toast } = useToast();
 

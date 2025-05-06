@@ -2,23 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-interface CheckUserResult {
-  auth_user_exists: boolean;
-  profile_exists: boolean;
-  fetchman_profile_exists: boolean;
-  user_id: string;
-  fetchman_profile_id: string | null;
-  roles: string[] | null;
-}
-
-interface DeleteUserResult {
-  success: boolean;
-  message: string;
-  deleted_items?: Record<string, number>;
-  user_id?: string;
-  fetchman_profile_id?: string;
-}
+import { CheckUserResult, DeleteUserResult } from "@/types/user-management";
 
 export const useUserDeletion = () => {
   const [isChecking, setIsChecking] = useState(false);
@@ -49,8 +33,9 @@ export const useUserDeletion = () => {
       }
       
       console.log("User check result:", data);
-      setUserDetails(data as CheckUserResult);
-      return data as CheckUserResult;
+      const result = data as CheckUserResult;
+      setUserDetails(result);
+      return result;
     } catch (error: any) {
       console.error("Exception checking user:", error);
       toast({
@@ -87,9 +72,10 @@ export const useUserDeletion = () => {
       }
       
       console.log("Database deletion result:", dbDeletionData);
+      const result = dbDeletionData as DeleteUserResult;
       
-      if (!dbDeletionData.success) {
-        return dbDeletionData as DeleteUserResult;
+      if (!result.success) {
+        return result;
       }
       
       // If database deletion was successful and auth user exists, delete from auth
@@ -104,9 +90,9 @@ export const useUserDeletion = () => {
             return {
               success: false,
               message: `Auth user deletion failed: ${authDeletionError.message}`,
-              deleted_items: dbDeletionData.deleted_items,
+              deleted_items: result.deleted_items,
               user_id: userId,
-              fetchman_profile_id: dbDeletionData.fetchman_profile_id
+              fetchman_profile_id: result.fetchman_profile_id
             };
           }
         } catch (authError: any) {
@@ -114,7 +100,7 @@ export const useUserDeletion = () => {
           return {
             success: false,
             message: `Auth deletion exception: ${authError.message}`,
-            deleted_items: dbDeletionData.deleted_items,
+            deleted_items: result.deleted_items,
             user_id: userId
           };
         }
@@ -131,9 +117,9 @@ export const useUserDeletion = () => {
       return {
         success: true,
         message: "User deleted successfully from all systems",
-        deleted_items: dbDeletionData.deleted_items,
+        deleted_items: result.deleted_items,
         user_id: userId,
-        fetchman_profile_id: dbDeletionData.fetchman_profile_id
+        fetchman_profile_id: result.fetchman_profile_id
       };
     } catch (error: any) {
       console.error("Exception deleting user:", error);

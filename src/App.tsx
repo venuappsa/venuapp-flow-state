@@ -23,6 +23,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminFetchmanPage from "./pages/admin/AdminFetchmanPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
+import AdminUserViewProfilePage from "@/pages/admin/user/AdminUserViewProfilePage";
 import Index from "./pages/Index";
 import ErrorPage from "./pages/ErrorPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -125,7 +126,13 @@ function App() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="fetchmen" element={<AdminFetchmanPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="users">
+            <Route index element={<AdminUsersPage />} />
+            <Route path=":userId">
+              <Route path="profile" element={<AdminUserViewProfilePage />} />
+              {/* Other user profile pages will be added here */}
+            </Route>
+          </Route>
         </Route>
       </Route>
     )

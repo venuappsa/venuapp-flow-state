@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   createBrowserRouter,
@@ -22,11 +23,14 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminFetchmanPage from "./pages/admin/AdminFetchmanPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
+import { ScrollToTop } from "./components/utils/ScrollToTop";
+import Index from "./pages/Index";
 
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<MainLayout />}>
+        <Route index element={<Index />} />
         <Route path="auth" element={<AuthenticationPage />} />
         <Route path="subscribe" element={<SubscriptionPage />} />
 
@@ -92,6 +96,7 @@ function App() {
       storageKey="venu-theme"
       attribute="class"
     >
+      <ScrollToTop />
       <RouterProvider router={router} />
     </ThemeProvider>
   );

@@ -32,6 +32,15 @@ interface OrphanedProfile {
   profiles: null;
 }
 
+// Extend the Database types to include our custom RPC functions
+type CustomRpcFunction = 
+  | "check_foreign_key_constraints" 
+  | "check_trigger_exists"
+  | "get_fetchman_with_profile"
+  | "is_admin"
+  | "postgrest_schema_cache_refresh"
+  | "repair_fetchman_profiles";
+
 export const UserRelationshipDiagnostic = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<DiagnosticResult[]>([]);
@@ -52,7 +61,7 @@ export const UserRelationshipDiagnostic = () => {
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
       const { data: constraintsData, error: constraintsError } = await supabase
-        .rpc('check_foreign_key_constraints');
+        .rpc<ForeignKeyConstraintsResult>('check_foreign_key_constraints' as CustomRpcFunction);
       
       if (constraintsError) {
         diagnosticResults.push({
@@ -60,10 +69,8 @@ export const UserRelationshipDiagnostic = () => {
           message: `Failed to check constraints: ${constraintsError.message}`
         });
       } else if (constraintsData) {
-        // Parse the response as our expected type
-        const constraints = constraintsData as ForeignKeyConstraintsResult;
-        const hasRoleConstraint = constraints.has_role_constraint;
-        const hasFetchmanConstraint = constraints.has_fetchman_constraint;
+        const hasRoleConstraint = constraintsData.has_role_constraint;
+        const hasFetchmanConstraint = constraintsData.has_fetchman_constraint;
         
         diagnosticResults.push({
           success: true,
@@ -150,7 +157,7 @@ export const UserRelationshipDiagnostic = () => {
       
       // Check 4: Verify the ensure_profile_exists trigger exists
       const { data: triggerData, error: triggerError } = await supabase
-        .rpc('check_trigger_exists');
+        .rpc<TriggerExistsResult>('check_trigger_exists' as CustomRpcFunction);
       
       if (triggerError) {
         diagnosticResults.push({
@@ -158,11 +165,9 @@ export const UserRelationshipDiagnostic = () => {
           message: `Failed to check triggers: ${triggerError.message}`
         });
       } else if (triggerData) {
-        // Parse the response as our expected type
-        const trigger = triggerData as TriggerExistsResult;
         diagnosticResults.push({
-          success: trigger.exists,
-          message: trigger.exists
+          success: triggerData.exists,
+          message: triggerData.exists
             ? "Automatic profile creation trigger is active."
             : "Automatic profile creation trigger is missing.",
           details: triggerData

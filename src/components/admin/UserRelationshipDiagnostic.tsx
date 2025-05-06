@@ -32,15 +32,6 @@ interface OrphanedProfile {
   profiles: null;
 }
 
-// Define a type for our custom RPC functions
-type CustomRpcFunction = 
-  | "check_foreign_key_constraints" 
-  | "check_trigger_exists"
-  | "get_fetchman_with_profile"
-  | "is_admin"
-  | "postgrest_schema_cache_refresh"
-  | "repair_fetchman_profiles";
-
 export const UserRelationshipDiagnostic = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<DiagnosticResult[]>([]);
@@ -61,7 +52,7 @@ export const UserRelationshipDiagnostic = () => {
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
       const { data: constraintsData, error: constraintsError } = await supabase
-        .rpc<ForeignKeyConstraintsResult, any>('check_foreign_key_constraints' as CustomRpcFunction);
+        .rpc('check_foreign_key_constraints');
       
       if (constraintsError) {
         diagnosticResults.push({
@@ -69,8 +60,10 @@ export const UserRelationshipDiagnostic = () => {
           message: `Failed to check constraints: ${constraintsError.message}`
         });
       } else if (constraintsData) {
-        const hasRoleConstraint = constraintsData.has_role_constraint;
-        const hasFetchmanConstraint = constraintsData.has_fetchman_constraint;
+        // Type assertion to help TypeScript understand the returned data structure
+        const typedData = constraintsData as ForeignKeyConstraintsResult;
+        const hasRoleConstraint = typedData.has_role_constraint;
+        const hasFetchmanConstraint = typedData.has_fetchman_constraint;
         
         diagnosticResults.push({
           success: true,
@@ -157,7 +150,7 @@ export const UserRelationshipDiagnostic = () => {
       
       // Check 4: Verify the ensure_profile_exists trigger exists
       const { data: triggerData, error: triggerError } = await supabase
-        .rpc<TriggerExistsResult, any>('check_trigger_exists' as CustomRpcFunction);
+        .rpc('check_trigger_exists');
       
       if (triggerError) {
         diagnosticResults.push({
@@ -165,9 +158,11 @@ export const UserRelationshipDiagnostic = () => {
           message: `Failed to check triggers: ${triggerError.message}`
         });
       } else if (triggerData) {
+        // Type assertion to help TypeScript understand the returned data structure
+        const typedData = triggerData as TriggerExistsResult;
         diagnosticResults.push({
-          success: triggerData.exists,
-          message: triggerData.exists
+          success: typedData.exists,
+          message: typedData.exists
             ? "Automatic profile creation trigger is active."
             : "Automatic profile creation trigger is missing.",
           details: triggerData

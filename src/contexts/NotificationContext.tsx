@@ -1,9 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { toast } from "@/components/ui/use-toast";
-import { ToastAction } from "@/components/ui/toast";
-// Using our own hook implementation to prevent circular imports
-import { useToast as useToastHook } from "@/hooks/use-toast";
+import { toast, ToastActionElement } from "@/hooks/use-toast";
+// Don't import useToast from here, to avoid circular dependency
 
 interface Notification {
   id: string;
@@ -36,7 +34,6 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
-  const { toast } = useToastHook();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     enableEmailNotifications: true,
@@ -48,6 +45,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   
   // Load preferences from localStorage on initial mount
   useEffect(() => {
+    console.log("NotificationProvider: Initializing");
     const savedPreferences = localStorage.getItem('notificationPreferences');
     if (savedPreferences) {
       try {
@@ -76,12 +74,15 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     
     // Show toast if enabled in preferences
     if (preferences.enableToastNotifications) {
+      // Using imported toast function directly, not hook
       toast({
         title: notification.title,
         description: notification.message,
         variant: notification.type === 'error' ? 'destructive' : 'default',
         ...(notification.link && {
-          action: <ToastAction altText="View" onClick={() => window.location.href = notification.link!}>View</ToastAction>
+          action: <ToastActionElement altText="View" asChild>
+            <a href={notification.link}>View</a>
+          </ToastActionElement>
         })
       });
     }

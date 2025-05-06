@@ -33,6 +33,7 @@ import FetchmanPage from "./pages/FetchmanPage";
 import AttendeePage from "./pages/AttendeePage";
 import SubscribePage from "./pages/SubscribePage";
 import SubscriptionManagementPage from "./pages/SubscriptionManagementPage";
+import PaystackSubscriptionPage from "./pages/PaystackSubscriptionPage";
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {
@@ -52,7 +53,7 @@ function App() {
         <Route index element={<Index />} />
         <Route path="auth" element={<AuthenticationPage />} />
         
-        {/* Public subscription routes */}
+        {/* Public subscription routes - explicitly ensure they're declared correctly */}
         <Route path="subscribe" element={<SubscribePage />} />
         
         {/* Feature Pages */}
@@ -80,12 +81,22 @@ function App() {
           errorElement={<ErrorPage />}
         />
         
-        {/* Host subscription management route */}
+        {/* Host subscription management routes */}
         <Route
           path="host/subscription"
           element={
             <ProtectedRoute allowedRoles={["host"]}>
               <SubscriptionManagementPage />
+            </ProtectedRoute>
+          }
+          errorElement={<ErrorPage />}
+        />
+        
+        <Route
+          path="host/subscription/paystack"
+          element={
+            <ProtectedRoute allowedRoles={["host"]}>
+              <PaystackSubscriptionPage />
             </ProtectedRoute>
           }
           errorElement={<ErrorPage />}

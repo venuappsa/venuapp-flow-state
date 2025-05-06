@@ -1,3 +1,4 @@
+
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -15,12 +16,11 @@ import { toast } from "@/components/ui/use-toast";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getRedirectPageForRoles } from "@/hooks/useRoleRedirect";
 import SecurePanelButton from "./SecurePanelButton";
-import { Button } from "@/components/ui/button";
 
 const VENUAPP_LOGO_SRC = "/lovable-uploads/00295b81-909c-4b6d-b67d-6638afdd5ba3.png";
 
 export default function Navbar() {
-  const { user, forceClearUser } = useUser();
+  const { user, forceClearUser, loading: userLoading } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -90,9 +90,10 @@ export default function Navbar() {
   };
 
   // Determine subscription link based on authentication status
+  // Explicitly log to help debug, and ensure no undefined paths
   const subscriptionLink = user ? "/host/subscription" : "/subscribe";
+  console.log("Navbar: Subscription link set to:", subscriptionLink, "User logged in:", Boolean(user));
 
-  // Always show SecurePanelButton for all users; it switches text based on auth state.
   return (
     <nav className="w-full border-b bg-white shadow z-50 sticky top-0">
       <div className="max-w-7xl mx-auto flex items-center px-4 py-1 sm:py-2">
@@ -165,6 +166,7 @@ export default function Navbar() {
             <Link
               to={subscriptionLink}
               className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
+              onClick={() => console.log("Subscribe link clicked, navigating to:", subscriptionLink)}
             >
               Subscribe
             </Link>

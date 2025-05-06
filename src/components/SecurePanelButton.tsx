@@ -37,6 +37,8 @@ export default function SecurePanelButton({ showWelcome = false, className }: Se
     .join("")
     .toUpperCase()
     .substring(0, 2);
+    
+  const subscriptionLink = user ? "/host/subscription" : "/subscribe";
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -45,6 +47,7 @@ export default function SecurePanelButton({ showWelcome = false, className }: Se
     try {
       const success = await AuthService.signOut();
       if (success) {
+        console.log("User signed out successfully");
         forceClearUser(); // Backup local state clearing
         navigate("/auth");
       }
@@ -99,7 +102,7 @@ export default function SecurePanelButton({ showWelcome = false, className }: Se
           <DropdownMenuItem onSelect={() => navigate('/host/venues/new')} className="cursor-pointer">
             Add Venue
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => navigate('/subscribe')} className="cursor-pointer">
+          <DropdownMenuItem onSelect={() => navigate(subscriptionLink)} className="cursor-pointer">
             Subscription
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">

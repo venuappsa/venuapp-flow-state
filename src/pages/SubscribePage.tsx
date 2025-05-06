@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,8 +6,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Check, Info } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useUser } from "@/hooks/useUser";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -24,7 +23,9 @@ const PRICE_IDS = {
 };
 
 const SubscribePage = () => {
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
+  console.log("SubscribePage: User state:", user ? "Logged in" : "Not logged in", "Loading:", userLoading);
+  
   const { data: userRoles = [], isLoading: rolesLoading } = useUserRoles(user?.id);
   const { 
     subscribed, 
@@ -46,11 +47,12 @@ const SubscribePage = () => {
   
   // Redirect authenticated users to the subscription management page
   useEffect(() => {
-    if (user) {
+    console.log("SubscribePage: Checking redirect logic, user:", Boolean(user), "userLoading:", userLoading);
+    if (!userLoading && user) {
       console.log("SubscribePage: User logged in, redirecting to host/subscription");
-      navigate("/host/subscription");
+      navigate("/host/subscription", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, userLoading, navigate]);
   
   const isHost = userRoles?.includes("host");
   const pricingPlans = getPricingPlans();
@@ -105,6 +107,16 @@ const SubscribePage = () => {
   const handlePlanSelect = async (planId: string, planName: string) => {
     await createCheckout(planId, planName);
   };
+
+  // If still loading user data, show a simple loading state
+  if (userLoading) {
+    return (
+      <div className="py-12 text-center">
+        <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+        <Skeleton className="h-8 w-64 mx-auto" />
+      </div>
+    );
+  }
 
   const renderGuestSubscribeForm = () => (
     <section className="py-16 bg-white">
@@ -219,256 +231,6 @@ const SubscribePage = () => {
     </section>
   );
 
-  const renderPricingPlans = () => (
-    <section className="py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-venu-orange">Subscription</span> Plans
-          </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
-            Choose the right plan for your venues and events. All plans include our core features with varying capacities and additional benefits.
-          </p>
-          
-          <div className="inline-flex items-center justify-center w-full">
-            <hr className="w-64 h-px my-8 bg-gray-200 border-0" />
-            <span className="absolute px-3 font-medium text-gray-500 bg-white">
-              Monthly Subscription Plans
-            </span>
-          </div>
-          
-          <p className="text-sm text-gray-500 mt-4 mb-8">
-            Perfect for venues that host multiple events over time. Billed monthly.
-          </p>
-        </div>
-
-        {subLoading ? (
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <Skeleton className="h-96 w-full" />
-            <Skeleton className="h-96 w-full" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Basic Plan */}
-            <Card className={`flex flex-col ${subscription_tier === 'basic' ? 'border-venu-orange shadow-lg' : ''}`}>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Basic</CardTitle>
-                  {subscription_tier === 'basic' && (
-                    <Badge className="bg-venu-orange">Current Plan</Badge>
-                  )}
-                </div>
-                <CardDescription>For smaller venues and events</CardDescription>
-                <div className="mt-4">
-                  <span className="text-3xl font-bold">
-                    R499
-                  </span>
-                  <span className="text-gray-500 ml-2">
-                    /month
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Up to 3 venues</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Up to 5 events per venue monthly</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Basic analytics</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Standard support</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>5% commission on transactions</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                {subscription_tier === 'basic' ? (
-                  <Button className="w-full bg-gray-200 text-gray-700 cursor-not-allowed" disabled>
-                    Current Plan
-                  </Button>
-                ) : (
-                  <Button 
-                    className="w-full" 
-                    variant={subscription_tier ? "outline" : "default"} 
-                    onClick={() => handlePlanSelect(PRICE_IDS.basic, "Basic")}
-                    disabled={isSubmitting}
-                  >
-                    {subscription_tier ? "Switch to Basic" : "Select Basic"}
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-
-            {/* Premium Plan */}
-            <Card className={`flex flex-col ${subscription_tier === 'premium' ? 'border-venu-orange shadow-lg' : 'md:scale-105 shadow-lg border-venu-orange/80'}`}>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Premium</CardTitle>
-                  {subscription_tier === 'premium' ? (
-                    <Badge className="bg-venu-orange">Current Plan</Badge>
-                  ) : (
-                    <Badge variant="outline" className="border-venu-orange text-venu-orange">Popular</Badge>
-                  )}
-                </div>
-                <CardDescription>For growing businesses</CardDescription>
-                <div className="mt-4">
-                  <span className="text-3xl font-bold">
-                    R999
-                  </span>
-                  <span className="text-gray-500 ml-2">
-                    /month
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Up to 10 venues</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Unlimited events</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Advanced analytics and reporting</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Priority support</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>3.5% commission on transactions</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                {subscription_tier === 'premium' ? (
-                  <Button className="w-full bg-gray-200 text-gray-700 cursor-not-allowed" disabled>
-                    Current Plan
-                  </Button>
-                ) : (
-                  <Button 
-                    className="w-full bg-venu-orange hover:bg-venu-orange/90"
-                    onClick={() => handlePlanSelect(PRICE_IDS.premium, "Premium")}
-                    disabled={isSubmitting}
-                  >
-                    {subscription_tier ? "Switch to Premium" : "Select Premium"}
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-
-            {/* Enterprise Plan */}
-            <Card className={`flex flex-col ${subscription_tier === 'enterprise' ? 'border-venu-orange shadow-lg' : ''}`}>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Enterprise</CardTitle>
-                  {subscription_tier === 'enterprise' && (
-                    <Badge className="bg-venu-orange">Current Plan</Badge>
-                  )}
-                </div>
-                <CardDescription>For large organizations</CardDescription>
-                <div className="mt-4">
-                  <span className="text-3xl font-bold">
-                    R2499
-                  </span>
-                  <span className="text-gray-500 ml-2">
-                    /month
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Unlimited venues</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Unlimited events with premium features</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Enterprise analytics with custom reports</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Dedicated account manager</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>2% commission on transactions</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                {subscription_tier === 'enterprise' ? (
-                  <Button className="w-full bg-gray-200 text-gray-700 cursor-not-allowed" disabled>
-                    Current Plan
-                  </Button>
-                ) : (
-                  <Button 
-                    className="w-full" 
-                    variant={subscription_tier ? "outline" : "default"} 
-                    onClick={() => handlePlanSelect(PRICE_IDS.enterprise, "Enterprise")}
-                    disabled={isSubmitting}
-                  >
-                    {subscription_tier ? "Switch to Enterprise" : "Select Enterprise"}
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-          </div>
-        )}
-
-        {subscription_tier && (
-          <div className="mt-12 text-center">
-            <div className="bg-blue-50 text-blue-800 p-4 rounded-md inline-block max-w-2xl">
-              <div className="flex items-center">
-                <Info className="h-5 w-5 mr-2" />
-                <span className="font-medium">Current Subscription</span>
-              </div>
-              <p className="mt-2">
-                You are currently on the <span className="font-medium">{subscription_tier}</span> plan.
-                {subscription_end && (
-                  <span> Your subscription renews on {new Date(subscription_end).toLocaleDateString()}.</span>
-                )}
-              </p>
-              {subscription_status && subscription_status !== "none" && (
-                <p className="mt-1">
-                  Status: <span className="font-medium capitalize">{subscription_status}</span>
-                </p>
-              )}
-              
-              <Button 
-                variant="link" 
-                className="mt-2"
-                onClick={() => navigate("/host/subscription")}
-              >
-                Manage your subscription
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-
   const renderPlanCTASection = () => (
     <section className="py-16 bg-gradient-to-r from-venu-orange/5 to-amber-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -506,22 +268,25 @@ const SubscribePage = () => {
     </section>
   );
 
+  // Simple debug component at the top of the page to help diagnose issues
+  const renderDebugInfo = () => (
+    <div className="bg-gray-100 p-2 text-xs text-gray-700 mb-4">
+      <p>Debug: Page loaded | Auth state: {user ? "Logged in" : "Not logged in"}</p>
+      <p>URL: {location.pathname}</p>
+    </div>
+  );
+
+  // Since we're inside MainLayout, we don't need to render Navbar/Footer here
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-grow pt-8">
-        {/* Since we've added Navbar to MainLayout, we don't need it here */}
-        {user ? (
-          <>
-            {renderPricingPlans()}
-            {/* ... keep existing code (FAQ section) */}
-          </>
-        ) : (
-          <>
-            {renderGuestSubscribeForm()}
-            {renderPlanCTASection()}
-          </>
-        )}
-      </main>
+    <div className="min-h-[calc(100vh-180px)]">
+      {process.env.NODE_ENV !== 'production' && renderDebugInfo()}
+      
+      {user === null && ( // Only show guest content if definitely not logged in
+        <>
+          {renderGuestSubscribeForm()}
+          {renderPlanCTASection()}
+        </>
+      )}
     </div>
   );
 };

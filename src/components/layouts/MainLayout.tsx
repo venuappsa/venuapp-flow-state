@@ -1,7 +1,6 @@
 
 import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { useTheme } from "@/components/ui/theme-provider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -17,6 +16,8 @@ export default function MainLayout() {
     console.log(`Document class list: ${document.documentElement.classList}`);
   }, [theme]);
 
+  console.log("MainLayout rendered");
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <ScrollToTop />
@@ -27,7 +28,7 @@ export default function MainLayout() {
         </ErrorBoundary>
       </main>
       <Footer />
-      <Toaster />
+      {/* Toaster is now rendered at the App level to avoid multiple instances */}
     </div>
   );
 }

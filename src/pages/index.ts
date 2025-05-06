@@ -30,4 +30,6 @@ export { default as FinanceSettings } from './FinanceSettingsPage';
 export { default as Fetchman } from './FetchmanPage';
 export { default as Subscribe } from './SubscribePage';
 export { default as SubscriptionManagement } from './SubscriptionManagementPage';
+export { default as SubscriptionPage } from './SubscriptionPage';
 export { default as PaystackSubscriptionPage } from './host/PaystackManagePage';
+

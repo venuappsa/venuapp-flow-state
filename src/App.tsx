@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import {
   createBrowserRouter,
@@ -31,6 +30,7 @@ import HostPage from "./pages/HostPage";
 import MerchantPage from "./pages/MerchantPage";
 import FetchmanPage from "./pages/FetchmanPage";
 import AttendeePage from "./pages/AttendeePage";
+import SubscribePage from "./pages/SubscribePage";
 
 function App() {
   // Debug theme setup
@@ -74,34 +74,7 @@ function App() {
           }
           errorElement={<ErrorPage />}
         />
-        <Route
-          path="host/venues/:venueId"
-          element={
-            <ProtectedRoute allowedRoles={["host"]}>
-              <VenueDetailsPage />
-            </ProtectedRoute>
-          }
-          errorElement={<ErrorPage />}
-        />
-        <Route
-          path="host/venues/new"
-          element={
-            <ProtectedRoute allowedRoles={["host"]}>
-              <NewVenuePage />
-            </ProtectedRoute>
-          }
-          errorElement={<ErrorPage />}
-        />
-        <Route
-          path="host/venues/:venueId/edit"
-          element={
-            <ProtectedRoute allowedRoles={["host"]}>
-              <EditVenuePage />
-            </ProtectedRoute>
-          }
-          errorElement={<ErrorPage />}
-        />
-
+        
         {/* Fetchman routes - only accessible to fetchmans */}
         <Route
           path="fetchman"

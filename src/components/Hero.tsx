@@ -25,14 +25,14 @@ const Hero = () => {
               </Button>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <a href="#" className="flex items-center gap-2 bg-black text-white px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors">
+              <a href="#" className="flex items-center gap-2 bg-card text-card-foreground px-4 py-3 rounded-lg hover:bg-secondary transition-colors border border-input">
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
                 <div>
                   <span className="text-xs block">Download on the</span>
                   <span className="text-sm font-semibold">App Store (Coming Soon)</span>
                 </div>
               </a>
-              <a href="#" className="flex items-center gap-2 bg-black text-white px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors">
+              <a href="#" className="flex items-center gap-2 bg-card text-card-foreground px-4 py-3 rounded-lg hover:bg-secondary transition-colors border border-input">
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                 <div>
                   <span className="text-xs block">GET IT ON</span>
@@ -52,7 +52,7 @@ const Hero = () => {
               <div className="absolute -bottom-16 -right-16 w-48 h-48 opacity-30 blur-sm rounded-full bg-venu-orange" />
               <div className="absolute -top-16 -left-16 w-40 h-40 opacity-30 blur-sm rounded-full bg-venu-orange" />
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center">
-                <div className="absolute bottom-4 left-4 right-4 bg-black/70 text-white p-4 rounded backdrop-blur-sm z-10">
+                <div className="absolute bottom-4 left-4 right-4 bg-card/90 text-card-foreground p-4 rounded backdrop-blur-sm z-10">
                   <p className="text-sm md:text-base">Experience events without the wait. Order food, drinks, and merchandise with instant delivery.</p>
                 </div>
               </div>

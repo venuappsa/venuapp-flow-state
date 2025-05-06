@@ -28,7 +28,7 @@ export default function HostPanelLayout({ children }: HostPanelLayoutProps) {
       allowedRoles={["host"]} 
       showFallback={true}
     >
-      <div className="flex h-screen overflow-hidden bg-venu-soft-gray/30">
+      <div className="flex h-screen overflow-hidden bg-background">
         {/* Ensure the sidebar takes the full height and is only rendered here */}
         <DashboardSidebar className="hidden md:flex h-screen" />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">

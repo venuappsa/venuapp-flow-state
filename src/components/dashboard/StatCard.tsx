@@ -25,7 +25,7 @@ export function StatCard({
   gradient = false,
 }: StatCardProps) {
   return (
-    <Card className={gradient ? "bg-gradient-to-br from-white to-gray-50" : ""}>
+    <Card className={gradient ? "bg-gradient-to-br from-card to-secondary/80" : ""}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>

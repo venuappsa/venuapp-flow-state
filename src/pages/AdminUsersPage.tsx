@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -19,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { UserRelationshipDiagnostic } from "@/components/admin/UserRelationshipDiagnostic";
 
 interface User {
   id: string;
@@ -32,6 +32,7 @@ interface User {
 
 export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
   const { toast } = useToast();
 
   const { data: users = [], isLoading, error, refetch } = useQuery({
@@ -230,13 +231,25 @@ export default function AdminUsersPage() {
           <h1 className="text-2xl font-bold">User Management</h1>
           <p className="text-gray-500">View and manage all users on the platform</p>
         </div>
-        <div className="mt-4 md:mt-0">
+        <div className="mt-4 md:mt-0 flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowDiagnostic(!showDiagnostic)}
+          >
+            {showDiagnostic ? "Hide Diagnostic" : "Show Diagnostic"}
+          </Button>
           <Button>
             <UserPlus className="mr-2 h-4 w-4" />
             Add User
           </Button>
         </div>
       </div>
+
+      {showDiagnostic && (
+        <div className="mb-8">
+          <UserRelationshipDiagnostic />
+        </div>
+      )}
 
       <Card className="mb-8">
         <CardHeader>

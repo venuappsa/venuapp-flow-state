@@ -5,6 +5,7 @@ import {
   RouterProvider,
   Route,
   createRoutesFromElements,
+  Navigate,
 } from "react-router-dom";
 import "./App.css";
 import AuthenticationPage from "./pages/AuthenticationPage";
@@ -26,6 +27,10 @@ import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
 import Index from "./pages/Index";
 import ErrorPage from "./pages/ErrorPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import HostPage from "./pages/HostPage";
+import MerchantPage from "./pages/MerchantPage";
+import FetchmanPage from "./pages/FetchmanPage";
+import AttendeePage from "./pages/AttendeePage";
 
 function App() {
   // Debug theme setup
@@ -44,6 +49,20 @@ function App() {
         <Route index element={<Index />} />
         <Route path="auth" element={<AuthenticationPage />} />
         <Route path="subscribe" element={<SubscriptionPage />} />
+
+        {/* Feature Pages */}
+        <Route path="features/host" element={<HostPage />} />
+        <Route path="features/merchant" element={<MerchantPage />} />
+        <Route path="features/fetchman" element={<FetchmanPage />} />
+        <Route path="features/attendee" element={<AttendeePage />} />
+        
+        {/* Legacy route redirects */}
+        <Route path="features/customer" element={<AttendeePage />} />
+        <Route path="host" element={<Navigate to="/features/host" />} />
+        <Route path="merchant" element={<Navigate to="/features/merchant" />} />
+        <Route path="vendor" element={<Navigate to="/features/merchant" />} />
+        <Route path="fetchman" element={<Navigate to="/features/fetchman" />} />
+        <Route path="customer" element={<Navigate to="/features/attendee" />} />
 
         {/* Host routes - only accessible to hosts */}
         <Route

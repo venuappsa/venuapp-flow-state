@@ -57,8 +57,10 @@ export default function AdminUsersPage() {
         // Here we need to extract the role from the user_roles array
         let role = "unassigned";
         
-        if (user.user_roles && user.user_roles.length > 0) {
-          role = user.user_roles[0].role;
+        // Ensure we're safely accessing and extracting the role from the user_roles array
+        const userRoles = user.user_roles as Array<{role: string}> || [];
+        if (userRoles.length > 0 && userRoles[0].role) {
+          role = userRoles[0].role;
         }
 
         // Check different profile tables based on role

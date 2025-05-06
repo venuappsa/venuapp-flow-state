@@ -1,11 +1,12 @@
-
 // This file contains the implementation of useToast hook
 import * as React from "react";
 
 import type {
-  ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast";
+
+// Export the ToastActionElement type from toast component
+import { type ToastActionElement } from "@/components/ui/toast";
 
 const TOAST_LIMIT = 5;
 const TOAST_REMOVE_DELAY = 5000; // Changed from 1000000 to a more reasonable 5000ms (5s)
@@ -191,4 +192,6 @@ function useToast() {
   };
 }
 
-export { useToast, toast, ToastActionElement };
+// Export properly for both values and types
+export { useToast, toast };
+export type { ToastActionElement };

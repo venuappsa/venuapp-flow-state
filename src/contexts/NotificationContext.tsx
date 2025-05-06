@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { toast, ToastActionElement } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
+import type { ToastActionElement } from "@/hooks/use-toast";
 // Don't import useToast from here, to avoid circular dependency
 
 interface Notification {
@@ -80,9 +81,15 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
         description: notification.message,
         variant: notification.type === 'error' ? 'destructive' : 'default',
         ...(notification.link && {
-          action: <ToastActionElement altText="View" asChild>
-            <a href={notification.link}>View</a>
-          </ToastActionElement>
+          action: (
+            <a 
+              href={notification.link} 
+              className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              View
+            </a>
+          )
         })
       });
     }

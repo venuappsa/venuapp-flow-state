@@ -45,6 +45,9 @@ function App() {
     // Check if theme is stored in localStorage
     const storedTheme = localStorage.getItem("venu-theme");
     console.log(`Theme in localStorage: ${storedTheme}`);
+    
+    // Debug toast system initialization
+    console.log("Toast system initialized");
   }, []);
 
   const router = createBrowserRouter(

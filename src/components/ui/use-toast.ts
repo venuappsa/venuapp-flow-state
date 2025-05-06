@@ -1,5 +1,8 @@
 
 // Import from the main hook implementation
-import { useToast, toast, ToastActionElement } from "@/hooks/use-toast";
+import { useToast, toast } from "@/hooks/use-toast";
+import type { ToastActionElement } from "@/hooks/use-toast";
 
-export { useToast, toast, ToastActionElement };
+// Re-export with proper type annotations
+export { useToast, toast };
+export type { ToastActionElement };

@@ -15,7 +15,7 @@ interface DiagnosticResult {
   details?: any;
 }
 
-// Define types for our RPC responses
+// Define interfaces for our RPC responses
 interface ForeignKeyConstraintsResult {
   has_role_constraint: boolean;
   has_fetchman_constraint: boolean;
@@ -51,7 +51,7 @@ export const UserRelationshipDiagnostic = () => {
     
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
-      const { data, error } = await supabase.rpc<ForeignKeyConstraintsResult>('check_foreign_key_constraints');
+      const { data, error } = await supabase.rpc<ForeignKeyConstraintsResult, ForeignKeyConstraintsResult>('check_foreign_key_constraints');
       
       if (error) {
         diagnosticResults.push({
@@ -146,7 +146,7 @@ export const UserRelationshipDiagnostic = () => {
       }
       
       // Check 4: Verify the ensure_profile_exists trigger exists
-      const { data: trigger, error: triggerError } = await supabase.rpc<TriggerExistsResult>('check_trigger_exists');
+      const { data: trigger, error: triggerError } = await supabase.rpc<TriggerExistsResult, TriggerExistsResult>('check_trigger_exists');
       
       if (triggerError) {
         diagnosticResults.push({

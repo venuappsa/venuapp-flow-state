@@ -51,18 +51,22 @@ export const UserRelationshipDiagnostic = () => {
     
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
-      const { data, error } = await supabase.rpc('check_foreign_key_constraints');
+      const { data: constraintsData, error: constraintsError } = await supabase
+        .from('rpc')
+        .select('*')
+        .eq('fn_name', 'check_foreign_key_constraints')
+        .maybeSingle();
       
-      if (error) {
+      if (constraintsError) {
         diagnosticResults.push({
           success: false,
-          message: `Failed to check constraints: ${error.message}`
+          message: `Failed to check constraints: ${constraintsError.message}`
         });
-      } else if (data) {
-        // Type assertion to handle the response
-        const constraintsData = data as ForeignKeyConstraintsResult;
-        const hasRoleConstraint = constraintsData.has_role_constraint;
-        const hasFetchmanConstraint = constraintsData.has_fetchman_constraint;
+      } else if (constraintsData) {
+        // Parse the response as our expected type
+        const data = constraintsData.result as ForeignKeyConstraintsResult;
+        const hasRoleConstraint = data.has_role_constraint;
+        const hasFetchmanConstraint = data.has_fetchman_constraint;
         
         diagnosticResults.push({
           success: true,
@@ -148,22 +152,26 @@ export const UserRelationshipDiagnostic = () => {
       }
       
       // Check 4: Verify the ensure_profile_exists trigger exists
-      const { data: trigger, error: triggerError } = await supabase.rpc('check_trigger_exists');
+      const { data: triggerData, error: triggerError } = await supabase
+        .from('rpc')
+        .select('*')
+        .eq('fn_name', 'check_trigger_exists')
+        .maybeSingle();
       
       if (triggerError) {
         diagnosticResults.push({
           success: false,
           message: `Failed to check triggers: ${triggerError.message}`
         });
-      } else if (trigger) {
-        // Type assertion to handle the response
-        const triggerData = trigger as TriggerExistsResult;
+      } else if (triggerData) {
+        // Parse the response as our expected type
+        const data = triggerData.result as TriggerExistsResult;
         diagnosticResults.push({
-          success: triggerData.exists,
-          message: triggerData.exists
+          success: data.exists,
+          message: data.exists
             ? "Automatic profile creation trigger is active."
             : "Automatic profile creation trigger is missing.",
-          details: trigger
+          details: triggerData
         });
       }
     } catch (error: any) {

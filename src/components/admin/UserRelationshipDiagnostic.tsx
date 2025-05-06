@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Loader, CheckCircle, AlertCircle } from "lucide-react";
 import { useSchemaFix } from "@/hooks/useSchemaFix";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 interface DiagnosticResult {
   success: boolean;
@@ -312,14 +312,26 @@ export const UserRelationshipDiagnostic = () => {
                           {result.details.length} items
                         </Badge>
                         {!result.success && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={repairMissingProfiles}
-                            disabled={isRepairing}
-                          >
-                            Repair Profiles
-                          </Button>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={repairMissingProfiles}
+                              disabled={isRepairing}
+                            >
+                              Repair Profiles
+                            </Button>
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                            >
+                              <Link to="/admin/users">
+                                Delete Orphaned Users
+                              </Link>
+                            </Button>
+                          </div>
                         )}
                       </div>
                     )}

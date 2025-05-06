@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import {
   createBrowserRouter,
@@ -126,7 +125,7 @@ function App() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="fetchmen" element={<AdminFetchmanPage />} />
-          <Route path="users" element={<AdminUserManagementPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
         </Route>
       </Route>
     )

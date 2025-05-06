@@ -54,7 +54,12 @@ export default function AdminUsersPage() {
       // Get user verification status from different profile tables
       const usersWithRoles = await Promise.all((data || []).map(async (user) => {
         let status = "active";
-        let role = user.user_roles?.[0]?.role || "unassigned";
+        // Here we need to extract the role from the user_roles array
+        let role = "unassigned";
+        
+        if (user.user_roles && user.user_roles.length > 0) {
+          role = user.user_roles[0].role;
+        }
 
         // Check different profile tables based on role
         if (role === "fetchman") {

@@ -1,5 +1,4 @@
 
--- Add our new check functions for the UserRelationshipDiagnostic component
 -- Function to check for foreign key constraints
 CREATE OR REPLACE FUNCTION public.check_foreign_key_constraints()
 RETURNS json

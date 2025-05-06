@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ReloadIcon, CheckCircleIcon, AlertCircleIcon } from "lucide-react";
+import { Loader, CheckCircle, AlertCircle } from "lucide-react";
 import { useSchemaFix } from "@/hooks/useSchemaFix";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -34,27 +34,17 @@ export const UserRelationshipDiagnostic = () => {
     
     try {
       // Check 1: Verify foreign key constraints exist
-      const { data: constraints, error: constraintsError } = await supabase
-        .from('information_schema.table_constraints')
-        .select('constraint_name, table_name')
-        .eq('constraint_type', 'FOREIGN KEY')
-        .or('table_name.eq.fetchman_profiles,table_name.eq.user_roles');
+      // Using a direct RPC call instead of querying information_schema to avoid type issues
+      const { data, error } = await supabase.rpc('check_foreign_key_constraints');
       
-      if (constraintsError) {
+      if (error) {
         diagnosticResults.push({
           success: false,
-          message: `Failed to check constraints: ${constraintsError.message}`
+          message: `Failed to check constraints: ${error.message}`
         });
-      } else {
-        const hasRoleConstraint = constraints?.some(c => 
-          c.table_name === 'user_roles' && 
-          c.constraint_name.includes('fk_user_roles_profile')
-        );
-        
-        const hasFetchmanConstraint = constraints?.some(c => 
-          c.table_name === 'fetchman_profiles' && 
-          c.constraint_name.includes('fk_fetchman_profiles_user_id')
-        );
+      } else if (data) {
+        const hasRoleConstraint = data.has_role_constraint;
+        const hasFetchmanConstraint = data.has_fetchman_constraint;
         
         diagnosticResults.push({
           success: true,
@@ -140,23 +130,21 @@ export const UserRelationshipDiagnostic = () => {
       }
       
       // Check 4: Verify the ensure_profile_exists trigger exists
-      const { data: triggers, error: triggersError } = await supabase
-        .from('information_schema.triggers')
-        .select('trigger_name, event_manipulation')
-        .eq('trigger_name', 'ensure_profile_before_insert');
+      // Using a direct RPC call instead of querying information_schema to avoid type issues
+      const { data: trigger, error: triggerError } = await supabase.rpc('check_trigger_exists');
       
-      if (triggersError) {
+      if (triggerError) {
         diagnosticResults.push({
           success: false,
-          message: `Failed to check triggers: ${triggersError.message}`
+          message: `Failed to check triggers: ${triggerError.message}`
         });
       } else {
         diagnosticResults.push({
-          success: triggers && triggers.length > 0,
-          message: triggers && triggers.length > 0
+          success: trigger && trigger.exists,
+          message: trigger && trigger.exists
             ? "Automatic profile creation trigger is active."
             : "Automatic profile creation trigger is missing.",
-          details: triggers
+          details: trigger
         });
       }
     } catch (error: any) {
@@ -260,9 +248,9 @@ export const UserRelationshipDiagnostic = () => {
                 <Alert key={index} variant={result.success ? "default" : "destructive"}>
                   <div className="flex items-center">
                     {result.success ? (
-                      <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                     ) : (
-                      <AlertCircleIcon className="h-4 w-4 text-red-500 mr-2" />
+                      <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
                     )}
                     <AlertTitle className="text-sm font-medium">
                       {result.success ? "Success" : "Issue Detected"}
@@ -315,7 +303,7 @@ export const UserRelationshipDiagnostic = () => {
           disabled={loading}
           className="mr-2"
         >
-          {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+          {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
           Run Diagnostic
         </Button>
         
@@ -324,7 +312,7 @@ export const UserRelationshipDiagnostic = () => {
           onClick={() => repairProfiles(true)}
           disabled={isRepairing}
         >
-          {isRepairing && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+          {isRepairing && <Loader className="mr-2 h-4 w-4 animate-spin" />}
           Repair All Profile Links
         </Button>
         

@@ -18,7 +18,8 @@ export const useUserDeletion = () => {
       setIsChecking(true);
       console.log(`Checking if user exists: ${userId}`);
       
-      const { data, error } = await supabase.rpc('check_user_exists', {
+      // Use type assertion to bypass TypeScript restrictions on RPC function names
+      const { data, error } = await (supabase.rpc as any)('check_user_exists', {
         user_id: userId
       });
       
@@ -33,7 +34,8 @@ export const useUserDeletion = () => {
       }
       
       console.log("User check result:", data);
-      const result = data as CheckUserResult;
+      // Cast to unknown first, then to our expected type
+      const result = data as unknown as CheckUserResult;
       setUserDetails(result);
       return result;
     } catch (error: any) {
@@ -58,7 +60,8 @@ export const useUserDeletion = () => {
       console.log(`Starting deletion process for user: ${userId}`);
       
       // First delete from database tables using our SQL function
-      const { data: dbDeletionData, error: dbDeletionError } = await supabase.rpc(
+      // Use type assertion to bypass TypeScript restrictions on RPC function names
+      const { data: dbDeletionData, error: dbDeletionError } = await (supabase.rpc as any)(
         'delete_fetchman_user_completely',
         { fetchman_user_id: userId }
       );
@@ -72,7 +75,8 @@ export const useUserDeletion = () => {
       }
       
       console.log("Database deletion result:", dbDeletionData);
-      const result = dbDeletionData as DeleteUserResult;
+      // Cast to unknown first, then to our expected type
+      const result = dbDeletionData as unknown as DeleteUserResult;
       
       if (!result.success) {
         return result;

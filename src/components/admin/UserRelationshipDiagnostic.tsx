@@ -52,10 +52,7 @@ export const UserRelationshipDiagnostic = () => {
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
       const { data: constraintsData, error: constraintsError } = await supabase
-        .from('rpc')
-        .select('*')
-        .eq('fn_name', 'check_foreign_key_constraints')
-        .maybeSingle();
+        .rpc('check_foreign_key_constraints');
       
       if (constraintsError) {
         diagnosticResults.push({
@@ -64,9 +61,9 @@ export const UserRelationshipDiagnostic = () => {
         });
       } else if (constraintsData) {
         // Parse the response as our expected type
-        const data = constraintsData.result as ForeignKeyConstraintsResult;
-        const hasRoleConstraint = data.has_role_constraint;
-        const hasFetchmanConstraint = data.has_fetchman_constraint;
+        const constraints = constraintsData as ForeignKeyConstraintsResult;
+        const hasRoleConstraint = constraints.has_role_constraint;
+        const hasFetchmanConstraint = constraints.has_fetchman_constraint;
         
         diagnosticResults.push({
           success: true,
@@ -153,10 +150,7 @@ export const UserRelationshipDiagnostic = () => {
       
       // Check 4: Verify the ensure_profile_exists trigger exists
       const { data: triggerData, error: triggerError } = await supabase
-        .from('rpc')
-        .select('*')
-        .eq('fn_name', 'check_trigger_exists')
-        .maybeSingle();
+        .rpc('check_trigger_exists');
       
       if (triggerError) {
         diagnosticResults.push({
@@ -165,10 +159,10 @@ export const UserRelationshipDiagnostic = () => {
         });
       } else if (triggerData) {
         // Parse the response as our expected type
-        const data = triggerData.result as TriggerExistsResult;
+        const trigger = triggerData as TriggerExistsResult;
         diagnosticResults.push({
-          success: data.exists,
-          message: data.exists
+          success: trigger.exists,
+          message: trigger.exists
             ? "Automatic profile creation trigger is active."
             : "Automatic profile creation trigger is missing.",
           details: triggerData

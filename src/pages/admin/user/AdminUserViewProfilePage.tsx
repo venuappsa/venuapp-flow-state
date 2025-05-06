@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -106,7 +105,7 @@ export default function AdminUserViewProfilePage() {
         roleSpecificData.fetchman = data;
       }
       
-      if (userRoles.includes("vendor") || userRoles.includes("merchant")) {
+      if (userRoles.includes("merchant")) {
         const { data } = await supabase
           .from("vendor_profiles")
           .select("*")

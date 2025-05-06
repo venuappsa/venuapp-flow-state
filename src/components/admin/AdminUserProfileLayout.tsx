@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -163,7 +162,6 @@ const AdminUserProfileLayout = ({ children, activeTab }: AdminUserProfileLayoutP
           return <Badge key={role} className="bg-purple-100 text-purple-800">Admin</Badge>;
         case "fetchman":
           return <Badge key={role} className="bg-blue-100 text-blue-800">Fetchman</Badge>;
-        case "vendor":
         case "merchant":
           return <Badge key={role} className="bg-green-100 text-green-800">Vendor</Badge>;
         case "host":

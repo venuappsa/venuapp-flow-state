@@ -130,7 +130,15 @@ function App() {
             <Route index element={<AdminUsersPage />} />
             <Route path=":userId">
               <Route path="profile" element={<AdminUserViewProfilePage />} />
-              {/* Other user profile pages will be added here */}
+              {/* Other user profile pages (these paths exist in the layout tabs) */}
+              <Route path="edit" element={<AdminUserViewProfilePage />} />
+              <Route path="transactions" element={<AdminUserViewProfilePage />} />
+              <Route path="revenue" element={<AdminUserViewProfilePage />} />
+              <Route path="message" element={<AdminUserViewProfilePage />} />
+              <Route path="reset-password" element={<AdminUserViewProfilePage />} />
+              <Route path="flag" element={<AdminUserViewProfilePage />} />
+              <Route path="blacklist" element={<AdminUserViewProfilePage />} />
+              <Route path="deactivate" element={<AdminUserViewProfilePage />} />
             </Route>
           </Route>
         </Route>

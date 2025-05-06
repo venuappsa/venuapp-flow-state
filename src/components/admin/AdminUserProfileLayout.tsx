@@ -82,7 +82,7 @@ const AdminUserProfileLayout = ({ children, activeTab }: AdminUserProfileLayoutP
         } else {
           status = "pending";
         }
-      } else if (roles.includes("vendor") || roles.includes("merchant")) {
+      } else if (roles.includes("merchant")) {
         const { data: vendor } = await supabase
           .from('vendor_profiles')
           .select('verification_status, is_suspended')

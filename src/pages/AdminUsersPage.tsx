@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
@@ -210,7 +209,6 @@ export default function AdminUsersPage() {
         return <Badge className="bg-purple-100 text-purple-800">Admin</Badge>;
       case "fetchman":
         return <Badge className="bg-blue-100 text-blue-800">Fetchman</Badge>;
-      case "vendor":
       case "merchant":
         return <Badge className="bg-green-100 text-green-800">Vendor</Badge>;
       case "host":
@@ -242,13 +240,12 @@ export default function AdminUsersPage() {
     switch(user.role) {
       case "fetchman":
         return `/admin/fetchman/${user.id}`;
-      case "vendor":
       case "merchant":
         return `/admin/merchants/${user.id}`;
       case "host":
         return `/admin/hosts/${user.id}`;
       default:
-        return `/admin/users/${user.id}`;
+        return `/admin/users/${user.id}/profile`;
     }
   };
 

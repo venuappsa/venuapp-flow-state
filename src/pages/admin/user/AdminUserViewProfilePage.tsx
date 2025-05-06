@@ -112,7 +112,7 @@ export default function AdminUserViewProfilePage() {
           .eq("user_id", userId)
           .single();
         
-        roleSpecificData.vendor = data;
+        roleSpecificData.merchant = data;
       }
       
       if (userRoles.includes("host")) {
@@ -211,32 +211,32 @@ export default function AdminUserViewProfilePage() {
           </Card>
         )}
 
-        {roleSpecificData.vendor && (
+        {roleSpecificData.merchant && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-lg">Vendor Details</CardTitle>
+              <CardTitle className="text-lg">Merchant Details</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Company Name</p>
-                  <p className="font-medium">{roleSpecificData.vendor.company_name || 'Not provided'}</p>
+                  <p className="font-medium">{roleSpecificData.merchant.company_name || 'Not provided'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Contact Name</p>
-                  <p className="font-medium">{roleSpecificData.vendor.contact_name || 'Not provided'}</p>
+                  <p className="font-medium">{roleSpecificData.merchant.contact_name || 'Not provided'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Contact Email</p>
-                  <p className="font-medium">{roleSpecificData.vendor.contact_email || 'Not provided'}</p>
+                  <p className="font-medium">{roleSpecificData.merchant.contact_email || 'Not provided'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Contact Phone</p>
-                  <p className="font-medium">{roleSpecificData.vendor.contact_phone || 'Not provided'}</p>
+                  <p className="font-medium">{roleSpecificData.merchant.contact_phone || 'Not provided'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Verification Status</p>
-                  <p className="font-medium">{roleSpecificData.vendor.verification_status}</p>
+                  <p className="font-medium">{roleSpecificData.merchant.verification_status}</p>
                 </div>
               </div>
             </CardContent>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -36,13 +37,20 @@ export default function AdminUsersPage() {
   const { data: users = [], isLoading, error, refetch } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
+      console.log("Fetching users for admin panel...");
+      
       // Modified query: First get all profiles without the join
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, name, surname, email, created_at')
         .order('created_at', { ascending: false });
       
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("Error fetching profiles:", profilesError);
+        throw profilesError;
+      }
+      
+      console.log(`Found ${profiles?.length || 0} user profiles`);
 
       // Get user roles in a separate query
       const usersWithRoles = await Promise.all((profiles || []).map(async (profile) => {
@@ -52,27 +60,36 @@ export default function AdminUsersPage() {
           .select('role')
           .eq('user_id', profile.id);
         
-        if (roleError) console.error("Error fetching role for user:", profile.id, roleError);
+        if (roleError) {
+          console.error("Error fetching role for user:", profile.id, roleError);
+        }
         
         // Extract role or default to unassigned
         let role = "unassigned";
         if (roleData && roleData.length > 0) {
           role = roleData[0].role;
         }
+        
+        console.log(`User ${profile.email} has role: ${role}`);
 
         // Get user verification status from different profile tables based on role
         let status = "active";
         
         // Check different profile tables based on role
         if (role === "fetchman") {
-          const { data: fetchman } = await supabase
+          const { data: fetchman, error: fetchmanError } = await supabase
             .from('fetchman_profiles')
             .select('verification_status, is_suspended')
             .eq('user_id', profile.id)
             .single();
           
+          if (fetchmanError) {
+            console.log(`No fetchman profile found for ${profile.email}`, fetchmanError);
+          }
+          
           if (fetchman) {
             status = fetchman.is_suspended ? "suspended" : fetchman.verification_status;
+            console.log(`Fetchman ${profile.email} status: ${status}`);
           }
         } else if (role === "vendor" || role === "merchant") {
           const { data: vendor } = await supabase
@@ -103,6 +120,12 @@ export default function AdminUsersPage() {
         } as User;
       }));
 
+      console.log(`Processed ${usersWithRoles.length} users with roles and status`);
+      
+      // Check specifically for fetchman users
+      const fetchmanUsers = usersWithRoles.filter(user => user.role === 'fetchman');
+      console.log(`Found ${fetchmanUsers.length} fetchman users:`, fetchmanUsers);
+
       return usersWithRoles;
     }
   });
@@ -113,6 +136,20 @@ export default function AdminUsersPage() {
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Log filtered users to help diagnose issues
+  React.useEffect(() => {
+    if (users.length > 0) {
+      console.log(`Total users: ${users.length}`);
+      console.log(`Filtered users: ${filteredUsers.length}`);
+      console.log('User roles distribution:', 
+        users.reduce((acc, user) => {
+          acc[user.role] = (acc[user.role] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      );
+    }
+  }, [users, filteredUsers]);
 
   const getRoleBadge = (role: string) => {
     switch (role) {

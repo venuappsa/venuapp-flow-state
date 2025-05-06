@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import {
   createBrowserRouter,
@@ -31,6 +32,7 @@ import MerchantPage from "./pages/MerchantPage";
 import FetchmanPage from "./pages/FetchmanPage";
 import AttendeePage from "./pages/AttendeePage";
 import SubscribePage from "./pages/SubscribePage";
+import SubscriptionManagementPage from "./pages/SubscriptionManagementPage";
 
 function App() {
   // Debug theme setup
@@ -48,7 +50,8 @@ function App() {
       <Route path="/" element={<MainLayout />} errorElement={<ErrorPage />}>
         <Route index element={<Index />} />
         <Route path="auth" element={<AuthenticationPage />} />
-        <Route path="subscribe" element={<SubscriptionPage />} />
+        {/* Update to use the fully implemented subscription management page */}
+        <Route path="subscribe" element={<SubscriptionManagementPage />} />
 
         {/* Feature Pages */}
         <Route path="features/host" element={<HostPage />} />
@@ -70,6 +73,17 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["host"]}>
               <HostDashboardPage />
+            </ProtectedRoute>
+          }
+          errorElement={<ErrorPage />}
+        />
+        
+        {/* Host subscription management route */}
+        <Route
+          path="host/subscription"
+          element={
+            <ProtectedRoute allowedRoles={["host"]}>
+              <SubscriptionManagementPage />
             </ProtectedRoute>
           }
           errorElement={<ErrorPage />}

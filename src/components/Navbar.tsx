@@ -89,6 +89,9 @@ export default function Navbar() {
     if (isMobile) setMobileMenuOpen(false);
   };
 
+  // Determine subscription link based on authentication status
+  const subscriptionLink = user ? "/host/subscription" : "/subscribe";
+
   // Always show SecurePanelButton for all users; it switches text based on auth state.
   return (
     <nav className="w-full border-b bg-white shadow z-50 sticky top-0">
@@ -160,7 +163,7 @@ export default function Navbar() {
               Contact
             </button>
             <Link
-              to="/subscribe"
+              to={subscriptionLink}
               className="text-gray-700 hover:text-black px-2 py-1 rounded transition-colors text-xs sm:text-sm font-medium"
             >
               Subscribe

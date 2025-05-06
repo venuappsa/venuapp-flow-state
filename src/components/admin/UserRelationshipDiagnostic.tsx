@@ -42,6 +42,12 @@ interface AuthUser {
   };
 }
 
+// Define the shape of auth response
+interface AuthUsersResponse {
+  users?: AuthUser[];
+  error?: any;
+}
+
 export const UserRelationshipDiagnostic = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<DiagnosticResult[]>([]);
@@ -203,7 +209,11 @@ export const UserRelationshipDiagnostic = () => {
     }
     
     try {
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      // Cast the response to include the correct type information
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers() as unknown as {
+        data: AuthUsersResponse | null;
+        error: any;
+      };
       
       if (authError) {
         toast({
@@ -217,9 +227,9 @@ export const UserRelationshipDiagnostic = () => {
       // Map of user IDs to auth user data
       const userMap = new Map<string, AuthUser>();
       
-      if (authUsers?.users) {
-        authUsers.users.forEach(user => {
-          userMap.set(user.id, user as AuthUser);
+      if (authUsers?.users && Array.isArray(authUsers.users)) {
+        authUsers.users.forEach((user: AuthUser) => {
+          userMap.set(user.id, user);
         });
       }
       

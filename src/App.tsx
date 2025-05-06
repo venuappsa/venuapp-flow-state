@@ -51,9 +51,10 @@ function App() {
       <Route path="/" element={<MainLayout />} errorElement={<ErrorPage />}>
         <Route index element={<Index />} />
         <Route path="auth" element={<AuthenticationPage />} />
-        {/* Update to use the fully implemented subscription management page */}
-        <Route path="subscribe" element={<SubscriptionManagementPage />} />
-
+        
+        {/* Public subscription routes */}
+        <Route path="subscribe" element={<SubscribePage />} />
+        
         {/* Feature Pages */}
         <Route path="features/host" element={<HostPage />} />
         <Route path="features/merchant" element={<MerchantPage />} />

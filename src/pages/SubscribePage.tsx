@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,26 +44,14 @@ const SubscribePage = () => {
   const location = useLocation();
   const breakpoint = useBreakpoint();
   
+  // Redirect authenticated users to the subscription management page
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const subStatus = params.get('subscription');
-    
-    if (subStatus === 'success') {
-      toast({
-        title: "Subscription successful!",
-        description: "Your subscription has been activated.",
-        variant: "default"
-      });
-      checkSubscription();
-    } else if (subStatus === 'canceled') {
-      toast({
-        title: "Subscription canceled",
-        description: "You can subscribe at any time when you're ready.",
-        variant: "default"
-      });
+    if (user) {
+      console.log("SubscribePage: User logged in, redirecting to host/subscription");
+      navigate("/host/subscription");
     }
-  }, [location.search]);
-
+  }, [user, navigate]);
+  
   const isHost = userRoles?.includes("host");
   const pricingPlans = getPricingPlans();
 
@@ -521,30 +508,12 @@ const SubscribePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow pt-20">
-        {isHost ? (
+      <main className="flex-grow pt-8">
+        {/* Since we've added Navbar to MainLayout, we don't need it here */}
+        {user ? (
           <>
             {renderPricingPlans()}
-            <section className="py-12 bg-white">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-                <div className="max-w-3xl mx-auto space-y-6">
-                  <div className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="font-medium mb-2">Can I pause my subscription?</h3>
-                    <p className="text-gray-600">Yes, you can pause your subscription once per quarter for up to 14 days. Visit the subscription management page to use this feature.</p>
-                  </div>
-                  <div className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="font-medium mb-2">How do commissions work?</h3>
-                    <p className="text-gray-600">Commissions are calculated on transaction volume processed through the platform. Higher tier plans offer lower commission rates.</p>
-                  </div>
-                  <div className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="font-medium mb-2">What happens if I exceed my plan limits?</h3>
-                    <p className="text-gray-600">If you exceed your plan limits, we'll notify you and suggest upgrading to a higher tier. There's a grace period before any additional charges apply.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+            {/* ... keep existing code (FAQ section) */}
           </>
         ) : (
           <>
@@ -553,7 +522,6 @@ const SubscribePage = () => {
           </>
         )}
       </main>
-      <Footer />
     </div>
   );
 };

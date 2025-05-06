@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -18,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface User {
   id: string;
@@ -36,42 +36,39 @@ export default function AdminUsersPage() {
   const { data: users = [], isLoading, error, refetch } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      // This query joins user profiles with role information
-      const { data, error } = await supabase
+      // Modified query: First get all profiles without the join
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          name,
-          surname,
-          email,
-          created_at,
-          user_roles!inner(role)
-        `)
+        .select('id, name, surname, email, created_at')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (profilesError) throw profilesError;
 
-      // Get user verification status from different profile tables
-      const usersWithRoles = await Promise.all((data || []).map(async (user) => {
-        let status = "active";
-        // Here we need to extract the role from the user_roles array
-        let role = "unassigned";
+      // Get user roles in a separate query
+      const usersWithRoles = await Promise.all((profiles || []).map(async (profile) => {
+        // Fetch role from user_roles table for this user
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', profile.id);
         
-        // Safely check and extract the role
-        // Type guard to check if user_roles is an array
-        if (Array.isArray(user.user_roles) && user.user_roles.length > 0) {
-          const userRole = user.user_roles[0];
-          if (userRole && typeof userRole === 'object' && 'role' in userRole) {
-            role = userRole.role;
-          }
+        if (roleError) console.error("Error fetching role for user:", profile.id, roleError);
+        
+        // Extract role or default to unassigned
+        let role = "unassigned";
+        if (roleData && roleData.length > 0) {
+          role = roleData[0].role;
         }
 
+        // Get user verification status from different profile tables based on role
+        let status = "active";
+        
         // Check different profile tables based on role
         if (role === "fetchman") {
           const { data: fetchman } = await supabase
             .from('fetchman_profiles')
             .select('verification_status, is_suspended')
-            .eq('user_id', user.id)
+            .eq('user_id', profile.id)
             .single();
           
           if (fetchman) {
@@ -81,7 +78,7 @@ export default function AdminUsersPage() {
           const { data: vendor } = await supabase
             .from('vendor_profiles')
             .select('verification_status, is_suspended')
-            .eq('user_id', user.id)
+            .eq('user_id', profile.id)
             .single();
           
           if (vendor) {
@@ -91,7 +88,7 @@ export default function AdminUsersPage() {
           const { data: host } = await supabase
             .from('host_profiles')
             .select('verification_status, is_suspended')
-            .eq('user_id', user.id)
+            .eq('user_id', profile.id)
             .single();
           
           if (host) {
@@ -100,7 +97,7 @@ export default function AdminUsersPage() {
         }
 
         return {
-          ...user,
+          ...profile,
           role,
           status
         } as User;

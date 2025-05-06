@@ -25,10 +25,17 @@ interface TriggerExistsResult {
   exists: boolean;
 }
 
+// Define a type for orphaned profile data
+interface OrphanedProfile {
+  user_id: string;
+  role: string;
+  profiles: null;
+}
+
 export const UserRelationshipDiagnostic = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<DiagnosticResult[]>([]);
-  const [orphanedProfiles, setOrphanedProfiles] = useState<any[]>([]);
+  const [orphanedProfiles, setOrphanedProfiles] = useState<OrphanedProfile[]>([]);
   const { toast } = useToast();
   const { 
     repairProfiles, 
@@ -88,7 +95,7 @@ export const UserRelationshipDiagnostic = () => {
         
         // Store orphaned profiles for potential repair
         if (missingProfiles && missingProfiles.length > 0) {
-          setOrphanedProfiles(missingProfiles);
+          setOrphanedProfiles(missingProfiles as OrphanedProfile[]);
         } else {
           setOrphanedProfiles([]);
         }

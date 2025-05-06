@@ -7,6 +7,7 @@ import HostHeader from "@/components/HostHeader";
 import { useToast } from "@/components/ui/use-toast";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import SystemBanners from "@/components/banners/SystemBanners";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface HostPanelLayoutProps {
   children?: React.ReactNode;
@@ -37,7 +38,9 @@ export default function HostPanelLayout({ children }: HostPanelLayoutProps) {
           <SystemBanners />
           <div className="flex-1 overflow-auto">
             <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
-              {children || <Outlet />}
+              <ErrorBoundary>
+                {children || <Outlet />}
+              </ErrorBoundary>
             </main>
           </div>
         </div>

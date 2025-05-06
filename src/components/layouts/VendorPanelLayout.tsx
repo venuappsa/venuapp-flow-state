@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorHeader from "@/components/vendor/VendorHeader";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface VendorPanelLayoutProps {
   children?: React.ReactNode;
@@ -57,7 +58,9 @@ export default function VendorPanelLayout({ children }: VendorPanelLayoutProps) 
         <VendorHeader />
         <ScrollArea className="flex-1 pt-16">
           <main className="px-4 py-6">
-            {children || <Outlet />}
+            <ErrorBoundary>
+              {children || <Outlet />}
+            </ErrorBoundary>
           </main>
         </ScrollArea>
       </div>

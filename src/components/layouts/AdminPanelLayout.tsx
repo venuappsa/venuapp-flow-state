@@ -9,6 +9,7 @@ import { AdminAccessSelfTest } from "@/components/admin/AdminAccessSelfTest";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface AdminPanelLayoutProps {
   children?: React.ReactNode;
@@ -37,7 +38,9 @@ function AdminPanelLayoutContent() {
             <AdminAccessSelfTest />
           </div>
           <main className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </main>
         </div>
       </div>
@@ -60,7 +63,9 @@ export default function AdminPanelLayout({ children }: AdminPanelLayoutProps) {
       showFallback={true}
     >
       <SidebarProvider>
-        <AdminPanelLayoutContent />
+        <ErrorBoundary>
+          <AdminPanelLayoutContent />
+        </ErrorBoundary>
       </SidebarProvider>
     </AuthTransitionWrapper>
   );

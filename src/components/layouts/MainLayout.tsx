@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ScrollToTop } from "@/components/utils/ScrollToTop";
 import { useTheme } from "@/components/ui/theme-provider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function MainLayout() {
   const { theme } = useTheme();
@@ -18,7 +19,9 @@ export default function MainLayout() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <ScrollToTop />
       <main className="flex-grow w-full">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <Toaster />
     </div>

@@ -24,6 +24,8 @@ import AdminFetchmanPage from "./pages/admin/AdminFetchmanPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
 import Index from "./pages/Index";
+import ErrorPage from "./pages/ErrorPage";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 function App() {
   // Debug theme setup
@@ -38,7 +40,7 @@ function App() {
 
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/" element={<MainLayout />}>
+      <Route path="/" element={<MainLayout />} errorElement={<ErrorPage />}>
         <Route index element={<Index />} />
         <Route path="auth" element={<AuthenticationPage />} />
         <Route path="subscribe" element={<SubscriptionPage />} />
@@ -51,6 +53,7 @@ function App() {
               <HostDashboardPage />
             </ProtectedRoute>
           }
+          errorElement={<ErrorPage />}
         />
         <Route
           path="host/venues/:venueId"
@@ -59,6 +62,7 @@ function App() {
               <VenueDetailsPage />
             </ProtectedRoute>
           }
+          errorElement={<ErrorPage />}
         />
         <Route
           path="host/venues/new"
@@ -67,6 +71,7 @@ function App() {
               <NewVenuePage />
             </ProtectedRoute>
           }
+          errorElement={<ErrorPage />}
         />
         <Route
           path="host/venues/:venueId/edit"
@@ -75,6 +80,7 @@ function App() {
               <EditVenuePage />
             </ProtectedRoute>
           }
+          errorElement={<ErrorPage />}
         />
 
         {/* Fetchman routes - only accessible to fetchmans */}
@@ -85,12 +91,17 @@ function App() {
               <FetchmanPanelLayout />
             </ProtectedRoute>
           }
+          errorElement={<ErrorPage />}
         >
           <Route index element={<FetchmanDashboardPage />} />
         </Route>
         
         {/* Admin routes */}
-        <Route path="/admin" element={<AdminPanelLayout />}>
+        <Route 
+          path="/admin" 
+          element={<AdminPanelLayout />}
+          errorElement={<ErrorPage />}
+        >
           <Route index element={<AdminDashboardPage />} />
           <Route path="fetchmen" element={<AdminFetchmanPage />} />
           <Route path="users" element={<AdminUserManagementPage />} />
@@ -105,7 +116,9 @@ function App() {
       storageKey="venu-theme"
       attribute="class"
     >
-      <RouterProvider router={router} />
+      <ErrorBoundary>
+        <RouterProvider router={router} />
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

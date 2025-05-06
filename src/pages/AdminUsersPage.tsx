@@ -81,8 +81,8 @@ export default function AdminUsersPage() {
             .from('fetchman_profiles')
             .select('verification_status, is_suspended')
             .eq('user_id', profile.id)
-            .single();
-          
+            .maybeSingle(); // Changed from single() to maybeSingle() to handle missing profiles
+           
           if (fetchmanError) {
             console.log(`No fetchman profile found for ${profile.email}`, fetchmanError);
           }
@@ -90,26 +90,34 @@ export default function AdminUsersPage() {
           if (fetchman) {
             status = fetchman.is_suspended ? "suspended" : fetchman.verification_status;
             console.log(`Fetchman ${profile.email} status: ${status}`);
+          } else {
+            // Default status if no fetchman profile is found
+            status = "pending";
+            console.log(`Fetchman ${profile.email} has no profile record, using default status: ${status}`);
           }
         } else if (role === "vendor" || role === "merchant") {
           const { data: vendor } = await supabase
             .from('vendor_profiles')
             .select('verification_status, is_suspended')
             .eq('user_id', profile.id)
-            .single();
+            .maybeSingle(); // Changed from single() to maybeSingle()
           
           if (vendor) {
             status = vendor.is_suspended ? "suspended" : vendor.verification_status;
+          } else {
+            status = "pending";
           }
         } else if (role === "host") {
           const { data: host } = await supabase
             .from('host_profiles')
             .select('verification_status, is_suspended')
             .eq('user_id', profile.id)
-            .single();
+            .maybeSingle(); // Changed from single() to maybeSingle()
           
           if (host) {
             status = host.is_suspended ? "suspended" : host.verification_status;
+          } else {
+            status = "pending";
           }
         }
 

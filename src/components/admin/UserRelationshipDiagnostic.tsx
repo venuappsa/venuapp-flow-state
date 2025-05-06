@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader, CheckCircle, AlertCircle } from "@/components/ui/icons";
+import { Loader, CheckCircle, AlertCircle } from "lucide-react";
 import { useSchemaFix } from "@/hooks/useSchemaFix";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -51,7 +51,7 @@ export const UserRelationshipDiagnostic = () => {
     
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
-      const { data, error } = await supabase.rpc<ForeignKeyConstraintsResult, ForeignKeyConstraintsResult>('check_foreign_key_constraints');
+      const { data, error } = await supabase.rpc('check_foreign_key_constraints');
       
       if (error) {
         diagnosticResults.push({
@@ -59,8 +59,10 @@ export const UserRelationshipDiagnostic = () => {
           message: `Failed to check constraints: ${error.message}`
         });
       } else if (data) {
-        const hasRoleConstraint = data.has_role_constraint;
-        const hasFetchmanConstraint = data.has_fetchman_constraint;
+        // Type assertion to handle the response
+        const constraintsData = data as ForeignKeyConstraintsResult;
+        const hasRoleConstraint = constraintsData.has_role_constraint;
+        const hasFetchmanConstraint = constraintsData.has_fetchman_constraint;
         
         diagnosticResults.push({
           success: true,
@@ -146,7 +148,7 @@ export const UserRelationshipDiagnostic = () => {
       }
       
       // Check 4: Verify the ensure_profile_exists trigger exists
-      const { data: trigger, error: triggerError } = await supabase.rpc<TriggerExistsResult, TriggerExistsResult>('check_trigger_exists');
+      const { data: trigger, error: triggerError } = await supabase.rpc('check_trigger_exists');
       
       if (triggerError) {
         diagnosticResults.push({
@@ -154,9 +156,11 @@ export const UserRelationshipDiagnostic = () => {
           message: `Failed to check triggers: ${triggerError.message}`
         });
       } else if (trigger) {
+        // Type assertion to handle the response
+        const triggerData = trigger as TriggerExistsResult;
         diagnosticResults.push({
-          success: trigger.exists,
-          message: trigger.exists
+          success: triggerData.exists,
+          message: triggerData.exists
             ? "Automatic profile creation trigger is active."
             : "Automatic profile creation trigger is missing.",
           details: trigger

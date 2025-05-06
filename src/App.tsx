@@ -33,6 +33,7 @@ import FetchmanPage from "./pages/FetchmanPage";
 import AttendeePage from "./pages/AttendeePage";
 import SubscribePage from "./pages/SubscribePage";
 import SubscriptionManagementPage from "./pages/SubscriptionManagementPage";
+import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   // Debug theme setup
@@ -124,6 +125,7 @@ function App() {
     >
       <ErrorBoundary>
         <RouterProvider router={router} />
+        <Toaster />
       </ErrorBoundary>
     </ThemeProvider>
   );

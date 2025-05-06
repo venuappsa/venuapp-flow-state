@@ -1,7 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+// Using our own hook implementation to prevent circular imports
+import { useToast as useToastHook } from "@/hooks/use-toast";
 
 interface Notification {
   id: string;
@@ -34,7 +36,7 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
-  const { toast } = useToast();
+  const { toast } = useToastHook();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     enableEmailNotifications: true,

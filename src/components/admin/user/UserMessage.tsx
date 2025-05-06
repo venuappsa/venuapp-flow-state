@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +44,7 @@ interface Message {
 
 export default function UserMessage() {
   const { userId } = useParams<{ userId: string }>();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("support");
@@ -64,17 +65,16 @@ export default function UserMessage() {
     enabled: !!userId,
   });
 
-  // In a real implementation, we would fetch message history
-  // from a messages table in the database
-  const { data: messageHistory, isLoading: messagesLoading } = useQuery<Message[]>({
+  // Query for fetching message history
+  const { data: messageHistory, isLoading: messagesLoading, refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["admin-user-messages", userId],
     queryFn: async () => {
       // Try to fetch real messages if they exist
       try {
         const { data, error } = await supabase
-          .from("fetchman_messages") // This is just one potential message table
+          .from("fetchman_messages") // Use an appropriate message table
           .select("*")
-          .eq("fetchman_id", userId)
+          .or(`fetchman_id.eq.${userId},admin_id.eq.${userId}`)
           .order("sent_at", { ascending: false });
           
         if (error) {
@@ -93,27 +93,45 @@ export default function UserMessage() {
             read: msg.read
           }));
         }
+        
+        // If no data found, use mock data
+        return getMockMessages(userId || "");
       } catch (error) {
         console.log("Error in message query:", error);
+        return getMockMessages(userId || "");
       }
-      
-      // If no real messages found or error occurred, use mock data
-      console.log("Using mock message data");
-      return getMockMessages(userId || "");
     },
     enabled: !!userId,
   });
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
-    
-    setIsSending(true);
-    
-    try {
-      // In a real implementation, we would save the message to the database
-      // For now, we'll just simulate a successful send
+  // Create a mutation for sending messages
+  const sendMessageMutation = useMutation({
+    mutationFn: async (newMessage: string) => {
+      // Attempt to save message to database
+      const adminId = "admin"; // In production, this would be the actual admin's ID
       
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const { data, error } = await supabase
+        .from("fetchman_messages")
+        .insert({
+          fetchman_id: userId,
+          admin_id: adminId,
+          message: newMessage,
+          sender_role: "admin",
+          sent_at: new Date().toISOString(),
+          read: false
+        })
+        .select();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch queries after successful message send
+      queryClient.invalidateQueries({ queryKey: ["admin-user-messages", userId] });
+      refetchMessages();
       
       toast({
         title: "Message sent",
@@ -121,13 +139,24 @@ export default function UserMessage() {
       });
       
       setMessage("");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error sending message:", error);
       toast({
         title: "Message failed",
         description: "There was an error sending your message.",
         variant: "destructive",
       });
+    }
+  });
+
+  const handleSendMessage = async () => {
+    if (!message.trim() || isSending) return;
+    
+    setIsSending(true);
+    
+    try {
+      await sendMessageMutation.mutateAsync(message);
     } finally {
       setIsSending(false);
     }

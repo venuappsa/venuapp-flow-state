@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { 
@@ -25,6 +25,8 @@ interface UserProfileData {
 
 export default function UserResetPassword() {
   const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isResetting, setIsResetting] = useState(false);
   const [resetStatus, setResetStatus] = useState<"idle" | "success" | "error">("idle");
@@ -59,17 +61,34 @@ export default function UserResetPassword() {
     setResetStatus("idle");
 
     try {
-      // In production this would use the Supabase admin API to reset the password
-      // Since we don't have direct access to that API from the client,
-      // we'd normally call a secure server endpoint
+      // In production this would use Auth API to reset the password
+      // This requires admin privileges so we'd call an edge function or secure API endpoint
       
-      // For now, simulate sending a password reset email
-      console.log(`Sending password reset email to ${userProfile.email}`);
+      // Send password recovery email via Supabase Auth API
+      const { error } = await supabase.auth.resetPasswordForEmail(userProfile.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (error) throw error;
       
-      // Simulate successful reset
+      // Log this action in admin activity logs (if applicable)
+      try {
+        await supabase
+          .from('admin_activity_logs')
+          .insert({
+            admin_id: 'admin', // In production, this would be the actual admin ID
+            action: 'password_reset_initiated',
+            details: `Password reset initiated for user: ${userProfile.email}`,
+            user_id: userId
+          });
+      } catch (logError) {
+        console.error("Failed to log admin activity:", logError);
+        // Non-critical error, don't need to throw
+      }
+      
+      // Update query data
+      queryClient.invalidateQueries(["admin-user-activities", userId]);
+      
       setResetStatus("success");
       toast({
         title: "Password reset initiated",
@@ -159,16 +178,28 @@ export default function UserResetPassword() {
           )}
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-col xs:flex-row gap-2 w-full">
+        <Button 
+          onClick={() => navigate(`/admin/users/${userId}/profile`)}
+          variant="outline"
+          className="w-full"
+        >
+          Back to Profile
+        </Button>
         <Button 
           onClick={handleResetPassword} 
-          disabled={isResetting || !userProfile?.email}
+          disabled={isResetting || !userProfile?.email || resetStatus === "success"}
           className="w-full"
         >
           {isResetting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Sending Reset Email...
+            </>
+          ) : resetStatus === "success" ? (
+            <>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Email Sent
             </>
           ) : (
             "Send Password Reset Email"

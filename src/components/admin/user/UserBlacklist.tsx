@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +33,8 @@ interface UserProfileData {
 
 export default function UserBlacklist() {
   const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [reason, setReason] = useState("");
   const [confirmDisable, setConfirmDisable] = useState(false);
@@ -90,10 +92,7 @@ export default function UserBlacklist() {
     setIsBlacklisting(true);
 
     try {
-      // In a real implementation, we would update the user's status in the database
-      // and potentially add them to a blacklist table
-      
-      // For fetchman users, there's already a blacklist setup we can use
+      // For fetchman users, use the existing blacklist setup
       if (userProfile?.roles.includes("fetchman")) {
         // Check if there's a fetchman profile
         const { data: fetchmanProfile } = await supabase
@@ -123,20 +122,65 @@ export default function UserBlacklist() {
         }
       }
       
-      // For other user types, we'd handle blacklisting differently
-      // but for now we'll just show a successful toast
+      // For other user types, create a general blacklist entry
+      try {
+        await supabase
+          .from('user_blacklist')
+          .insert({
+            user_id: userId,
+            blacklisted_by: 'admin', // In production, this would be the actual admin ID
+            reason: reason,
+            content_deleted: confirmDelete
+          });
+      } catch (blacklistError) {
+        console.error("Failed to create blacklist entry (table may not exist):", blacklistError);
+        // Non-critical error if table doesn't exist
+      }
+
+      // Update user status in relevant profile based on role
+      try {
+        if (userProfile?.roles.includes("merchant") || userProfile?.roles.includes("vendor")) {
+          await supabase
+            .from('vendor_profiles')
+            .update({ is_suspended: true })
+            .eq("user_id", userId);
+        }
+        
+        if (userProfile?.roles.includes("host")) {
+          await supabase
+            .from('host_profiles')
+            .update({ is_suspended: true })
+            .eq("user_id", userId);
+        }
+      } catch (updateError) {
+        console.error("Failed to update profile status:", updateError);
+      }
       
-      console.log(`Blacklisting user ${userId} with reason: ${reason}`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      // Log admin action
+      try {
+        await supabase
+          .from('admin_activity_logs')
+          .insert({
+            admin_id: 'admin', // In production, this would be the actual admin ID
+            action: 'user_blacklisted',
+            details: `User blacklisted. Reason: ${reason}. Content deleted: ${confirmDelete}`,
+            user_id: userId
+          });
+      } catch (logError) {
+        console.error("Failed to log admin activity:", logError);
+      }
+      
+      // Invalidate and refetch queries
+      queryClient.invalidateQueries(["admin-user-profile", userId]);
+      queryClient.invalidateQueries(["admin-users"]);
       
       toast({
         title: "User blacklisted",
         description: "User has been blacklisted and their account has been disabled.",
       });
       
-      setReason("");
-      setConfirmDisable(false);
-      setConfirmDelete(false);
+      // Navigate back to profile
+      navigate(`/admin/users/${userId}/profile`);
     } catch (error) {
       console.error("Error blacklisting user:", error);
       toast({
@@ -253,7 +297,14 @@ export default function UserBlacklist() {
           </div>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-col xs:flex-row gap-2 w-full">
+        <Button 
+          onClick={() => navigate(`/admin/users/${userId}/profile`)} 
+          variant="outline"
+          className="w-full"
+        >
+          Cancel
+        </Button>
         <Button 
           onClick={handleBlacklistUser} 
           disabled={!reason.trim() || !confirmDisable || isBlacklisting}

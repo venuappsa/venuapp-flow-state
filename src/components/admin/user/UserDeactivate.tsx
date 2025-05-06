@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +35,7 @@ interface UserProfileData {
 export default function UserDeactivate() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [reason, setReason] = useState("");
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
@@ -92,21 +93,82 @@ export default function UserDeactivate() {
     setIsDeactivating(true);
 
     try {
-      // In a real implementation, we would use a secure server endpoint
-      // to deactivate the user since this requires admin privileges
+      // In a real implementation with proper admin permissions, 
+      // we would use the Admin API to deactivate/delete the user
       
-      console.log(`Deactivating user ${userId} with reason: ${reason}`);
-      console.log(`Delete associated data: ${deleteData}`);
+      // For now we'll implement what we can with available permissions:
+      // 1. Mark all role-specific profiles as deactivated/suspended
+      // 2. Log the deactivation request
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Update fetchman profile if it exists
+      if (userProfile?.roles.includes("fetchman")) {
+        try {
+          await supabase
+            .from("fetchman_profiles")
+            .update({
+              is_suspended: true,
+              updated_at: new Date().toISOString()
+            })
+            .eq("user_id", userId);
+        } catch (error) {
+          console.error("Error updating fetchman profile:", error);
+        }
+      }
+      
+      // Update vendor/merchant profile if it exists
+      if (userProfile?.roles.includes("merchant") || userProfile?.roles.includes("vendor")) {
+        try {
+          await supabase
+            .from("vendor_profiles")
+            .update({
+              is_suspended: true,
+              updated_at: new Date().toISOString()
+            })
+            .eq("user_id", userId);
+        } catch (error) {
+          console.error("Error updating vendor profile:", error);
+        }
+      }
+      
+      // Update host profile if it exists
+      if (userProfile?.roles.includes("host")) {
+        try {
+          await supabase
+            .from("host_profiles")
+            .update({
+              is_suspended: true,
+              updated_at: new Date().toISOString()
+            })
+            .eq("user_id", userId);
+        } catch (error) {
+          console.error("Error updating host profile:", error);
+        }
+      }
+      
+      // Log deactivation request for admin follow-up
+      try {
+        await supabase
+          .from('admin_activity_logs')
+          .insert({
+            admin_id: 'admin', // In production, this would be the actual admin ID
+            action: 'user_deactivation',
+            details: `User deactivation. Reason: ${reason}. Delete data: ${deleteData}`,
+            user_id: userId
+          });
+      } catch (logError) {
+        console.error("Failed to log admin activity:", logError);
+      }
+      
+      // Invalidate queries to refresh UI
+      queryClient.invalidateQueries(["admin-user-profile", userId]);
+      queryClient.invalidateQueries(["admin-users"]);
       
       toast({
         title: "User deactivated",
         description: "User account has been successfully deactivated.",
       });
       
-      // Navigate back to users list after successful deactivation
+      // Navigate back to users list
       navigate("/admin/users");
     } catch (error) {
       console.error("Error deactivating user:", error);
@@ -243,7 +305,7 @@ export default function UserDeactivate() {
         <div className="flex flex-col xs:flex-row gap-2 w-full">
           <Button 
             variant="outline" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/admin/users/${userId}/profile`)}
             className="w-full"
           >
             Cancel

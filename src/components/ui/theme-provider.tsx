@@ -26,7 +26,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "vite-ui-theme",
+  storageKey = "venu-theme",
   attribute = "class",
   ...props
 }: ThemeProviderProps) {
@@ -34,9 +34,17 @@ export function ThemeProvider({
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
 
+  // Debug logging to help diagnose theme issues
+  useEffect(() => {
+    console.log(`ThemeProvider initialized with theme: ${theme}`);
+    console.log(`Using storageKey: ${storageKey}`);
+    console.log(`Current localStorage value: ${localStorage.getItem(storageKey)}`);
+  }, [theme, storageKey]);
+
   useEffect(() => {
     const root = window.document.documentElement;
-
+    
+    // Remove all theme classes first
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
@@ -44,12 +52,14 @@ export function ThemeProvider({
         .matches
         ? "dark"
         : "light";
-
+      
+      console.log(`System theme detected as: ${systemTheme}`);
       root.classList.add(systemTheme);
       root.setAttribute(attribute, systemTheme);
       return;
     }
 
+    console.log(`Applying theme: ${theme}`);
     root.classList.add(theme);
     root.setAttribute(attribute, theme);
   }, [theme, attribute]);

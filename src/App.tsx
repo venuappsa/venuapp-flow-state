@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -26,6 +26,16 @@ import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
 import Index from "./pages/Index";
 
 function App() {
+  // Debug theme setup
+  useEffect(() => {
+    console.log("App component mounted");
+    console.log(`Current document class: ${document.documentElement.className}`);
+    
+    // Check if theme is stored in localStorage
+    const storedTheme = localStorage.getItem("venu-theme");
+    console.log(`Theme in localStorage: ${storedTheme}`);
+  }, []);
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<MainLayout />}>

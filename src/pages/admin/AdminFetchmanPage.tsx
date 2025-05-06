@@ -208,11 +208,12 @@ export default function AdminFetchmanPage() {
       
       await refetch();
       
-      // Fix: Check if data exists and correctly access the properties
-      // The repair_fetchman_profiles function returns an object, not an array
-      if (data && typeof data === 'object') {
-        const fixedCount = data.fixed_count || 0;
-        const errorCount = data.error_count || 0;
+      // The repair_fetchman_profiles function returns an array with a single object
+      // So we need to access the first element of the array
+      if (data && Array.isArray(data) && data.length > 0) {
+        const result = data[0];
+        const fixedCount = result.fixed_count || 0;
+        const errorCount = result.error_count || 0;
         
         toast({
           title: "Profiles repaired",

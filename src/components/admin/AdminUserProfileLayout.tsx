@@ -1,3 +1,4 @@
+
 import React, { ReactNode } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -83,14 +84,14 @@ const AdminUserProfileLayout = ({ children, activeTab }: AdminUserProfileLayoutP
           status = "pending";
         }
       } else if (roles.includes("merchant")) {
-        const { data: vendor } = await supabase
+        const { data: merchant } = await supabase
           .from('vendor_profiles')
           .select('verification_status, is_suspended')
           .eq('user_id', userId)
           .maybeSingle();
         
-        if (vendor) {
-          status = vendor.is_suspended ? "suspended" : vendor.verification_status;
+        if (merchant) {
+          status = merchant.is_suspended ? "suspended" : merchant.verification_status;
         } else {
           status = "pending";
         }
@@ -163,7 +164,7 @@ const AdminUserProfileLayout = ({ children, activeTab }: AdminUserProfileLayoutP
         case "fetchman":
           return <Badge key={role} className="bg-blue-100 text-blue-800">Fetchman</Badge>;
         case "merchant":
-          return <Badge key={role} className="bg-green-100 text-green-800">Vendor</Badge>;
+          return <Badge key={role} className="bg-green-100 text-green-800">Merchant</Badge>;
         case "host":
           return <Badge key={role} className="bg-yellow-100 text-yellow-800">Host</Badge>;
         case "customer":

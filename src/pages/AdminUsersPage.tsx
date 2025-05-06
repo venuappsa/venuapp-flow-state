@@ -210,7 +210,7 @@ export default function AdminUsersPage() {
       case "fetchman":
         return <Badge className="bg-blue-100 text-blue-800">Fetchman</Badge>;
       case "merchant":
-        return <Badge className="bg-green-100 text-green-800">Vendor</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Merchant</Badge>;
       case "host":
         return <Badge className="bg-yellow-100 text-yellow-800">Host</Badge>;
       case "customer":
@@ -237,16 +237,8 @@ export default function AdminUsersPage() {
   };
 
   const getProfileDetailLink = (user: User) => {
-    switch(user.role) {
-      case "fetchman":
-        return `/admin/fetchman/${user.id}`;
-      case "merchant":
-        return `/admin/merchants/${user.id}`;
-      case "host":
-        return `/admin/hosts/${user.id}`;
-      default:
-        return `/admin/users/${user.id}/profile`;
-    }
+    // Always direct to the standard user profile route for consistent navigation
+    return `/admin/users/${user.id}/profile`;
   };
 
   const handleResetPassword = async (userId: string) => {

@@ -130,7 +130,7 @@ function App() {
             <Route index element={<AdminUsersPage />} />
             <Route path=":userId">
               <Route path="profile" element={<AdminUserViewProfilePage />} />
-              {/* Other user profile pages (these paths exist in the layout tabs) */}
+              {/* The following routes use the same view component but will be distinguished by the activeTab prop */}
               <Route path="edit" element={<AdminUserViewProfilePage />} />
               <Route path="transactions" element={<AdminUserViewProfilePage />} />
               <Route path="revenue" element={<AdminUserViewProfilePage />} />

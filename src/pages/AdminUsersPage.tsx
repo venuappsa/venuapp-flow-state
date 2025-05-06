@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -63,6 +63,7 @@ export default function AdminUsersPage() {
   
   const itemsPerPage = 10;
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Update search params when filters change
   useEffect(() => {
@@ -236,61 +237,39 @@ export default function AdminUsersPage() {
     }
   };
 
+  // Modified function to navigate to the user page
   const getProfileDetailLink = (user: User) => {
     // Always direct to the standard user profile route for consistent navigation
     return `/admin/users/${user.id}/profile`;
   };
 
+  // Update action handlers to navigate to correct routes
   const handleResetPassword = async (userId: string) => {
-    toast({
-      title: "Password reset requested",
-      description: "A password reset email has been sent to the user.",
-    });
+    navigate(`/admin/users/${userId}/reset-password`);
   };
 
   const handleDeactivateUser = async (userId: string) => {
-    toast({
-      title: "User deactivated",
-      description: "The user account has been deactivated.",
-    });
+    navigate(`/admin/users/${userId}/deactivate`);
   };
   
   const handleBlacklistUser = async (userId: string) => {
-    toast({
-      title: "User blacklisted",
-      description: "The user has been added to the blacklist.",
-    });
+    navigate(`/admin/users/${userId}/blacklist`);
   };
   
   const handleFlagUser = async (userId: string) => {
-    toast({
-      title: "User flagged",
-      description: "The user has been flagged for review.",
-    });
+    navigate(`/admin/users/${userId}/flag`);
   };
   
   const handleViewTransactions = (userId: string) => {
-    toast({
-      title: "View transactions",
-      description: "Navigating to user transactions...",
-    });
-    // In a real implementation, this would navigate to a transactions page
+    navigate(`/admin/users/${userId}/transactions`);
   };
   
   const handleViewRevenue = (userId: string) => {
-    toast({
-      title: "View revenue",
-      description: "Navigating to user revenue dashboard...",
-    });
-    // In a real implementation, this would navigate to a revenue dashboard
+    navigate(`/admin/users/${userId}/revenue`);
   };
   
   const handleMessageUser = (userId: string) => {
-    toast({
-      title: "Message user",
-      description: "Opening message dialog...",
-    });
-    // In a real implementation, this would open a messaging dialog
+    navigate(`/admin/users/${userId}/message`);
   };
 
   return (
@@ -401,9 +380,11 @@ export default function AdminUsersPage() {
                                       View Profile
                                     </Link>
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit User
+                                  <DropdownMenuItem asChild>
+                                    <Link to={`/admin/users/${user.id}/edit`}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit User
+                                    </Link>
                                   </DropdownMenuItem>
                                   
                                   <DropdownMenuSeparator />

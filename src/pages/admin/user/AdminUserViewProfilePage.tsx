@@ -1,13 +1,25 @@
 
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
+import AdminUserProfileLayout from "@/components/admin/AdminUserProfileLayout";
+
+// Import all the user profile tab components
+import UserEditForm from "@/components/admin/user/UserEditForm";
+import UserTransactions from "@/components/admin/user/UserTransactions";
+import UserRevenue from "@/components/admin/user/UserRevenue";
+import UserMessage from "@/components/admin/user/UserMessage";
+import UserResetPassword from "@/components/admin/user/UserResetPassword";
+import UserFlag from "@/components/admin/user/UserFlag";
+import UserBlacklist from "@/components/admin/user/UserBlacklist";
+import UserDeactivate from "@/components/admin/user/UserDeactivate";
+
+// Import the original profile details view components
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import AdminUserProfileLayout from "@/components/admin/AdminUserProfileLayout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -23,6 +35,23 @@ interface UserActivity {
 
 export default function AdminUserViewProfilePage() {
   const { userId } = useParams<{ userId: string }>();
+  const location = useLocation();
+  
+  // Determine which tab is active based on the URL path
+  const getActiveTab = () => {
+    const path = location.pathname;
+    if (path.includes("/edit")) return "edit";
+    if (path.includes("/transactions")) return "transactions";
+    if (path.includes("/revenue")) return "revenue";
+    if (path.includes("/message")) return "message";
+    if (path.includes("/reset-password")) return "reset-password";
+    if (path.includes("/flag")) return "flag";
+    if (path.includes("/blacklist")) return "blacklist";
+    if (path.includes("/deactivate")) return "deactivate";
+    return "profile";
+  };
+  
+  const activeTab = getActiveTab();
 
   // This query fetches the user's activity logs
   const { data: activities, isLoading: activitiesLoading, error: activitiesError } = useQuery<UserActivity[]>({
@@ -78,7 +107,7 @@ export default function AdminUserViewProfilePage() {
       
       return simulatedActivities;
     },
-    enabled: !!userId
+    enabled: !!userId && activeTab === "profile"
   });
 
   // This query fetches additional user details that aren't in the basic profile
@@ -131,7 +160,7 @@ export default function AdminUserViewProfilePage() {
         roleSpecificData
       };
     },
-    enabled: !!userId
+    enabled: !!userId && activeTab === "profile"
   });
 
   const renderActivityItem = (activity: UserActivity) => {
@@ -283,62 +312,89 @@ export default function AdminUserViewProfilePage() {
     );
   };
 
-  return (
-    <AdminUserProfileLayout activeTab="profile">
-      <Tabs defaultValue="details">
-        <TabsContent value="details" className="mt-0 space-y-6">
-          <div className="space-y-0.5">
-            <h2 className="text-2xl font-bold tracking-tight">User Profile</h2>
-            <p className="text-muted-foreground">
-              View detailed information about this user's profile and activity.
-            </p>
-          </div>
-          <Separator />
-          
-          {/* User details section */}
-          {detailsLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-24 w-full" />
-              ))}
-            </div>
-          ) : (
-            <>
-              {renderRoleSpecificDetails()}
-            </>
-          )}
-          
-          {/* Activity log section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity Log</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {activitiesLoading ? (
+  // Render the appropriate content based on the active tab
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "edit":
+        return <UserEditForm />;
+      case "transactions":
+        return <UserTransactions />;
+      case "revenue":
+        return <UserRevenue />;
+      case "message":
+        return <UserMessage />;
+      case "reset-password":
+        return <UserResetPassword />;
+      case "flag":
+        return <UserFlag />;
+      case "blacklist":
+        return <UserBlacklist />;
+      case "deactivate":
+        return <UserDeactivate />;
+      default:
+        // Profile tab - render the original profile content
+        return (
+          <Tabs defaultValue="details">
+            <TabsContent value="details" className="mt-0 space-y-6">
+              <div className="space-y-0.5">
+                <h2 className="text-2xl font-bold tracking-tight">User Profile</h2>
+                <p className="text-muted-foreground">
+                  View detailed information about this user's profile and activity.
+                </p>
+              </div>
+              <Separator />
+              
+              {/* User details section */}
+              {detailsLoading ? (
                 <div className="space-y-4">
-                  {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="h-10 w-full" />
+                  {[...Array(3)].map((_, i) => (
+                    <Skeleton key={i} className="h-24 w-full" />
                   ))}
                 </div>
-              ) : activitiesError ? (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>
-                    Failed to load activity logs.
-                  </AlertDescription>
-                </Alert>
-              ) : activities && activities.length > 0 ? (
-                <div className="divide-y">
-                  {activities.map(renderActivityItem)}
-                </div>
               ) : (
-                <p className="text-center py-4 text-muted-foreground">No activity logs found for this user.</p>
+                <>
+                  {renderRoleSpecificDetails()}
+                </>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              
+              {/* Activity log section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Activity Log</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {activitiesLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(4)].map((_, i) => (
+                        <Skeleton key={i} className="h-10 w-full" />
+                      ))}
+                    </div>
+                  ) : activitiesError ? (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>
+                        Failed to load activity logs.
+                      </AlertDescription>
+                    </Alert>
+                  ) : activities && activities.length > 0 ? (
+                    <div className="divide-y">
+                      {activities.map(renderActivityItem)}
+                    </div>
+                  ) : (
+                    <p className="text-center py-4 text-muted-foreground">No activity logs found for this user.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        );
+    }
+  };
+
+  return (
+    <AdminUserProfileLayout activeTab={activeTab}>
+      {renderTabContent()}
     </AdminUserProfileLayout>
   );
 }

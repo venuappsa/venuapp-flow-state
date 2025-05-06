@@ -32,7 +32,7 @@ interface OrphanedProfile {
   profiles: null;
 }
 
-// Extend the Database types to include our custom RPC functions
+// Define a type for our custom RPC functions
 type CustomRpcFunction = 
   | "check_foreign_key_constraints" 
   | "check_trigger_exists"
@@ -61,7 +61,7 @@ export const UserRelationshipDiagnostic = () => {
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
       const { data: constraintsData, error: constraintsError } = await supabase
-        .rpc<ForeignKeyConstraintsResult>('check_foreign_key_constraints' as CustomRpcFunction);
+        .rpc<ForeignKeyConstraintsResult, any>('check_foreign_key_constraints' as CustomRpcFunction);
       
       if (constraintsError) {
         diagnosticResults.push({
@@ -157,7 +157,7 @@ export const UserRelationshipDiagnostic = () => {
       
       // Check 4: Verify the ensure_profile_exists trigger exists
       const { data: triggerData, error: triggerError } = await supabase
-        .rpc<TriggerExistsResult>('check_trigger_exists' as CustomRpcFunction);
+        .rpc<TriggerExistsResult, any>('check_trigger_exists' as CustomRpcFunction);
       
       if (triggerError) {
         diagnosticResults.push({

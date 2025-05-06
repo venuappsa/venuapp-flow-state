@@ -52,7 +52,7 @@ export const UserRelationshipDiagnostic = () => {
     try {
       // Check 1: Verify foreign key constraints exist using our RPC function
       const { data: constraintsData, error: constraintsError } = await supabase
-        .rpc('check_foreign_key_constraints');
+        .rpc('check_foreign_key_constraints', {}, { count: 'exact' });
       
       if (constraintsError) {
         diagnosticResults.push({
@@ -150,7 +150,7 @@ export const UserRelationshipDiagnostic = () => {
       
       // Check 4: Verify the ensure_profile_exists trigger exists
       const { data: triggerData, error: triggerError } = await supabase
-        .rpc('check_trigger_exists');
+        .rpc('check_trigger_exists', {}, { count: 'exact' });
       
       if (triggerError) {
         diagnosticResults.push({

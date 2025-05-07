@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import {
   createBrowserRouter,
@@ -24,6 +25,7 @@ import AdminFetchmanPage from "./pages/admin/AdminFetchmanPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
 import AdminUserViewProfilePage from "@/pages/admin/user/AdminUserViewProfilePage";
+import AdminHostsPage from "./pages/admin/AdminHostsPage";
 import HostProfilePage from "./pages/HostProfilePage";
 import Index from "./pages/Index";
 import ErrorPage from "./pages/ErrorPage";
@@ -138,6 +140,7 @@ function App() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="fetchmen" element={<AdminFetchmanPage />} />
+          <Route path="hosts" element={<AdminHostsPage />} />
           <Route path="users">
             <Route index element={<AdminUsersPage />} />
             <Route path=":userId">

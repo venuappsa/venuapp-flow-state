@@ -96,10 +96,16 @@ export default function UserEditForm() {
 
       if (error) throw error;
 
-      // Invalidate and refetch relevant queries
-      await queryClient.invalidateQueries(['admin-user-profile', userId]);
-      await queryClient.invalidateQueries(['admin-user-edit-profile', userId]);
-      await queryClient.invalidateQueries(['admin-users']);
+      // Invalidate and refetch relevant queries with the correct syntax
+      queryClient.invalidateQueries({
+        queryKey: ['admin-user-profile', userId]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['admin-user-edit-profile', userId]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['admin-users']
+      });
 
       toast({
         title: "Profile updated",

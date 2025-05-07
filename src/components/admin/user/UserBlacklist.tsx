@@ -111,7 +111,7 @@ export default function UserBlacklist() {
             })
             .eq("user_id", userId);
             
-          // Add to the blacklist table
+          // Add to the fetchman_blacklist table
           await supabase
             .from("fetchman_blacklist")
             .insert({
@@ -122,22 +122,7 @@ export default function UserBlacklist() {
         }
       }
       
-      // For other user types, create a general blacklist entry
-      try {
-        await supabase
-          .from('user_blacklist')
-          .insert({
-            user_id: userId,
-            blacklisted_by: 'admin', // In production, this would be the actual admin ID
-            reason: reason,
-            content_deleted: confirmDelete
-          });
-      } catch (blacklistError) {
-        console.error("Failed to create blacklist entry (table may not exist):", blacklistError);
-        // Non-critical error if table doesn't exist
-      }
-
-      // Update user status in relevant profile based on role
+      // For other user types, update their profile status in relevant tables
       try {
         if (userProfile?.roles.includes("merchant") || userProfile?.roles.includes("vendor")) {
           await supabase
@@ -156,23 +141,17 @@ export default function UserBlacklist() {
         console.error("Failed to update profile status:", updateError);
       }
       
-      // Log admin action
-      try {
-        await supabase
-          .from('admin_activity_logs')
-          .insert({
-            admin_id: 'admin', // In production, this would be the actual admin ID
-            action: 'user_blacklisted',
-            details: `User blacklisted. Reason: ${reason}. Content deleted: ${confirmDelete}`,
-            user_id: userId
-          });
-      } catch (logError) {
-        console.error("Failed to log admin activity:", logError);
-      }
+      // Instead of trying to log to a non-existent table, we'll use console for now
+      // In production, you would implement proper logging
+      console.log(`User blacklisted: ${userId}. Reason: ${reason}. Content deleted: ${confirmDelete}`);
       
-      // Invalidate and refetch queries
-      queryClient.invalidateQueries(["admin-user-profile", userId]);
-      queryClient.invalidateQueries(["admin-users"]);
+      // Invalidate and refetch queries to ensure UI is updated
+      queryClient.invalidateQueries({
+        queryKey: ["admin-user-profile", userId]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-users"]
+      });
       
       toast({
         title: "User blacklisted",

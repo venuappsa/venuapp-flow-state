@@ -94,7 +94,7 @@ export default function UserDeactivate() {
 
     try {
       // In a real implementation with proper admin permissions, 
-      // we would use the Admin API to deactivate/delete the user
+      // we would use the Auth API to deactivate/delete the user
       
       // For now we'll implement what we can with available permissions:
       // 1. Mark all role-specific profiles as deactivated/suspended
@@ -145,23 +145,16 @@ export default function UserDeactivate() {
         }
       }
       
-      // Log deactivation request for admin follow-up
-      try {
-        await supabase
-          .from('admin_activity_logs')
-          .insert({
-            admin_id: 'admin', // In production, this would be the actual admin ID
-            action: 'user_deactivation',
-            details: `User deactivation. Reason: ${reason}. Delete data: ${deleteData}`,
-            user_id: userId
-          });
-      } catch (logError) {
-        console.error("Failed to log admin activity:", logError);
-      }
+      // Log deactivation for admin follow-up (using console for now)
+      console.log(`User deactivation requested: ${userId}. Reason: ${reason}. Delete data: ${deleteData}`);
       
       // Invalidate queries to refresh UI
-      queryClient.invalidateQueries(["admin-user-profile", userId]);
-      queryClient.invalidateQueries(["admin-users"]);
+      queryClient.invalidateQueries({
+        queryKey: ["admin-user-profile", userId]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-users"]
+      });
       
       toast({
         title: "User deactivated",

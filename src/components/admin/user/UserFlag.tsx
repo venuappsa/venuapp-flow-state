@@ -64,42 +64,54 @@ export default function UserFlag() {
     setIsFlagging(true);
 
     try {
-      // Create a flag record
-      const { error: flagError } = await supabase
-        .from('user_flags')
-        .insert({
-          user_id: userId,
-          flagged_by: 'admin', // In production, this would be the actual admin ID
-          reason: reason,
-          severity: severity,
-          status: 'active'
-        });
-        
-      if (flagError) {
-        // If the table doesn't exist, log to console but proceed as if it worked
-        // This allows us to simulate the flow when the DB structure isn't complete
-        console.error("Error creating flag (table may not exist):", flagError);
-      }
-
-      // Add an entry to admin activity logs
-      try {
+      // Since there's no user_flags table in the DB schema,
+      // We'll use the fetchman_profiles or vendor_profiles tables to mark users
+      
+      // Check if user is a fetchman and update relevant field
+      const { data: fetchmanProfile } = await supabase
+        .from("fetchman_profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      if (fetchmanProfile) {
         await supabase
-          .from('admin_activity_logs')
-          .insert({
-            admin_id: 'admin', // In production, this would be the actual admin ID
-            action: 'user_flagged',
-            details: `User flagged with ${severity} severity. Reason: ${reason}`,
-            user_id: userId
-          });
-      } catch (logError) {
-        console.error("Failed to log admin activity:", logError);
-        // Non-critical error, don't need to throw
+          .from("fetchman_profiles")
+          .update({
+            is_suspended: severity === "high"  // Suspend immediately for high severity
+          })
+          .eq("user_id", userId);
       }
       
-      // Invalidate and refetch queries to ensure UI is updated
-      queryClient.invalidateQueries(["admin-user-profile", userId]);
-      queryClient.invalidateQueries(["admin-user-activities", userId]);
-      queryClient.invalidateQueries(["admin-users"]);
+      // Check if user is a vendor/merchant and update relevant field
+      const { data: vendorProfile } = await supabase
+        .from("vendor_profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      if (vendorProfile) {
+        await supabase
+          .from("vendor_profiles")
+          .update({
+            is_suspended: severity === "high"  // Suspend immediately for high severity
+          })
+          .eq("user_id", userId);
+      }
+      
+      // Log flag action (using console since table doesn't exist)
+      console.log(`User flagged: ${userId}. Severity: ${severity}. Reason: ${reason}`);
+      
+      // Invalidate and refetch queries with proper syntax
+      queryClient.invalidateQueries({
+        queryKey: ["admin-user-profile", userId]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-users"]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-user-activities", userId]
+      });
       
       toast({
         title: "User flagged",

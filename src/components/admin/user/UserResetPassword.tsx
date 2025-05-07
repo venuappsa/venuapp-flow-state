@@ -71,23 +71,13 @@ export default function UserResetPassword() {
       
       if (error) throw error;
       
-      // Log this action in admin activity logs (if applicable)
-      try {
-        await supabase
-          .from('admin_activity_logs')
-          .insert({
-            admin_id: 'admin', // In production, this would be the actual admin ID
-            action: 'password_reset_initiated',
-            details: `Password reset initiated for user: ${userProfile.email}`,
-            user_id: userId
-          });
-      } catch (logError) {
-        console.error("Failed to log admin activity:", logError);
-        // Non-critical error, don't need to throw
-      }
+      // Log this action (using console.log instead of DB table)
+      console.log(`Password reset initiated for user: ${userProfile.email} (${userId})`);
       
-      // Update query data
-      queryClient.invalidateQueries(["admin-user-activities", userId]);
+      // Update query data with proper syntax
+      queryClient.invalidateQueries({
+        queryKey: ["admin-user-activities", userId]
+      });
       
       setResetStatus("success");
       toast({

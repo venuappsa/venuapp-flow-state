@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, UserCheck, UserX, User, Settings } from "lucide-react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 
 export default function AdminHostsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,105 +85,103 @@ export default function AdminHostsPage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Host Management</h1>
-            <p className="text-gray-500">Manage and monitor host accounts</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Button>
-              <UserCheck className="mr-2 h-4 w-4" />
-              Add New Host
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Host Management</h1>
+          <p className="text-gray-500">Manage and monitor host accounts</p>
         </div>
-
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Host Accounts</CardTitle>
-            <CardDescription>View and manage host accounts on the platform</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row justify-between mb-6">
-              <div className="relative max-w-md mb-4 md:mb-0">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Search hosts..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="space-x-2">
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-                <Button variant="outline">
-                  Export
-                </Button>
-              </div>
-            </div>
-
-            <div className="rounded-md border">
-              <Table>
-                <TableCaption>List of hosts registered on the platform</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Join Date</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Events</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredHosts.map((host) => (
-                    <TableRow key={host.id}>
-                      <TableCell className="font-medium">
-                        <div>
-                          {host.name}
-                          <div className="text-xs text-gray-500">
-                            {host.email}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{host.company}</TableCell>
-                      <TableCell>{new Date(host.joinDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{host.plan}</TableCell>
-                      <TableCell>{host.eventsHosted}</TableCell>
-                      <TableCell>{getStatusBadge(host.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon">
-                            <User className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Settings className="h-4 w-4" />
-                          </Button>
-                          {host.status !== "suspended" ? (
-                            <Button variant="ghost" size="icon">
-                              <UserX className="h-4 w-4 text-red-500" />
-                            </Button>
-                          ) : (
-                            <Button variant="ghost" size="icon">
-                              <UserCheck className="h-4 w-4 text-green-500" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mt-4 md:mt-0">
+          <Button>
+            <UserCheck className="mr-2 h-4 w-4" />
+            Add New Host
+          </Button>
+        </div>
       </div>
-    </AdminPanelLayout>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Host Accounts</CardTitle>
+          <CardDescription>View and manage host accounts on the platform</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row justify-between mb-6">
+            <div className="relative max-w-md mb-4 md:mb-0">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search hosts..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="space-x-2">
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+              </Button>
+              <Button variant="outline">
+                Export
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableCaption>List of hosts registered on the platform</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Join Date</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Events</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredHosts.map((host) => (
+                  <TableRow key={host.id}>
+                    <TableCell className="font-medium">
+                      <div>
+                        {host.name}
+                        <div className="text-xs text-gray-500">
+                          {host.email}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{host.company}</TableCell>
+                    <TableCell>{new Date(host.joinDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{host.plan}</TableCell>
+                    <TableCell>{host.eventsHosted}</TableCell>
+                    <TableCell>{getStatusBadge(host.status)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon">
+                          <User className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                        {host.status !== "suspended" ? (
+                          <Button variant="ghost" size="icon">
+                            <UserX className="h-4 w-4 text-red-500" />
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="icon">
+                            <UserCheck className="h-4 w-4 text-green-500" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

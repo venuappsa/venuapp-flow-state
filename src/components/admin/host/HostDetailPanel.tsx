@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { 
   Tabs, TabsContent, TabsList, TabsTrigger 
 } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import {
   CreditCard, 

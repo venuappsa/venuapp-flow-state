@@ -5,10 +5,12 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, UserCheck, UserX, User, Settings } from "lucide-react";
+import { Search, Filter, UserCheck, UserX, User, Settings, ChevronDown, ChevronUp } from "lucide-react";
+import { HostDetailPanel } from "@/components/admin/host/HostDetailPanel";
 
 export default function AdminHostsPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedHostId, setExpandedHostId] = useState<string | null>(null);
 
   // Mock data for hosts
   const hosts = [
@@ -84,6 +86,10 @@ export default function AdminHostsPage() {
     }
   };
 
+  const toggleExpandHost = (hostId: string) => {
+    setExpandedHostId(expandedHostId === hostId ? null : hostId);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -131,6 +137,7 @@ export default function AdminHostsPage() {
               <TableCaption>List of hosts registered on the platform</TableCaption>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10"></TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Join Date</TableHead>
@@ -142,40 +149,65 @@ export default function AdminHostsPage() {
               </TableHeader>
               <TableBody>
                 {filteredHosts.map((host) => (
-                  <TableRow key={host.id}>
-                    <TableCell className="font-medium">
-                      <div>
-                        {host.name}
-                        <div className="text-xs text-gray-500">
-                          {host.email}
+                  <React.Fragment key={host.id}>
+                    <TableRow className={expandedHostId === host.id ? "bg-muted/50" : ""}>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => toggleExpandHost(host.id)}
+                          aria-label={expandedHostId === host.id ? "Collapse details" : "Expand details"}
+                        >
+                          {expandedHostId === host.id ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <div>
+                          {host.name}
+                          <div className="text-xs text-gray-500">
+                            {host.email}
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{host.company}</TableCell>
-                    <TableCell>{new Date(host.joinDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{host.plan}</TableCell>
-                    <TableCell>{host.eventsHosted}</TableCell>
-                    <TableCell>{getStatusBadge(host.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon">
-                          <User className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                        {host.status !== "suspended" ? (
+                      </TableCell>
+                      <TableCell>{host.company}</TableCell>
+                      <TableCell>{new Date(host.joinDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{host.plan}</TableCell>
+                      <TableCell>{host.eventsHosted}</TableCell>
+                      <TableCell>{getStatusBadge(host.status)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
                           <Button variant="ghost" size="icon">
-                            <UserX className="h-4 w-4 text-red-500" />
+                            <User className="h-4 w-4" />
                           </Button>
-                        ) : (
                           <Button variant="ghost" size="icon">
-                            <UserCheck className="h-4 w-4 text-green-500" />
+                            <Settings className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                          {host.status !== "suspended" ? (
+                            <Button variant="ghost" size="icon">
+                              <UserX className="h-4 w-4 text-red-500" />
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="icon">
+                              <UserCheck className="h-4 w-4 text-green-500" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {expandedHostId === host.id && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="p-0">
+                          <div className="border-t bg-muted/30 px-4 py-3">
+                            <HostDetailPanel host={host} />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 ))}
               </TableBody>
             </Table>

@@ -24,6 +24,7 @@ import AdminFetchmanPage from "./pages/admin/AdminFetchmanPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminUserManagementPage from "@/pages/admin/AdminUserManagementPage";
 import AdminUserViewProfilePage from "@/pages/admin/user/AdminUserViewProfilePage";
+import HostProfilePage from "./pages/HostProfilePage";
 import Index from "./pages/Index";
 import ErrorPage from "./pages/ErrorPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -79,6 +80,17 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["host"]}>
               <HostDashboardPage />
+            </ProtectedRoute>
+          }
+          errorElement={<ErrorPage />}
+        />
+        
+        {/* Add the host profile route */}
+        <Route
+          path="host/profile"
+          element={
+            <ProtectedRoute allowedRoles={["host"]}>
+              <HostProfilePage />
             </ProtectedRoute>
           }
           errorElement={<ErrorPage />}

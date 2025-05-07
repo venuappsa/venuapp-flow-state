@@ -1,12 +1,12 @@
 
 import React from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
+import HostPanelLayout from "@/components/layouts/HostPanelLayout";
 import ProfilePage from "./ProfilePage";
 
 export default function HostProfilePage() {
   return (
-    <AdminPanelLayout>
+    <HostPanelLayout>
       <ProfilePage type="host" />
-    </AdminPanelLayout>
+    </HostPanelLayout>
   );
 }

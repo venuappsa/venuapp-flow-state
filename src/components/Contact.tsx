@@ -84,7 +84,7 @@ const Contact = () => {
 
   return (
     <section id="contact" className="py-16 bg-white">
-      <div className="max-w-7xl ml-0 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-left mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-venu-black">
             Get in <span className="text-venu-orange">Touch</span>
@@ -94,7 +94,7 @@ const Contact = () => {
           </p>
         </div>
         
-        <div className="max-w-2xl ml-0">
+        <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
               <CardTitle>Send us a message</CardTitle>

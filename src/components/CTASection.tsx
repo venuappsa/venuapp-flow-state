@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 const CTASection = () => {
   return (
     <section className="py-16 bg-accent">
-      <div className="max-w-7xl ml-0 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 text-left">
           <img 
             src="/lovable-uploads/e9386f08-cbd8-40f1-b3b8-fa095a8e1a4b.png" 

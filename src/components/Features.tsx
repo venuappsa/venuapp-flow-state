@@ -39,11 +39,11 @@ const Features = () => {
   return (
     <section id="features" className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-venu-black">
             Innovative <span className="text-venu-orange">Features</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-lg text-gray-600 max-w-3xl">
             Discover how Venuapp transforms the event experience for audiences and businesses alike.
           </p>
         </div>

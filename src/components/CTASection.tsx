@@ -5,8 +5,8 @@ import { ArrowRight } from "lucide-react";
 const CTASection = () => {
   return (
     <section className="py-16 bg-accent">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="mb-8 flex justify-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
           <img 
             src="/lovable-uploads/e9386f08-cbd8-40f1-b3b8-fa095a8e1a4b.png" 
             alt="Venuapp Experience" 
@@ -16,10 +16,10 @@ const CTASection = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-accent-foreground mb-4">
           Ready to Transform Your <span className="text-venu-orange">Event Experience?</span>
         </h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+        <p className="text-lg text-muted-foreground max-w-2xl mb-8">
           Join thousands of hosts, merchants, and event-goers who are eager to enjoy queue-free experiences across South Africa.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <Button className="bg-venu-orange text-white hover:bg-venu-orange/90 text-lg px-8 py-6">
             <a href="/register">Get Started Now</a>
             <ArrowRight className="ml-2 h-5 w-5" />

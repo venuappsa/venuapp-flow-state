@@ -29,11 +29,11 @@ const Stats = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-venu-black">
             Unlocking <span className="text-venu-orange">Potential</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-lg text-gray-600 max-w-3xl">
             Venuapp aims to solve critical challenges in South Africa's event ecosystem with impressive projected results.
           </p>
         </div>
@@ -55,9 +55,9 @@ const Stats = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {stats.map((stat, index) => (
-              <Card key={index} className="text-center hover:shadow-md transition-shadow">
+              <Card key={index} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
-                  <div className="mx-auto w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full mb-4">
+                  <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full mb-4">
                     {stat.icon}
                   </div>
                   <div className="text-3xl font-bold text-venu-black">{stat.value}</div>

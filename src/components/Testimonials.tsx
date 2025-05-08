@@ -27,11 +27,11 @@ const Testimonials = () => {
   return (
     <section className="py-16 bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-venu-black">
             What People <span className="text-venu-orange">Say</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-lg text-gray-600 max-w-3xl">
             Early feedback from our validation interviews with potential users of Venuapp.
           </p>
         </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -179,198 +180,198 @@ export default function AdminVendorPerformancePage() {
                   By Category
                 </TabsTrigger>
               </TabsList>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <TabsContent value="overview" className="mt-0 h-[350px]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Monthly Revenue by Vendors</h3>
-                <Button variant="outline" size="sm" onClick={() => handleExportData("Monthly Revenue")}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
-                </Button>
-              </div>
-              <BarChart
-                data={monthlyRevenueData}
-                index="month"
-                categories={["revenue"]}
-                colors={["#8B5CF6"]}
-                valueFormatter={(value) => `$${value.toLocaleString()}`}
-                showXAxis
-                showYAxis
-                showLegend={false}
-                showTooltip
-                showGridLines
-                className="h-[300px]"
-              />
-            </TabsContent>
-            <TabsContent value="category" className="mt-0 h-[350px]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Category Performance</h3>
-                <Button variant="outline" size="sm" onClick={() => handleExportData("Category Performance")}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
-                </Button>
-              </div>
-              <LineChart
-                data={categoryPerformanceData}
-                index="category"
-                categories={["avgRating", "bookingRate"]}
-                colors={["#10B981", "#F59E0B"]}
-                valueFormatter={(value) => {
-                  // The signature doesn't match what we're actually receiving
-                  // We now properly match the type definition
-                  return value < 10 ? `${value} stars` : `${value}%`;
-                }}
-                showXAxis
-                showYAxis
-                showLegend
-                showTooltip
-                showGridLines
-                className="h-[300px]"
-              />
-            </TabsContent>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Vendor Metrics</CardTitle>
-            <CardDescription>Detailed vendor performance metrics</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Star className="h-8 w-8 text-yellow-500 mr-4" />
-                  <div>
-                    <p className="text-2xl font-bold">4.6</p>
-                    <p className="text-sm text-muted-foreground">Average Rating</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Calendar className="h-8 w-8 text-blue-500 mr-4" />
-                  <div>
-                    <p className="text-2xl font-bold">79%</p>
-                    <p className="text-sm text-muted-foreground">Booking Rate</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <DollarSign className="h-8 w-8 text-green-500 mr-4" />
-                  <div>
-                    <p className="text-2xl font-bold">$355K</p>
-                    <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <ThumbsUp className="h-8 w-8 text-purple-500 mr-4" />
-                  <div>
-                    <p className="text-2xl font-bold">90%</p>
-                    <p className="text-sm text-muted-foreground">Response Rate</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Search vendors..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <TabsContent value="overview" className="mt-0 h-[350px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Monthly Revenue by Vendors</h3>
+              <Button variant="outline" size="sm" onClick={() => handleExportData("Monthly Revenue")}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
               </Button>
             </div>
+            <BarChart
+              data={monthlyRevenueData}
+              index="month"
+              categories={["revenue"]}
+              colors={["#8B5CF6"]}
+              valueFormatter={(value) => `$${value.toLocaleString()}`}
+              showXAxis
+              showYAxis
+              showLegend={false}
+              showTooltip
+              showGridLines
+              className="h-[300px]"
+            />
+          </TabsContent>
+          <TabsContent value="category" className="mt-0 h-[350px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Category Performance</h3>
+              <Button variant="outline" size="sm" onClick={() => handleExportData("Category Performance")}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </div>
+            <LineChart
+              data={categoryPerformanceData}
+              index="category"
+              categories={["avgRating", "bookingRate"]}
+              colors={["#10B981", "#F59E0B"]}
+              valueFormatter={(value) => {
+                // The signature doesn't match what we're actually receiving
+                // We now properly match the type definition
+                return value < 10 ? `${value} stars` : `${value}%`;
+              }}
+              showXAxis
+              showYAxis
+              showLegend
+              showTooltip
+              showGridLines
+              className="h-[300px]"
+            />
+          </TabsContent>
+        </CardContent>
+      </Card>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Avg. Rating</TableHead>
-                    <TableHead>Booking Rate</TableHead>
-                    <TableHead>Response Rate</TableHead>
-                    <TableHead>Revenue</TableHead>
-                    <TableHead>Trend</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredVendors.length > 0 ? (
-                    filteredVendors.map((vendor) => (
-                      <TableRow key={vendor.id}>
-                        <TableCell className="font-medium">{vendor.name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{vendor.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                            <span>{vendor.avgRating}</span>
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({vendor.reviews})
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{vendor.bookingRate}%</TableCell>
-                        <TableCell>{vendor.responseRate}%</TableCell>
-                        <TableCell>${vendor.revenue.toLocaleString()}</TableCell>
-                        <TableCell>
-                          {vendor.trend === "up" ? (
-                            <div className="flex items-center text-green-600">
-                              <ArrowUpRight className="h-4 w-4 mr-1" />
-                              <span>Up</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center text-red-600">
-                              <ArrowDownRight className="h-4 w-4 mr-1" />
-                              <span>Down</span>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleViewVendor(vendor.id, vendor.name)}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <ThumbsDown className="h-12 w-12 mb-2 text-gray-300" />
-                          <p className="text-lg font-medium">No vendors found</p>
-                          <p className="text-sm">
-                            {searchTerm ? "Try adjusting your search term" : "No vendor data available"}
-                          </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Vendor Metrics</CardTitle>
+          <CardDescription>Detailed vendor performance metrics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardContent className="p-4 flex items-center">
+                <Star className="h-8 w-8 text-yellow-500 mr-4" />
+                <div>
+                  <p className="text-2xl font-bold">4.6</p>
+                  <p className="text-sm text-muted-foreground">Average Rating</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center">
+                <Calendar className="h-8 w-8 text-blue-500 mr-4" />
+                <div>
+                  <p className="text-2xl font-bold">79%</p>
+                  <p className="text-sm text-muted-foreground">Booking Rate</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center">
+                <DollarSign className="h-8 w-8 text-green-500 mr-4" />
+                <div>
+                  <p className="text-2xl font-bold">$355K</p>
+                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 flex items-center">
+                <ThumbsUp className="h-8 w-8 text-purple-500 mr-4" />
+                <div>
+                  <p className="text-2xl font-bold">90%</p>
+                  <p className="text-sm text-muted-foreground">Response Rate</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search vendors..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button variant="outline">
+              <Filter className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Avg. Rating</TableHead>
+                  <TableHead>Booking Rate</TableHead>
+                  <TableHead>Response Rate</TableHead>
+                  <TableHead>Revenue</TableHead>
+                  <TableHead>Trend</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredVendors.length > 0 ? (
+                  filteredVendors.map((vendor) => (
+                    <TableRow key={vendor.id}>
+                      <TableCell className="font-medium">{vendor.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{vendor.category}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                          <span>{vendor.avgRating}</span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({vendor.reviews})
+                          </span>
                         </div>
                       </TableCell>
+                      <TableCell>{vendor.bookingRate}%</TableCell>
+                      <TableCell>{vendor.responseRate}%</TableCell>
+                      <TableCell>${vendor.revenue.toLocaleString()}</TableCell>
+                      <TableCell>
+                        {vendor.trend === "up" ? (
+                          <div className="flex items-center text-green-600">
+                            <ArrowUpRight className="h-4 w-4 mr-1" />
+                            <span>Up</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center text-red-600">
+                            <ArrowDownRight className="h-4 w-4 mr-1" />
+                            <span>Down</span>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleViewVendor(vendor.id, vendor.name)}
+                        >
+                          View
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-6">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <ThumbsDown className="h-12 w-12 mb-2 text-gray-300" />
+                        <p className="text-lg font-medium">No vendors found</p>
+                        <p className="text-sm">
+                          {searchTerm ? "Try adjusting your search term" : "No vendor data available"}
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

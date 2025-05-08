@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -395,25 +396,25 @@ export default function AdminEventTimelinePage() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ))}
+            </div>
+          ))}
 
-            {tasks.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No timeline tasks yet. Add your first task above.
-              </div>
-            )}
-          </div>
-        </Card>
-
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/vendors`)}>
-            Assign Vendors
-          </Button>
-          <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/resources`)}>
-            Manage Resources
-          </Button>
+          {tasks.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No timeline tasks yet. Add your first task above.
+            </div>
+          )}
         </div>
+      </Card>
+
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/vendors`)}>
+          Assign Vendors
+        </Button>
+        <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/resources`)}>
+          Manage Resources
+        </Button>
       </div>
-    
+    </div>
   );
 }

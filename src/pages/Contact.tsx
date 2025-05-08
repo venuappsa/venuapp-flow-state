@@ -1,11 +1,11 @@
 
 import React from 'react';
+import Contact from '@/components/Contact';
 
-export default function Contact() {
+export default function ContactPage() {
   return (
-    <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold mb-8">Contact Us</h1>
-      <p className="mb-4">This page is under construction.</p>
+    <div className="container ml-0 py-12">
+      <Contact />
     </div>
   );
 }

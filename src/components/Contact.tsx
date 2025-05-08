@@ -84,17 +84,17 @@ const Contact = () => {
 
   return (
     <section id="contact" className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+      <div className="max-w-7xl ml-0 px-4 sm:px-6 lg:px-8">
+        <div className="text-left mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-venu-black">
             Get in <span className="text-venu-orange">Touch</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-lg text-gray-600 max-w-3xl">
             Have questions or ready to enhance your event experience? Our team is here to help.
           </p>
         </div>
         
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl ml-0">
           <Card>
             <CardHeader>
               <CardTitle>Send us a message</CardTitle>
@@ -207,9 +207,9 @@ const Contact = () => {
                 </Button>
               </form>
               
-              <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+              <div className="mt-6 pt-6 border-t border-gray-200 text-left">
                 <p className="text-sm text-gray-600 mb-3">Download our app to get started</p>
-                <div className="flex flex-col sm:flex-row justify-center gap-3">
+                <div className="flex flex-col sm:flex-row justify-start gap-3">
                   <Button variant="outline" className="flex items-center gap-2">
                     <Download size={18} />
                     <span>Download for iOS (Coming Soon)</span>

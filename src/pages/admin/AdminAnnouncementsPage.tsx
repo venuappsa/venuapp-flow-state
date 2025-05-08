@@ -1,6 +1,4 @@
-
 import React, { useState } from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -149,188 +147,186 @@ export default function AdminAnnouncementsPage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Announcements</h1>
-            <p className="text-gray-500">Create and manage platform announcements</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Button onClick={() => setAnnounceDialogOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New Announcement
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Announcements</h1>
+          <p className="text-gray-500">Create and manage platform announcements</p>
         </div>
+        <div className="mt-4 md:mt-0">
+          <Button onClick={() => setAnnounceDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Announcement
+          </Button>
+        </div>
+      </div>
 
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>All Announcements</CardTitle>
-            <CardDescription>Send and track platform-wide communications</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row justify-between mb-6">
-              <div className="relative max-w-md mb-4 md:mb-0">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Search announcements..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="space-x-2">
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-              </div>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>All Announcements</CardTitle>
+          <CardDescription>Send and track platform-wide communications</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row justify-between mb-6">
+            <div className="relative max-w-md mb-4 md:mb-0">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search announcements..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+            <div className="space-x-2">
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+              </Button>
+            </div>
+          </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableCaption>List of platform announcements</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Audience</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Sent By</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAnnouncements.length > 0 ? (
-                    filteredAnnouncements.map((announcement) => (
-                      <TableRow key={announcement.id}>
-                        <TableCell className="font-medium">
-                          <div>
-                            {announcement.title}
-                            <div className="text-xs text-gray-500 truncate max-w-[200px]">
-                              {announcement.message}
-                            </div>
+          <div className="rounded-md border">
+            <Table>
+              <TableCaption>List of platform announcements</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Audience</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Sent By</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAnnouncements.length > 0 ? (
+                  filteredAnnouncements.map((announcement) => (
+                    <TableRow key={announcement.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          {announcement.title}
+                          <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                            {announcement.message}
                           </div>
-                        </TableCell>
-                        <TableCell>{getAudienceBadge(announcement.audience)}</TableCell>
-                        <TableCell>{getTypeBadge(announcement.type)}</TableCell>
-                        <TableCell>{format(new Date(announcement.sentDate), 'MMM dd, yyyy')}</TableCell>
-                        <TableCell>
-                          <Badge variant={announcement.status === "scheduled" ? "outline" : "default"}>
-                            {announcement.status === "scheduled" ? "Scheduled" : "Sent"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{announcement.sentBy}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon">
-                              <Edit className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleDeleteAnnouncement(announcement.id)}
-                            >
-                              <Trash className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No announcements found
+                        </div>
+                      </TableCell>
+                      <TableCell>{getAudienceBadge(announcement.audience)}</TableCell>
+                      <TableCell>{getTypeBadge(announcement.type)}</TableCell>
+                      <TableCell>{format(new Date(announcement.sentDate), 'MMM dd, yyyy')}</TableCell>
+                      <TableCell>
+                        <Badge variant={announcement.status === "scheduled" ? "outline" : "default"}>
+                          {announcement.status === "scheduled" ? "Scheduled" : "Sent"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{announcement.sentBy}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon">
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Edit</span>
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleDeleteAnnouncement(announcement.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No announcements found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Dialog open={announceDialogOpen} onOpenChange={setAnnounceDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Create New Announcement</DialogTitle>
-              <DialogDescription>
-                Compose and send a new announcement to platform users.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
-                  Title
-                </Label>
-                <Input
-                  id="title"
-                  placeholder="Enter announcement title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="audience" className="text-right">
-                  Audience
-                </Label>
-                <Select value={audienceType} onValueChange={setAudienceType}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select target audience" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Users</SelectItem>
-                    <SelectItem value="hosts">Hosts Only</SelectItem>
-                    <SelectItem value="vendors">Vendors Only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right">
-                  Type
-                </Label>
-                <Select value={messageType} onValueChange={setMessageType}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select message type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="info">Information</SelectItem>
-                    <SelectItem value="warning">Warning</SelectItem>
-                    <SelectItem value="alert">Alert</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="message" className="text-right pt-2">
-                  Message
-                </Label>
-                <Textarea
-                  id="message"
-                  placeholder="Enter announcement message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="col-span-3"
-                  rows={5}
-                />
-              </div>
+      <Dialog open={announceDialogOpen} onOpenChange={setAnnounceDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Announcement</DialogTitle>
+            <DialogDescription>
+              Compose and send a new announcement to platform users.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="title" className="text-right">
+                Title
+              </Label>
+              <Input
+                id="title"
+                placeholder="Enter announcement title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="col-span-3"
+              />
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setAnnounceDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSendAnnouncement}>
-                <Send className="mr-2 h-4 w-4" />
-                Send Announcement
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </AdminPanelLayout>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="audience" className="text-right">
+                Audience
+              </Label>
+              <Select value={audienceType} onValueChange={setAudienceType}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select target audience" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Users</SelectItem>
+                  <SelectItem value="hosts">Hosts Only</SelectItem>
+                  <SelectItem value="vendors">Vendors Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="type" className="text-right">
+                Type
+              </Label>
+              <Select value={messageType} onValueChange={setMessageType}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select message type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="info">Information</SelectItem>
+                  <SelectItem value="warning">Warning</SelectItem>
+                  <SelectItem value="alert">Alert</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="message" className="text-right pt-2">
+                Message
+              </Label>
+              <Textarea
+                id="message"
+                placeholder="Enter announcement message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="col-span-3"
+                rows={5}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAnnounceDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendAnnouncement}>
+              <Send className="mr-2 h-4 w-4" />
+              Send Announcement
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

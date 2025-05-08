@@ -1,6 +1,4 @@
-
 import React, { useState } from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,45 +142,43 @@ export default function AdminVendorPerformancePage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Vendor Performance</h1>
-            <p className="text-gray-500">Track and analyze vendor metrics</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Button variant="outline" onClick={() => handleExportData("Vendor Performance")}>
-              <Download className="mr-2 h-4 w-4" />
-              Export Data
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Vendor Performance</h1>
+          <p className="text-gray-500">Track and analyze vendor metrics</p>
         </div>
+        <div className="mt-4 md:mt-0">
+          <Button variant="outline" onClick={() => handleExportData("Vendor Performance")}>
+            <Download className="mr-2 h-4 w-4" />
+            Export Data
+          </Button>
+        </div>
+      </div>
 
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row justify-between gap-4">
-              <div>
-                <CardTitle>Performance Overview</CardTitle>
-                <CardDescription>Key vendor performance metrics</CardDescription>
-              </div>
-              <Tabs 
-                defaultValue="overview" 
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full sm:w-auto"
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="overview">
-                    <BarChartIcon className="h-4 w-4 mr-2" />
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger value="category">
-                    <LineChartIcon className="h-4 w-4 mr-2" />
-                    By Category
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+      <Card className="mb-8">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <div>
+              <CardTitle>Performance Overview</CardTitle>
+              <CardDescription>Key vendor performance metrics</CardDescription>
+            </div>
+            <Tabs 
+              defaultValue="overview" 
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full sm:w-auto"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="overview">
+                  <BarChartIcon className="h-4 w-4 mr-2" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="category">
+                  <LineChartIcon className="h-4 w-4 mr-2" />
+                  By Category
+                </TabsTrigger>
+              </TabsList>
             </div>
           </CardHeader>
           <CardContent>
@@ -375,6 +371,6 @@ export default function AdminVendorPerformancePage() {
           </CardContent>
         </Card>
       </div>
-    </AdminPanelLayout>
+    </div>
   );
 }

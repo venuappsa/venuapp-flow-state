@@ -38,12 +38,12 @@ const features = [
 const Features = () => {
   return (
     <section id="features" className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-venu-black">
+      <div className="max-w-7xl ml-0 px-4 sm:px-6 lg:px-8">
+        <div className="mb-16 text-left">
+          <h2 className="text-3xl md:text-4xl font-bold text-venu-black text-left">
             Innovative <span className="text-venu-orange">Features</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl">
+          <p className="mt-4 text-lg text-gray-600 max-w-3xl text-left">
             Discover how Venuapp transforms the event experience for audiences and businesses alike.
           </p>
         </div>
@@ -53,10 +53,10 @@ const Features = () => {
             <Card key={index} className="transition-all duration-300 hover:shadow-lg border-t-4 border-t-venu-orange">
               <CardHeader>
                 <div className="mb-4">{feature.icon}</div>
-                <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
+                <CardTitle className="text-xl font-bold text-left">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-base text-gray-600">{feature.description}</CardDescription>
+                <CardDescription className="text-base text-gray-600 text-left">{feature.description}</CardDescription>
               </CardContent>
             </Card>
           ))}

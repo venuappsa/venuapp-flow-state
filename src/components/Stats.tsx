@@ -28,12 +28,12 @@ const stats = [
 const Stats = () => {
   return (
     <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-venu-black">
+      <div className="max-w-7xl ml-0 px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 text-left">
+          <h2 className="text-3xl md:text-4xl font-bold text-venu-black text-left">
             Unlocking <span className="text-venu-orange">Potential</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl">
+          <p className="mt-4 text-lg text-gray-600 max-w-3xl text-left">
             Venuapp aims to solve critical challenges in South Africa's event ecosystem with impressive projected results.
           </p>
         </div>
@@ -46,7 +46,7 @@ const Stats = () => {
               className="w-full h-96 object-cover rounded-xl shadow-lg"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-xl"></div>
-            <div className="absolute bottom-6 left-6 right-6 text-white">
+            <div className="absolute bottom-6 left-6 right-6 text-white text-left">
               <p className="text-lg font-semibold">
                 No Queues, Just Vibes. <span className="font-normal">No one should queue at an event they've paid for.</span>
               </p>
@@ -56,7 +56,7 @@ const Stats = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {stats.map((stat, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
+                <CardContent className="pt-6 text-left">
                   <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full mb-4">
                     {stat.icon}
                   </div>

@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -219,185 +217,183 @@ export default function AdminEventTimelinePage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate(`/admin/events/${id}/vendors`)}
-              className="mr-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">{event?.name || "Loading..."}: Timeline</h1>
-              <p className="text-gray-500">{event?.description}</p>
-            </div>
+    <div className="max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate(`/admin/events/${id}/vendors`)}
+            className="mr-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{event?.name || "Loading..."}: Timeline</h1>
+            <p className="text-gray-500">{event?.description}</p>
           </div>
-          <Button onClick={handleSaveTimeline}>Save Timeline</Button>
+        </div>
+        <Button onClick={handleSaveTimeline}>Save Timeline</Button>
+      </div>
+
+      <Card className="p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Timeline Tasks</h2>
+          {!isAddingTask && (
+            <Button onClick={() => setIsAddingTask(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Add Task
+            </Button>
+          )}
         </div>
 
-        <Card className="p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Timeline Tasks</h2>
-            {!isAddingTask && (
-              <Button onClick={() => setIsAddingTask(true)}>
-                <Plus className="h-4 w-4 mr-1" /> Add Task
-              </Button>
-            )}
-          </div>
-
-          {isAddingTask && (
-            <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-              <h3 className="font-medium mb-3">Add New Task</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <Input
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    placeholder="Task title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal"
-                        )}
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {format(newTask.dueDate, "PPP")}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={newTask.dueDate}
-                        onSelect={(date) => setNewTask({ ...newTask, dueDate: date || new Date() })}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+        {isAddingTask && (
+          <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+            <h3 className="font-medium mb-3">Add New Task</h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <Input
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  placeholder="Task title"
+                />
               </div>
-              <div className="flex justify-end mt-4 gap-2">
-                <Button variant="outline" onClick={() => setIsAddingTask(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddTask}>Add Task</Button>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {format(newTask.dueDate, "PPP")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={newTask.dueDate}
+                      onSelect={(date) => setNewTask({ ...newTask, dueDate: date || new Date() })}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
-          )}
+            <div className="flex justify-end mt-4 gap-2">
+              <Button variant="outline" onClick={() => setIsAddingTask(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddTask}>Add Task</Button>
+            </div>
+          </div>
+        )}
 
-          <div className="space-y-3">
-            {tasks.map((task, index) => (
-              <div
-                key={task.id}
-                className={cn(
-                  "p-4 border rounded-lg flex items-center justify-between",
-                  task.status === "completed" ? "bg-green-50 border-green-200" : "bg-white"
-                )}
-              >
-                <div className="flex items-center">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "h-8 w-8 rounded-full mr-3",
-                      task.status === "completed" ? "bg-green-100 text-green-600" : "bg-gray-100"
-                    )}
-                    onClick={() => handleToggleStatus(task.id)}
-                  >
-                    {task.status === "completed" && <Check className="h-4 w-4" />}
-                  </Button>
-                  <div>
-                    {editingTask === task.id ? (
-                      <Input
-                        value={task.title}
-                        onChange={(e) =>
-                          handleUpdateTask(task.id, { title: e.target.value })
-                        }
-                        onBlur={() => setEditingTask(null)}
-                        autoFocus
-                        className="mb-1"
-                      />
-                    ) : (
-                      <p
-                        className={cn(
-                          "font-medium",
-                          task.status === "completed" && "line-through text-gray-500"
-                        )}
-                        onClick={() => setEditingTask(task.id)}
-                      >
-                        {task.title}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>Due: {format(task.dueDate, "MMM d, yyyy")}</span>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          task.status === "completed"
-                            ? "border-green-300 bg-green-100 text-green-700"
-                            : "border-amber-300 bg-amber-100 text-amber-700"
-                        )}
-                      >
-                        {task.status === "completed" ? "Completed" : "Planned"}
-                      </Badge>
-                    </div>
+        <div className="space-y-3">
+          {tasks.map((task, index) => (
+            <div
+              key={task.id}
+              className={cn(
+                "p-4 border rounded-lg flex items-center justify-between",
+                task.status === "completed" ? "bg-green-50 border-green-200" : "bg-white"
+              )}
+            >
+              <div className="flex items-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-8 w-8 rounded-full mr-3",
+                    task.status === "completed" ? "bg-green-100 text-green-600" : "bg-gray-100"
+                  )}
+                  onClick={() => handleToggleStatus(task.id)}
+                >
+                  {task.status === "completed" && <Check className="h-4 w-4" />}
+                </Button>
+                <div>
+                  {editingTask === task.id ? (
+                    <Input
+                      value={task.title}
+                      onChange={(e) =>
+                        handleUpdateTask(task.id, { title: e.target.value })
+                      }
+                      onBlur={() => setEditingTask(null)}
+                      autoFocus
+                      className="mb-1"
+                    />
+                  ) : (
+                    <p
+                      className={cn(
+                        "font-medium",
+                        task.status === "completed" && "line-through text-gray-500"
+                      )}
+                      onClick={() => setEditingTask(task.id)}
+                    >
+                      {task.title}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span>Due: {format(task.dueDate, "MMM d, yyyy")}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        task.status === "completed"
+                          ? "border-green-300 bg-green-100 text-green-700"
+                          : "border-amber-300 bg-amber-100 text-amber-700"
+                      )}
+                    >
+                      {task.status === "completed" ? "Completed" : "Planned"}
+                    </Badge>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleMoveUp(index)}
-                    disabled={index === 0}
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleMoveDown(index)}
-                    disabled={index === tasks.length - 1}
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Calendar className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <CalendarComponent
-                        mode="single"
-                        selected={task.dueDate}
-                        onSelect={(date) =>
-                          handleUpdateTask(task.id, { dueDate: date })
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-red-500 hover:text-red-600"
-                    onClick={() => handleDeleteTask(task.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleMoveUp(index)}
+                  disabled={index === 0}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleMoveDown(index)}
+                  disabled={index === tasks.length - 1}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <CalendarComponent
+                      mode="single"
+                      selected={task.dueDate}
+                      onSelect={(date) =>
+                        handleUpdateTask(task.id, { dueDate: date })
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-red-500 hover:text-red-600"
+                  onClick={() => handleDeleteTask(task.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
 
@@ -418,6 +414,6 @@ export default function AdminEventTimelinePage() {
           </Button>
         </div>
       </div>
-    </AdminPanelLayout>
+    
   );
 }

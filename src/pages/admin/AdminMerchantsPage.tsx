@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, UserCheck, UserX, User, Star } from "lucide-react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 
 export default function AdminMerchantsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,107 +91,105 @@ export default function AdminMerchantsPage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Merchant Management</h1>
-            <p className="text-gray-500">Manage and monitor vendor accounts</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Button>
-              <UserCheck className="mr-2 h-4 w-4" />
-              Add New Vendor
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Merchant Management</h1>
+          <p className="text-gray-500">Manage and monitor vendor accounts</p>
         </div>
-
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Vendor Accounts</CardTitle>
-            <CardDescription>View and manage vendor accounts on the platform</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row justify-between mb-6">
-              <div className="relative max-w-md mb-4 md:mb-0">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Search vendors..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="space-x-2">
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-                <Button variant="outline">
-                  Export
-                </Button>
-              </div>
-            </div>
-
-            <div className="rounded-md border">
-              <Table>
-                <TableCaption>List of vendors registered on the platform</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Business Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Join Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Bookings</TableHead>
-                    <TableHead>Rating</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMerchants.map((merchant) => (
-                    <TableRow key={merchant.id}>
-                      <TableCell className="font-medium">{merchant.name}</TableCell>
-                      <TableCell>{merchant.category}</TableCell>
-                      <TableCell>
-                        <div>
-                          {merchant.contact}
-                          <div className="text-xs text-gray-500">
-                            {merchant.email}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{new Date(merchant.joinDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{getStatusBadge(merchant.status)}</TableCell>
-                      <TableCell>{merchant.bookings}</TableCell>
-                      <TableCell className="flex items-center">
-                        {merchant.rating}
-                        <Star className="h-3 w-3 ml-1 text-yellow-500 fill-yellow-500" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon">
-                            <User className="h-4 w-4" />
-                          </Button>
-                          {merchant.status !== "suspended" ? (
-                            <Button variant="ghost" size="icon">
-                              <UserX className="h-4 w-4 text-red-500" />
-                            </Button>
-                          ) : (
-                            <Button variant="ghost" size="icon">
-                              <UserCheck className="h-4 w-4 text-green-500" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mt-4 md:mt-0">
+          <Button>
+            <UserCheck className="mr-2 h-4 w-4" />
+            Add New Vendor
+          </Button>
+        </div>
       </div>
-    </AdminPanelLayout>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Vendor Accounts</CardTitle>
+          <CardDescription>View and manage vendor accounts on the platform</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row justify-between mb-6">
+            <div className="relative max-w-md mb-4 md:mb-0">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search vendors..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="space-x-2">
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+              </Button>
+              <Button variant="outline">
+                Export
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableCaption>List of vendors registered on the platform</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Business Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Join Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Bookings</TableHead>
+                  <TableHead>Rating</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredMerchants.map((merchant) => (
+                  <TableRow key={merchant.id}>
+                    <TableCell className="font-medium">{merchant.name}</TableCell>
+                    <TableCell>{merchant.category}</TableCell>
+                    <TableCell>
+                      <div>
+                        {merchant.contact}
+                        <div className="text-xs text-gray-500">
+                          {merchant.email}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{new Date(merchant.joinDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{getStatusBadge(merchant.status)}</TableCell>
+                    <TableCell>{merchant.bookings}</TableCell>
+                    <TableCell className="flex items-center">
+                      {merchant.rating}
+                      <Star className="h-3 w-3 ml-1 text-yellow-500 fill-yellow-500" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon">
+                          <User className="h-4 w-4" />
+                        </Button>
+                        {merchant.status !== "suspended" ? (
+                          <Button variant="ghost" size="icon">
+                            <UserX className="h-4 w-4 text-red-500" />
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="icon">
+                            <UserCheck className="h-4 w-4 text-green-500" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

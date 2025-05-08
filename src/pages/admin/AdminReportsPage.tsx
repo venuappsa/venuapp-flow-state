@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,7 +136,6 @@ export default function AdminReportsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>Total Events</CardTitle>
-              <CardDescription>Created events</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">342</div>

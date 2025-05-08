@@ -1,6 +1,4 @@
-
 import React, { useState } from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +14,8 @@ export default function AdminSubscriptionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
+  // Mock subscription data
+  
   // Mock subscription data
   const subscriptions = [
     {
@@ -133,148 +133,146 @@ export default function AdminSubscriptionsPage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Subscriptions</h1>
-            <p className="text-gray-500">Manage and monitor user subscriptions</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <Button variant="outline" onClick={handleExportData}>
-              <Download className="mr-2 h-4 w-4" />
-              Export Data
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Subscriptions</h1>
+          <p className="text-gray-500">Manage and monitor user subscriptions</p>
         </div>
+        <div className="mt-4 md:mt-0">
+          <Button variant="outline" onClick={handleExportData}>
+            <Download className="mr-2 h-4 w-4" />
+            Export Data
+          </Button>
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>All Subscriptions</CardTitle>
-            <CardDescription>
-              Track and manage subscription plans across the platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-              <div className="relative w-full md:w-96">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Search subscriptions..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              
-              <Tabs 
-                defaultValue="all" 
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full md:w-auto"
-              >
-                <TabsList className="grid w-full md:w-auto grid-cols-3">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="host">Hosts</TabsTrigger>
-                  <TabsTrigger value="merchant">Merchants</TabsTrigger>
-                </TabsList>
-              </Tabs>
+      <Card>
+        <CardHeader>
+          <CardTitle>All Subscriptions</CardTitle>
+          <CardDescription>
+            Track and manage subscription plans across the platform
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search subscriptions..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+            
+            <Tabs 
+              defaultValue="all" 
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full md:w-auto"
+            >
+              <TabsList className="grid w-full md:w-auto grid-cols-3">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="host">Hosts</TabsTrigger>
+                <TabsTrigger value="merchant">Merchants</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Next Billing</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSubscriptions.length > 0 ? (
-                    filteredSubscriptions.map((sub) => (
-                      <TableRow key={sub.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{sub.customerName}</p>
-                            <p className="text-sm text-muted-foreground">{sub.email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p>{sub.plan}</p>
-                            <p className="text-sm text-muted-foreground">{sub.billingCycle}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{sub.amount}</TableCell>
-                        <TableCell>{getStatusBadge(sub.status)}</TableCell>
-                        <TableCell>
-                          {sub.status === "cancelled" ? (
-                            "—"
-                          ) : (
-                            formatDistanceToNow(sub.nextBilling, { addSuffix: true })
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="outline" size="sm">View</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-6">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <AlertTriangle className="h-12 w-12 mb-2 text-gray-300" />
-                          <p className="text-lg font-medium">No subscriptions found</p>
-                          <p className="text-sm">
-                            {searchTerm ? "Try adjusting your search" : "No data matches your current filter"}
-                          </p>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Next Billing</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSubscriptions.length > 0 ? (
+                  filteredSubscriptions.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{sub.customerName}</p>
+                          <p className="text-sm text-muted-foreground">{sub.email}</p>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <div>
+                          <p>{sub.plan}</p>
+                          <p className="text-sm text-muted-foreground">{sub.billingCycle}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{sub.amount}</TableCell>
+                      <TableCell>{getStatusBadge(sub.status)}</TableCell>
+                      <TableCell>
+                        {sub.status === "cancelled" ? (
+                          "—"
+                        ) : (
+                          formatDistanceToNow(sub.nextBilling, { addSuffix: true })
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm">View</Button>
+                      </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-6">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <AlertTriangle className="h-12 w-12 mb-2 text-gray-300" />
+                        <p className="text-lg font-medium">No subscriptions found</p>
+                        <p className="text-sm">
+                          {searchTerm ? "Try adjusting your search" : "No data matches your current filter"}
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-            <div className="mt-6">
-              <h3 className="text-lg font-medium mb-4">Subscription Statistics</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardContent className="p-4 flex items-center">
-                    <CheckCircle className="h-8 w-8 text-green-500 mr-4" />
-                    <div>
-                      <p className="text-2xl font-bold">4</p>
-                      <p className="text-sm text-muted-foreground">Active Subscriptions</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 flex items-center">
-                    <AlertTriangle className="h-8 w-8 text-yellow-500 mr-4" />
-                    <div>
-                      <p className="text-2xl font-bold">1</p>
-                      <p className="text-sm text-muted-foreground">Past Due</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 flex items-center">
-                    <XCircle className="h-8 w-8 text-red-500 mr-4" />
-                    <div>
-                      <p className="text-2xl font-bold">1</p>
-                      <p className="text-sm text-muted-foreground">Cancelled</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+          <div className="mt-6">
+            <h3 className="text-lg font-medium mb-4">Subscription Statistics</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <CheckCircle className="h-8 w-8 text-green-500 mr-4" />
+                  <div>
+                    <p className="text-2xl font-bold">4</p>
+                    <p className="text-sm text-muted-foreground">Active Subscriptions</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <AlertTriangle className="h-8 w-8 text-yellow-500 mr-4" />
+                  <div>
+                    <p className="text-2xl font-bold">1</p>
+                    <p className="text-sm text-muted-foreground">Past Due</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <XCircle className="h-8 w-8 text-red-500 mr-4" />
+                  <div>
+                    <p className="text-2xl font-bold">1</p>
+                    <p className="text-sm text-muted-foreground">Cancelled</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AdminPanelLayout>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

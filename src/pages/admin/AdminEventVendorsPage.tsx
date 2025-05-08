@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -176,110 +175,108 @@ export default function AdminEventVendorsPage() {
   });
 
   return (
-    <AdminPanelLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate("/admin/events")}
-              className="mr-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">{event?.name || "Loading..."}</h1>
-              <p className="text-gray-500">{event?.description}</p>
-            </div>
-          </div>
-          <Button onClick={handleSaveAssignments}>Save Assignments</Button>
-        </div>
-
-        <Card className="p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Assign Vendors</h2>
-            <div className="flex gap-2">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  type="search"
-                  placeholder="Search vendors..."
-                  className="pl-9 w-[250px]"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <select
-                className="border rounded px-3 py-2 bg-background"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              >
-                <option value="">All</option>
-                <option value="assigned">Assigned</option>
-                <option value="unassigned">Unassigned</option>
-              </select>
-            </div>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]">Assign</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Tags</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredVendors.map((vendor) => (
-                <TableRow key={vendor.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={vendor.isAssigned}
-                      onCheckedChange={() => handleVendorToggle(vendor.id)}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{vendor.name}</TableCell>
-                  <TableCell>{vendor.category}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <span className="mr-1">{vendor.rating}</span>
-                      <span className="text-yellow-400">★</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{vendor.location}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {vendor.tags.map((tag, i) => (
-                        <Badge key={i} variant="outline">{tag}</Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredVendors.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No vendors found matching your search.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
-
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/timeline`)}>
-            Manage Timeline
+    <div className="max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate("/admin/events")}
+            className="mr-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
-          <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/resources`)}>
-            Manage Resources
-          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{event?.name || "Loading..."}</h1>
+            <p className="text-gray-500">{event?.description}</p>
+          </div>
         </div>
+        <Button onClick={handleSaveAssignments}>Save Assignments</Button>
       </div>
-    </AdminPanelLayout>
+
+      <Card className="p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Assign Vendors</h2>
+          <div className="flex gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                type="search"
+                placeholder="Search vendors..."
+                className="pl-9 w-[250px]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <select
+              className="border rounded px-3 py-2 bg-background"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="">All</option>
+              <option value="assigned">Assigned</option>
+              <option value="unassigned">Unassigned</option>
+            </select>
+          </div>
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">Assign</TableHead>
+              <TableHead>Vendor</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Rating</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Tags</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredVendors.map((vendor) => (
+              <TableRow key={vendor.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={vendor.isAssigned}
+                    onCheckedChange={() => handleVendorToggle(vendor.id)}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{vendor.name}</TableCell>
+                <TableCell>{vendor.category}</TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    <span className="mr-1">{vendor.rating}</span>
+                    <span className="text-yellow-400">★</span>
+                  </div>
+                </TableCell>
+                <TableCell>{vendor.location}</TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {vendor.tags.map((tag, i) => (
+                      <Badge key={i} variant="outline">{tag}</Badge>
+                    ))}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {filteredVendors.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  No vendors found matching your search.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/timeline`)}>
+          Manage Timeline
+        </Button>
+        <Button variant="outline" onClick={() => navigate(`/admin/events/${id}/resources`)}>
+          Manage Resources
+        </Button>
+      </div>
+    </div>
   );
 }

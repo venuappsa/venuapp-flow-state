@@ -1,6 +1,5 @@
 
 import React from "react";
-import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle, Server, Database, Cloud, Globe } from "lucide-react";
@@ -77,110 +76,108 @@ export default function AdminSystemStatusPage() {
   };
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">System Status</h1>
-            <p className="text-gray-500">Monitor and manage platform operational status</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            {systemStatus.overall === "operational" ? (
-              <Badge className="bg-green-100 text-green-800">All Systems Operational</Badge>
-            ) : (
-              <Badge className="bg-yellow-100 text-yellow-800">System Issues Detected</Badge>
-            )}
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">System Status</h1>
+          <p className="text-gray-500">Monitor and manage platform operational status</p>
         </div>
+        <div className="mt-4 md:mt-0">
+          {systemStatus.overall === "operational" ? (
+            <Badge className="bg-green-100 text-green-800">All Systems Operational</Badge>
+          ) : (
+            <Badge className="bg-yellow-100 text-yellow-800">System Issues Detected</Badge>
+          )}
+        </div>
+      </div>
 
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>System Components</CardTitle>
-            <CardDescription>Current status of all platform components</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {systemStatus.components.map((component, index) => (
-                <div key={index} className="p-4 border rounded-md flex items-center justify-between">
-                  <div className="flex items-center">
-                    {getComponentIcon(component.name)}
-                    <div className="ml-3">
-                      <p className="font-medium">{component.name}</p>
-                      <p className="text-sm text-gray-500">Uptime: {component.uptime}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    {getStatusIcon(component.status)}
-                    <span className="ml-2">{getStatusBadge(component.status)}</span>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>System Components</CardTitle>
+          <CardDescription>Current status of all platform components</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {systemStatus.components.map((component, index) => (
+              <div key={index} className="p-4 border rounded-md flex items-center justify-between">
+                <div className="flex items-center">
+                  {getComponentIcon(component.name)}
+                  <div className="ml-3">
+                    <p className="font-medium">{component.name}</p>
+                    <p className="text-sm text-gray-500">Uptime: {component.uptime}</p>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center">
+                  {getStatusIcon(component.status)}
+                  <span className="ml-2">{getStatusBadge(component.status)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Incidents</CardTitle>
+            <CardDescription>Current issues affecting the platform</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {systemStatus.incidents.length > 0 ? (
+              <div className="space-y-4">
+                {systemStatus.incidents.map((incident) => (
+                  <div key={incident.id} className="p-4 border rounded-md bg-yellow-50">
+                    <div className="flex justify-between">
+                      <h3 className="font-medium">{incident.title}</h3>
+                      <Badge variant="outline">{incident.status}</Badge>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {new Date(incident.date).toLocaleString()}
+                    </p>
+                    <p className="mt-2 text-sm">{incident.description}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                <p className="text-lg font-medium">No Active Incidents</p>
+                <p className="text-gray-500">All systems are functioning normally</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Incidents</CardTitle>
-              <CardDescription>Current issues affecting the platform</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {systemStatus.incidents.length > 0 ? (
-                <div className="space-y-4">
-                  {systemStatus.incidents.map((incident) => (
-                    <div key={incident.id} className="p-4 border rounded-md bg-yellow-50">
-                      <div className="flex justify-between">
-                        <h3 className="font-medium">{incident.title}</h3>
-                        <Badge variant="outline">{incident.status}</Badge>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {new Date(incident.date).toLocaleString()}
-                      </p>
-                      <p className="mt-2 text-sm">{incident.description}</p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Scheduled Maintenance</CardTitle>
+            <CardDescription>Upcoming maintenance windows</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {systemStatus.maintenance.length > 0 ? (
+              <div className="space-y-4">
+                {systemStatus.maintenance.map((event) => (
+                  <div key={event.id} className="p-4 border rounded-md">
+                    <h3 className="font-medium">{event.title}</h3>
+                    <div className="flex flex-col sm:flex-row sm:justify-between text-sm text-gray-500 mt-1">
+                      <span>
+                        {new Date(event.date).toLocaleString()}
+                      </span>
+                      <span>Duration: {event.duration} minutes</span>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                  <p className="text-lg font-medium">No Active Incidents</p>
-                  <p className="text-gray-500">All systems are functioning normally</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Scheduled Maintenance</CardTitle>
-              <CardDescription>Upcoming maintenance windows</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {systemStatus.maintenance.length > 0 ? (
-                <div className="space-y-4">
-                  {systemStatus.maintenance.map((event) => (
-                    <div key={event.id} className="p-4 border rounded-md">
-                      <h3 className="font-medium">{event.title}</h3>
-                      <div className="flex flex-col sm:flex-row sm:justify-between text-sm text-gray-500 mt-1">
-                        <span>
-                          {new Date(event.date).toLocaleString()}
-                        </span>
-                        <span>Duration: {event.duration} minutes</span>
-                      </div>
-                      <p className="mt-2 text-sm">{event.description}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">No scheduled maintenance</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    <p className="mt-2 text-sm">{event.description}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No scheduled maintenance</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </AdminPanelLayout>
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import AdminPanelLayout from "@/components/layouts/AdminPanelLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Search, Trash, CheckSquare, Bell, Megaphone, Settings } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminNotificationsPage() {
   const { toast } = useToast();
@@ -106,141 +107,139 @@ export default function AdminNotificationsPage() {
   const unreadCount = notifications.filter(notif => !notif.read).length;
 
   return (
-    <AdminPanelLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Notifications</h1>
-            <p className="text-gray-500">Manage system and user notifications</p>
-          </div>
-          <div className="mt-4 md:mt-0 space-x-2">
-            <Button variant="outline" asChild>
-              <a href="/admin/notification-settings">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </a>
-            </Button>
-            <Button>
-              <Megaphone className="mr-2 h-4 w-4" />
-              Send Announcement
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Notifications</h1>
+          <p className="text-gray-500">Manage system and user notifications</p>
         </div>
+        <div className="mt-4 md:mt-0 space-x-2">
+          <Button variant="outline" asChild>
+            <a href="/admin/notification-settings">
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </a>
+          </Button>
+          <Button>
+            <Megaphone className="mr-2 h-4 w-4" />
+            Send Announcement
+          </Button>
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <div>
-                <CardTitle>All Notifications</CardTitle>
-                <CardDescription>
-                  {unreadCount > 0 ? 
-                    `You have ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}` : 
-                    'No unread notifications'}
-                </CardDescription>
-              </div>
-              {unreadCount > 0 && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleMarkAllAsRead}
-                  className="mt-2 md:mt-0"
-                >
-                  <CheckSquare className="mr-2 h-4 w-4" />
-                  Mark all as read
-                </Button>
-              )}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+              <CardTitle>All Notifications</CardTitle>
+              <CardDescription>
+                {unreadCount > 0 ? 
+                  `You have ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}` : 
+                  'No unread notifications'}
+              </CardDescription>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row justify-between mb-6">
-              <div className="relative max-w-md mb-4 md:mb-0">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Search notifications..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div>
-                <Tabs 
-                  defaultValue="all" 
-                  value={selectedTab} 
-                  onValueChange={setSelectedTab}
-                  className="w-full md:w-auto"
-                >
-                  <TabsList className="grid w-full md:w-auto grid-cols-3">
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="user">User</TabsTrigger>
-                    <TabsTrigger value="system">System</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
+            {unreadCount > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleMarkAllAsRead}
+                className="mt-2 md:mt-0"
+              >
+                <CheckSquare className="mr-2 h-4 w-4" />
+                Mark all as read
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row justify-between mb-6">
+            <div className="relative max-w-md mb-4 md:mb-0">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search notifications..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+            <div>
+              <Tabs 
+                defaultValue="all" 
+                value={selectedTab} 
+                onValueChange={setSelectedTab}
+                className="w-full md:w-auto"
+              >
+                <TabsList className="grid w-full md:w-auto grid-cols-3">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="user">User</TabsTrigger>
+                  <TabsTrigger value="system">System</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
 
-            <div className="space-y-4">
-              {filteredNotifications.length > 0 ? (
-                filteredNotifications.map((notification) => (
-                  <div 
-                    key={notification.id} 
-                    className={`p-4 border rounded-md ${!notification.read ? 'bg-accent/20' : ''}`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center">
-                        {notification.type === "system" ? (
-                          <Bell className="h-5 w-5 text-blue-500 mr-2" />
-                        ) : notification.type === "alert" ? (
-                          <Bell className="h-5 w-5 text-red-500 mr-2" />
-                        ) : (
-                          <Bell className="h-5 w-5 text-green-500 mr-2" />
-                        )}
-                        <div>
-                          <h3 className="font-medium">{notification.title}</h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
-                          </p>
-                        </div>
+          <div className="space-y-4">
+            {filteredNotifications.length > 0 ? (
+              filteredNotifications.map((notification) => (
+                <div 
+                  key={notification.id} 
+                  className={`p-4 border rounded-md ${!notification.read ? 'bg-accent/20' : ''}`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center">
+                      {notification.type === "system" ? (
+                        <Bell className="h-5 w-5 text-blue-500 mr-2" />
+                      ) : notification.type === "alert" ? (
+                        <Bell className="h-5 w-5 text-red-500 mr-2" />
+                      ) : (
+                        <Bell className="h-5 w-5 text-green-500 mr-2" />
+                      )}
+                      <div>
+                        <h3 className="font-medium">{notification.title}</h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
+                        </p>
                       </div>
-                      <div className="flex space-x-2">
-                        {!notification.read && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleMarkAsRead(notification.id)}
-                          >
-                            <CheckSquare className="h-4 w-4" />
-                            <span className="sr-only">Mark as read</span>
-                          </Button>
-                        )}
+                    </div>
+                    <div className="flex space-x-2">
+                      {!notification.read && (
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={() => handleDeleteNotification(notification.id)}
+                          onClick={() => handleMarkAsRead(notification.id)}
                         >
-                          <Trash className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
+                          <CheckSquare className="h-4 w-4" />
+                          <span className="sr-only">Mark as read</span>
                         </Button>
-                      </div>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDeleteNotification(notification.id)}
+                      >
+                        <Trash className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
                     </div>
-                    <p className="mt-2">{notification.message}</p>
-                    {!notification.read && (
-                      <Badge className="mt-2" variant="outline">Unread</Badge>
-                    )}
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-12">
-                  <Bell className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-lg font-medium">No notifications found</p>
-                  <p className="text-gray-500">
-                    {searchTerm ? 'Try adjusting your search term' : 'You have no notifications in this category'}
-                  </p>
+                  <p className="mt-2">{notification.message}</p>
+                  {!notification.read && (
+                    <Badge className="mt-2" variant="outline">Unread</Badge>
+                  )}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AdminPanelLayout>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <Bell className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-lg font-medium">No notifications found</p>
+                <p className="text-gray-500">
+                  {searchTerm ? 'Try adjusting your search term' : 'You have no notifications in this category'}
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
